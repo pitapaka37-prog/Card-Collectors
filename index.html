@@ -143,6 +143,14 @@ nav button span{font-family:var(--body);font-size:13px;font-weight:700}
 .dex .count{position:absolute;bottom:-6px;left:-4px;z-index:4;font-size:11px;font-weight:700;background:var(--ink);color:#fff;padding:0 6px;font-variant-numeric:tabular-nums}
 .dex .slot .card{cursor:pointer}
 .locked{aspect-ratio:5/7;border:3px dashed #8a8170;border-radius:10px;display:grid;place-items:center;color:#8a8170;font-family:var(--display);font-size:34px;background:var(--paper)}
+button.locked{width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:8px 6px;cursor:pointer;font-family:var(--display);transition:background .1s,color .1s}
+button.locked:hover{background:var(--paper2);color:var(--ink);border-color:var(--ink)}
+button.locked .q{font-size:34px;line-height:1}
+button.locked .nm{font-size:clamp(12px,2.6vw,15px);line-height:1.1;letter-spacing:.03em;color:var(--ink);text-align:center;overflow-wrap:anywhere}
+button.locked .kn{font-family:var(--jp);font-size:9px;color:var(--mute);text-align:center;line-height:1.3}
+.detail .stamp-wrap{position:relative}
+.detail .stamp{position:absolute;z-index:5;left:50%;top:42%;transform:translate(-50%,-50%) rotate(-14deg);font-family:var(--display);font-size:22px;letter-spacing:.06em;color:var(--red);background:rgba(255,255,255,.88);border:3px solid var(--red);padding:0 10px;white-space:nowrap;pointer-events:none}
+.detail .how{font-size:13px;margin-top:8px}
 .detail{background:var(--paper2);border:3px solid var(--ink);padding:16px;display:grid;grid-template-columns:130px 1fr;gap:18px;align-items:center}
 .detail h4{font-family:var(--display);font-weight:400;font-size:30px;margin:0;letter-spacing:.03em;line-height:1}
 .detail .jp{font-family:var(--jp);font-size:13px;margin:2px 0 8px}
@@ -855,9 +863,12 @@ function setBanner(id){
 /* ---- dex ---- */
 function showDetail(c){
   const d=$("detail");d.hidden=false;d.innerHTML="";
-  const w=document.createElement("div");w.appendChild(cardEl(c,{flipped:true}));
+  const have=S.owned[c.id]||0;
+  const w=document.createElement("div");w.className="stamp-wrap";w.appendChild(cardEl(c,{flipped:true}));
+  if(!have)w.insertAdjacentHTML("beforeend",`<span class="stamp">未所持</span>`);
+  const where=c.pack?pname(packOf(c.pack)):"STANDARD";
   const t=document.createElement("div");t.style.minWidth="0";
-  t.innerHTML=`<div class="rates" style="margin:0 0 8px"><span><b>${c.r}</b>所持 ${S.owned[c.id]} 枚</span></div><h4>${esc(c.name)}</h4><div class="jp">${esc(c.kana||"")}</div>${c.flavor?`<p>${esc(c.flavor)}</p>`:""}`;
+  t.innerHTML=`<div class="rates" style="margin:0 0 8px"><span><b>${c.r}</b>${have?`所持 ${have} 枚`:"まだ持っていません"}</span></div><h4>${esc(c.name)}</h4><div class="jp">${esc(c.kana||"")}</div>${c.flavor?`<p>${esc(c.flavor)}</p>`:""}${have?"":`<div class="how">「${esc(where)}」ガチャで手に入ります。</div>`}`;
   d.append(w,t);
 }
 let dexSel=null; // null = selection screen, otherwise "std" or a pack id
@@ -911,7 +922,13 @@ function dexGroup(body,pool){
         const el=cardEl(c,{flipped:true});el.tabIndex=0;el.setAttribute("role","button");el.setAttribute("aria-label",c.name);
         el.onclick=()=>{showDetail(c);$("detail").scrollIntoView({behavior:"smooth",block:"nearest"})};el.onkeydown=e=>{if(e.key==="Enter")el.onclick()};
         s.appendChild(el);s.insertAdjacentHTML("beforeend",`<span class="count">×${S.owned[c.id]}</span>`);
-      }else s.innerHTML=`<div class="locked" aria-label="未入手">?</div>`;
+      }else{
+        const b=document.createElement("button");b.type="button";b.className="locked";
+        b.setAttribute("aria-label",`${c.name}（未所持）の詳細を見る`);
+        b.innerHTML=`<span class="q">?</span><span class="nm">${esc(c.name)}</span><span class="kn">${esc(c.kana||"")}</span>`;
+        b.onclick=()=>{showDetail(c);$("detail").scrollIntoView({behavior:"smooth",block:"nearest"})};
+        s.appendChild(b);
+      }
       g.appendChild(s);
     });
     sec.appendChild(g);body.appendChild(sec);
