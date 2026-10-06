@@ -2934,38 +2934,23 @@ const BT_ABIL={
  "Omega Paragon":{t:2,s:{name:"万象の魔術",cost:4,desc:"1.5倍ダメージ＋敵の攻撃力40%ダウン（3ターン）＋敵を確実にしびれさせる",fx:[btH(1.5),{k:"weaken",v:.4,turns:3},{k:"stun",ch:1}]},p:{k:"charge",name:"千年の叡智",desc:"毎ターン、チャージが1多くたまる"}},
  "Star Velvet":{t:1,spd:1.15,s:{name:"ハイパードライブ砲",cost:4,desc:"2.1倍ダメージ",fx:[btH(2.1)]},p:{k:"buddy",v:.3,name:"最高の相棒",desc:"味方チームにベルベット・コメットがいると攻撃力30%アップ"}},
 };
-// original (custom) cards get a skill picked from this list, plus a passive at SSR and above
-const BT_GEN_SKILLS=[
- {name:"必殺の一撃",cost:3,desc:"1.7倍ダメージ",fx:[btH(1.7)]},
- {name:"連続アタック",cost:3,desc:"0.6倍ダメージ×3回",fx:[btH(.6,3)]},
- {name:"ひと休み",cost:2,desc:"自分のHPを35%回復",fx:[{k:"heal",v:.35}]},
- {name:"鉄壁ガード",cost:2,desc:"2ターンのあいだ受けるダメージ50%カット",fx:[{k:"guard",v:.5,turns:2}]},
- {name:"気合いため",cost:2,desc:"攻撃力40%アップ（3ターン）＋0.8倍ダメージ",fx:[btH(.8),{k:"buff",v:.4,turns:3}]},
- {name:"びっくり作戦",cost:3,desc:"1.0倍ダメージ＋60%の確率で敵をしびれさせる",fx:[btH(1),{k:"stun",ch:.6}]},
-];
-const BT_GEN_PASSIVES=[
- {k:"tough",v:.15,name:"タフネス",desc:"受けるダメージがいつも15%少ない"},
- {k:"regen",v:.05,name:"自然回復",desc:"毎ターン、HPが5%回復する"},
- {k:"dodge",v:.15,name:"身のこなし",desc:"15%の確率で攻撃をよける"},
- {k:"rage",v:.4,name:"火事場の力",desc:"HPが40%以下になると攻撃力40%アップ"},
-];
 function btHash(str){let h=2166136261;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
+// only STAR LIGHT cards have battle abilities; original (custom) cards have none
+function btHasAbility(c){return !!(c&&!c.img&&BT_ABIL[c.name])}
 function btProfile(c){
-  const key=String(c.id)+"|"+(c.name||"");
+  if(!btHasAbility(c))return null;
+  const a=BT_ABIL[c.name],key=String(c.id)+"|"+c.name;
   const h=btHash(key),h2=btHash(key+"#"),h3=btHash(key+"$");
-  const a=BT_ABIL[c.name]&&!c.img?BT_ABIL[c.name]:null;
-  const type=a?a.t:h%3;
   const vary=x=>.92+((x%1000)/1000)*.16;
-  const hp=Math.round(BT_HP[c.r]*vary(h2)*(a&&a.hp||1));
-  const atk=Math.round(BT_ATK[c.r]*vary(h3)*(a&&a.atk||1));
-  const spd=Math.round(([45,70,55][type]+BT_RANK[c.r]*4+(h%17))*(a&&a.spd||1));
-  const skill=a?a.s:BT_GEN_SKILLS[h2%BT_GEN_SKILLS.length];
-  const passive=a?(a.p||null):(BT_RANK[c.r]>=3?BT_GEN_PASSIVES[h3%BT_GEN_PASSIVES.length]:null);
-  return{type,hp,atk,spd,skill,passive};
+  const type=a.t;
+  const hp=Math.round(BT_HP[c.r]*vary(h2)*(a.hp||1));
+  const atk=Math.round(BT_ATK[c.r]*vary(h3)*(a.atk||1));
+  const spd=Math.round(([45,70,55][type]+BT_RANK[c.r]*4+(h%17))*(a.spd||1));
+  return{type,hp,atk,spd,skill:a.s,passive:a.p||null};
 }
 const btBeats=(a,b)=>(a===0&&b===2)||(a===2&&b===1)||(a===1&&b===0);
 function btAbilityHTML(c){
-  const p=btProfile(c);
+  const p=btProfile(c);if(!p)return "";
   return `<div class="bt-abil"><div class="bt-abil-row"><span class="bt-type t${p.type}">${BT_TYPES[p.type]}</span><b>${BT_TNAME[p.type]}</b><span>HP ${p.hp}</span><span>ATK ${p.atk}</span><span>SPD ${p.spd}</span></div>
     <div class="bt-abil-sk"><small>わざ ・ チャージ${p.skill.cost}</small><b>${esc(p.skill.name)}</b><span>${esc(p.skill.desc)}</span></div>
     ${p.passive?`<div class="bt-abil-sk ps"><small>とくせい</small><b>${esc(p.passive.name)}</b><span>${esc(p.passive.desc)}</span></div>`:""}</div>`;
@@ -2974,7 +2959,7 @@ function btAbilityHTML(c){
 let BT=null,BT_FAST=false;
 const btWait=ms=>BT_FAST?Promise.resolve():new Promise(r=>setTimeout(r,ms));
 // battles use STAR LIGHT cards only (gacha, shop and mission cards) - original cards are left out
-function btPool(){return CARDS.concat(SHOP_CARDS,REWARD_CARDS).filter(c=>S.owned[c.id])}
+function btPool(){return CARDS.concat(SHOP_CARDS,REWARD_CARDS).filter(c=>S.owned[c.id]&&btHasAbility(c))}
 function btMake(c,side){
   const p=btProfile(c);
   return{c,side,type:p.type,maxHp:p.hp,hp:p.hp,atk:p.atk,spd:p.spd,skill:p.skill,passive:p.passive,
