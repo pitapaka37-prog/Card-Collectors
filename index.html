@@ -3319,7 +3319,7 @@ function btDraw(){
     const b=document.createElement("button");b.type="button";b.className="bt-bu"+(x.hp<=0?" ko":"")+(pickMode&&x.hp>0?" can":"");
     b.setAttribute("aria-label",`${x.c.name} のステータス`);
     b.appendChild(btFace(x.c));
-    b.insertAdjacentHTML("beforeend",`<span class="bt-bname">${esc(x.c.name)}</span><span class="bt-bstat"><span class="bt-type t${x.type}">${BT_TYPES[x.type]}</span>${x.hp}/${x.maxHp}</span>${btBar(x)}${x.hp>0&&eu&&btBeats(x.type,eu.type)?`<span class="bt-adv">有利!</span>`:""}`);
+    b.insertAdjacentHTML("beforeend",`<span class="bt-bstat"><span class="bt-type t${x.type}">${BT_TYPES[x.type]}</span>${x.hp}/${x.maxHp}</span>${btBar(x)}${x.hp>0&&eu&&btBeats(x.type,eu.type)?`<span class="bt-adv">有利!</span>`:""}`);
     b.onclick=()=>btShowInfo(x);
     bench.appendChild(b);
   });
@@ -3362,7 +3362,7 @@ function dkSlots(box,list,onTap){
   for(let i=0;i<DK_SIZE;i++){
     const c=list[i];
     const b=document.createElement("button");b.type="button";b.className="dk-slot"+(c?"":" empty");
-    if(c){b.appendChild(btFace(c));b.insertAdjacentHTML("beforeend",`<span class="dk-cc">${DK_COST[c.r]}</span>`);const p=btProfile(c);b.insertAdjacentHTML("beforeend",`<span class="dk-sn"><span class="bt-type t${p.type}">${BT_TYPES[p.type]}</span>${esc(c.name)}</span>`)}
+    if(c){b.appendChild(btFace(c));b.insertAdjacentHTML("beforeend",`<span class="dk-cc">${DK_COST[c.r]}</span>`);const p=btProfile(c);b.setAttribute("aria-label",c.name);b.insertAdjacentHTML("beforeend",`<span class="dk-sn"><span class="bt-type t${p.type}">${BT_TYPES[p.type]}</span>${c.r}</span>`)}
     else b.innerHTML=`<span class="dk-plus">＋</span>`;
     b.onclick=()=>onTap(c,i);
     box.appendChild(b);
