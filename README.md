@@ -27,11 +27,11 @@
 | `manifest.webmanifest` | アプリ名・アイコン・テーマ色 |
 | `sw.js` | オフライン用のキャッシュ（Service Worker） |
 | `icon-*.png` | アプリのアイコン |
-| `rubber-duck.jpg`, `atlas-prime.jpg`, `nova-mae.jpg`, `skyline-sentinel.jpg`, `queen-quasar.jpg`, `thunder-hound.jpg`, `atomic-bee.jpg`, `radio-ranger.jpg`, `mirror-max.jpg` | 画像を使うカードの絵 |
+| `rubber-duck.jpg`, `atlas-prime.jpg`, `nova-mae.jpg`, `skyline-sentinel.jpg`, `queen-quasar.jpg`, `thunder-hound.jpg`, `atomic-bee.jpg`, `radio-ranger.jpg`, `mirror-max.jpg`, `velvet-comet.jpg` | 画像を使うカードの絵 |
 
 ## 更新するとき
 
-`sw.js` の `VERSION`（いまは `cc-v18`）を `cc-v19` のように上げると、利用者の端末の古いキャッシュが入れ替わります。
+`sw.js` の `VERSION`（いまは `cc-v19`）を `cc-v20` のように上げると、利用者の端末の古いキャッシュが入れ替わります。
 
 ## データについて
 
