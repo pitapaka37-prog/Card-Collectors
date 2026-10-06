@@ -1096,7 +1096,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
       <div class="dk-top">
         <div class="dk-head"><span class="dk-tabs" id="dkEditTabs" role="tablist"></span><span class="dk-caps" id="dkEditCaps"></span></div>
         <div class="dk-row edit" id="dkEditRow"></div>
-        <p class="dk-note">下のカードをタップすると入れる・外すができます。デッキは5枚で、<b>コストの合計が15以内</b>になるように作ろう。コストは <b>UR 5・SSR 4・SR 3・R 2・N 1</b>。カードの左上の数字がコストです。「詳しく」で能力が見られます。</p>
+        <p class="dk-note">下のカードをタップすると入れる・外すができます。デッキは5枚で、<b>コストの合計が15以内</b>になるように作ろう。コストは <b>UR 5・SSR 4・SR 3・R 2・N 1</b>。カードの左上の数字がコストです。<b>UR と SSR はそれぞれ1枚まで</b>。「詳しく」で能力が見られます。</p>
         <div class="dk-btns"><button type="button" class="ghost" id="dkAuto">おまかせ</button><button type="button" class="ghost" id="dkClear">ぜんぶ外す</button><button type="button" class="btn-main" id="dkDone">このデッキでバトル！</button></div>
       </div>
       <div class="dk-filter" id="dkFilter" role="tablist"></div>
@@ -3265,21 +3265,23 @@ function renderBattle(){
 /* ---- decks: 5 cards within 15 cost (UR 5 / SSR 4 / SR 3 / R 2 / N 1) ---- */
 const DK_COST={UR:5,SSR:4,SR:3,R:2,N:1};
 const DK_MAXCOST=15;
+const DK_LIMIT={UR:1,SSR:1}; // on top of the cost limit, at most one UR and one SSR
+const dkOver=(list,c)=>DK_LIMIT[c.r]!=null&&list.filter(x=>x.r===c.r).length>=DK_LIMIT[c.r];
 const DK_SIZE=5;
 let dkEditK=0;
 function dkCard(id){return CARDS.concat(SHOP_CARDS,REWARD_CARDS).find(c=>String(c.id)===String(id))}
 function dkCards(k){return S.decks[k].map(dkCard).filter(c=>c&&S.owned[c.id])}
 function dkCost(list){return list.reduce((a,c)=>a+DK_COST[c.r],0)}
-function dkValid(list){return list.length===DK_SIZE&&dkCost(list)<=DK_MAXCOST}
+function dkValid(list){return list.length===DK_SIZE&&dkCost(list)<=DK_MAXCOST&&Object.keys(DK_LIMIT).every(r=>list.filter(x=>x.r===r).length<=DK_LIMIT[r])}
 // can c be added and still leave room (cost-wise) to fill the rest of the deck with cards you own?
 function dkCanAdd(list,c){
-  if(list.length>=DK_SIZE||list.includes(c))return false;
+  if(list.length>=DK_SIZE||list.includes(c)||dkOver(list,c))return false;
   const left=DK_SIZE-list.length-1;
   const cheap=btPool().filter(x=>x!==c&&!list.includes(x)).map(x=>DK_COST[x.r]).sort((a,b)=>a-b).slice(0,left);
   const need=cheap.length<left?Infinity:cheap.reduce((a,b)=>a+b,0);
   return dkCost(list)+DK_COST[c.r]+need<=DK_MAXCOST;
 }
-function dkCapsHTML(list){const c=dkCost(list);return `<span class="dk-cost ${c>DK_MAXCOST?"over":c===DK_MAXCOST?"full":""}"><b>COST</b>${c}<i>/${DK_MAXCOST}</i><span class="dk-meter"><span style="width:${Math.min(100,c/DK_MAXCOST*100)}%"></span></span></span><span class="dk-cap tot ${list.length===DK_SIZE?"full":""}"><b>枚数</b>${list.length}/${DK_SIZE}</span>`}
+function dkCapsHTML(list){const c=dkCost(list);return `<span class="dk-cost ${c>DK_MAXCOST?"over":c===DK_MAXCOST?"full":""}"><b>COST</b>${c}<i>/${DK_MAXCOST}</i><span class="dk-meter"><span style="width:${Math.min(100,c/DK_MAXCOST*100)}%"></span></span></span><span class="dk-cap tot ${list.length===DK_SIZE?"full":""}"><b>枚数</b>${list.length}/${DK_SIZE}</span>`+Object.keys(DK_LIMIT).map(r=>{const n=list.filter(x=>x.r===r).length;return `<span class="dk-cap r-${r} ${n>DK_LIMIT[r]?"over":n===DK_LIMIT[r]?"full":""}"><b>${r}</b>${n}/${DK_LIMIT[r]}</span>`}).join("")}
 function dkSlots(box,list,onTap){
   box.innerHTML="";
   for(let i=0;i<DK_SIZE;i++){
@@ -3300,7 +3302,7 @@ function dkRender(){
   const ok=dkValid(list);
   $("btStartDeck").disabled=!ok;
   const cost=dkCost(list);
-  $("dkNote").textContent=ok?`このデッキで戦えます！（コスト ${cost}/${DK_MAXCOST}） バトルでは、出す順番をその場で選べます。`:cost>DK_MAXCOST?`コストオーバー！（${cost}/${DK_MAXCOST}） 「DECK」からコスト15以内に作り直してね。`:list.length?`あと ${DK_SIZE-list.length} 枚入れるとバトルできます。`:"「DECK」から、持っている STAR LIGHT のカードを5枚、コスト15以内でえらんでデッキを作ろう。";
+  $("dkNote").textContent=ok?`このデッキで戦えます！（コスト ${cost}/${DK_MAXCOST}） バトルでは、出す順番をその場で選べます。`:cost>DK_MAXCOST?`コストオーバー！（${cost}/${DK_MAXCOST}） 「DECK」からコスト15以内に作り直してね。`:list.length===DK_SIZE?"UR と SSR はそれぞれ1枚までです。「DECK」から作り直してね。":list.length?`あと ${DK_SIZE-list.length} 枚入れるとバトルできます。`:"「DECK」から、持っている STAR LIGHT のカードを5枚、コスト15以内でえらんでデッキを作ろう。";
 }
 let dkFilterR="ALL";
 function dkOpen(k){dkEditK=k;tab("deck");window.scrollTo({top:0,behavior:"smooth"})}
@@ -3312,6 +3314,7 @@ function dkToggle(c){
   else{
     const list=dkCards(dkEditK);
     if(list.length>=DK_SIZE){toast("デッキは5枚までです");return}
+    if(dkOver(list,c)){toast(`${c.r} はデッキに1枚までしか入れられません`);return}
     if(!dkCanAdd(list,c)){toast(dkCost(list)+DK_COST[c.r]>DK_MAXCOST?`コストオーバー！（いま ${dkCost(list)}、${c.name} はコスト${DK_COST[c.r]}）`:"このカードを入れると、残りの枠をコスト15以内で埋められません");return}
     S.decks[dkEditK]=list.map(x=>String(x.id)).concat(id);sfx("flip");
   }
@@ -3344,7 +3347,7 @@ function dkDrawEdit(){
     const b=document.createElement("button");b.type="button";b.className="dk-pick";b.setAttribute("aria-label",`${c.name} を${inDeck?"外す":"入れる"}`);
     b.appendChild(cardEl(c,{flipped:true}));
     if(inDeck)b.insertAdjacentHTML("beforeend",`<span class="dk-in">IN</span>`);
-    else if(cap)b.insertAdjacentHTML("beforeend",`<span class="dk-lock">コストオーバー</span>`);
+    else if(cap)b.insertAdjacentHTML("beforeend",`<span class="dk-lock">${dkOver(list,c)?`${c.r}は1枚まで`:"コストオーバー"}</span>`);
     b.insertAdjacentHTML("beforeend",`<span class="dk-cc big">${DK_COST[c.r]}</span>`);
     b.onclick=()=>dkToggle(c);
     w.appendChild(b);
