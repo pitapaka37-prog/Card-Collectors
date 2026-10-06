@@ -250,6 +250,44 @@ nav button span{font-family:var(--body);font-size:13px;font-weight:700}
 .fx-name b{display:block;font-family:var(--display);font-weight:400;font-size:clamp(30px,8vw,46px);letter-spacing:.03em;line-height:1}
 .fx-name small{font-family:var(--jp);font-size:13px}
 .fx-name em{display:inline-block;margin-left:8px;font-style:normal;font-family:var(--display);font-size:20px;background:var(--yellow);color:var(--ink);border:2px solid var(--ink);padding:0 6px;text-shadow:none;transform:rotate(-6deg)}
+/* lavish rare effects */
+.fx-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:3;pointer-events:none}
+.fx-dim{position:absolute;inset:0;background:#000;opacity:0;transition:opacity .35s;pointer-events:none}
+.pull-fx.dark .fx-dim{opacity:.55}
+.pull-fx.dark .fx-rays{animation-duration:3s;opacity:.8}
+.fx-stage.quake{animation:quake .35s}
+.fx-stage.quake-hard{animation:quake-hard .5s}
+@keyframes quake{20%{transform:translate(-6px,3px)}40%{transform:translate(5px,-4px)}60%{transform:translate(-4px,-2px)}80%{transform:translate(3px,4px)}}
+@keyframes quake-hard{10%{transform:translate(-14px,6px) rotate(-1deg)}25%{transform:translate(12px,-8px) rotate(1deg)}40%{transform:translate(-10px,-6px)}55%{transform:translate(9px,8px) rotate(-.5deg)}70%{transform:translate(-6px,4px)}85%{transform:translate(4px,-3px)}}
+.fx-ring{position:absolute;top:45%;left:50%;width:40px;height:40px;margin:-20px 0 0 -20px;border:10px solid #fff;border-radius:50%;pointer-events:none;animation:ring .85s ease-out forwards;z-index:4}
+@keyframes ring{to{transform:scale(28);opacity:0;border-width:2px}}
+.fx-bolt{position:absolute;top:0;width:60px;height:55%;background:#fff;clip-path:polygon(45% 0,70% 0,52% 38%,80% 38%,30% 100%,44% 52%,18% 52%);filter:drop-shadow(0 0 12px var(--t2)) drop-shadow(0 0 4px #fff);opacity:0;animation:bolt .6s steps(2) forwards;pointer-events:none;z-index:4}
+@keyframes bolt{0%,30%,60%{opacity:1}15%,45%,100%{opacity:0}}
+.fx-word.rank{color:#fff;font-size:clamp(46px,13vw,96px);text-shadow:5px 5px 0 var(--t1),9px 9px 0 var(--ink);z-index:5}
+.fx-pack.charge,.fx-card.charge{animation:charge2 .75s ease-in forwards}
+@keyframes charge2{0%{filter:brightness(1)}60%{transform:translateY(-14px) scale(1.06);filter:brightness(1.8) drop-shadow(0 0 20px #fff)}100%{transform:translateY(-18px) scale(1.12);filter:brightness(3) drop-shadow(0 0 40px #fff)}}
+.card.tremble{animation:tremble .09s linear infinite}
+@keyframes tremble{25%{transform:translate(-2px,1px) rotate(-1deg)}75%{transform:translate(2px,-1px) rotate(1deg)}}
+.card.back-rainbow .back{background-image:radial-gradient(rgba(0,0,0,.2) 1.5px,transparent 1.8px),conic-gradient(from 0deg,#ff5bd1,#ffd21f,#21e0a0,#21b5e0,#b04dff,#ff5bd1)!important;box-shadow:0 0 30px #fff}
+.fx-card .card.hint-ssr .back,.fx-card .card.back-rainbow .back{box-shadow:4px 4px 0 var(--ink),0 0 30px var(--t2)}
+.fx-cutin{position:absolute;inset:0;display:grid;place-items:center;z-index:5;overflow:hidden}
+.fx-speed{position:absolute;inset:-20%;background:repeating-linear-gradient(-8deg,transparent 0 28px,rgba(255,255,255,.55) 28px 31px,transparent 31px 70px);animation:speed .25s linear infinite}
+@keyframes speed{to{transform:translateX(-70px)}}
+.fx-band.b1{position:absolute;top:34%}
+.fx-band.b2{position:absolute;top:56%;transform:rotate(6deg);background:repeating-linear-gradient(90deg,var(--t1) 0 26px,var(--t2) 26px 52px);border-color:#fff;animation:band2 1.6s ease-in-out}
+.fx-band.b2 span{font-size:clamp(26px,7vw,52px);color:#fff;-webkit-text-stroke:2px var(--ink);text-shadow:3px 3px 0 var(--ink);animation:slide2 1.6s cubic-bezier(.2,.8,.2,1)}
+.fx-band.b1,.fx-band.b1 span{animation-duration:1.6s}
+@keyframes band2{0%{transform:rotate(6deg) scaleY(0)}15%,85%{transform:rotate(6deg) scaleY(1)}100%{transform:rotate(6deg) scaleY(0)}}
+@keyframes slide2{0%{transform:translateX(-80vw)}20%,80%{transform:translateX(0)}100%{transform:translateX(80vw)}}
+.fx-glow{position:absolute;top:50%;left:50%;width:170vmax;height:170vmax;transform:translate(-50%,-50%);background:repeating-conic-gradient(from 0deg,var(--t2) 0 5deg,transparent 5deg 15deg);-webkit-mask:radial-gradient(circle,#000 0,transparent 40%);mask:radial-gradient(circle,#000 0,transparent 40%);opacity:.9;pointer-events:none;animation:spin 8s linear infinite}
+.tier-rainbow .fx-glow{background:repeating-conic-gradient(from 0deg,#ff5bd1 0 4deg,#ffd21f 4deg 8deg,#21e0a0 8deg 12deg,#21b5e0 12deg 16deg,transparent 16deg 24deg)}
+.fx-stars{color:var(--yellow);font-size:22px;letter-spacing:2px;-webkit-text-stroke:1px var(--ink);text-shadow:2px 2px 0 var(--ink)}
+.fx-name.grand{animation:pop-in .45s cubic-bezier(.3,1.8,.5,1)}
+.fx-name.grand b{font-size:clamp(36px,10vw,58px);color:var(--yellow);-webkit-text-stroke:1.5px var(--ink)}
+.fx-legend{position:absolute;top:-12%;left:50%;transform:translateX(-50%) rotate(-8deg);font-family:var(--display);font-size:clamp(34px,10vw,64px);letter-spacing:.05em;white-space:nowrap;background:linear-gradient(90deg,#ff5bd1,#ffd21f,#21e0a0,#21b5e0,#b04dff);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(3px 3px 0 #141414);animation:legend 1s cubic-bezier(.3,1.8,.5,1),hue 2s linear infinite;z-index:3}
+@keyframes legend{from{transform:translateX(-50%) rotate(-8deg) scale(0)}}
+@keyframes hue{to{filter:drop-shadow(3px 3px 0 #141414) hue-rotate(360deg)}}
+
 /* one by one + results */
 .pull-fx.calm .fx-rays{opacity:.3;animation-duration:30s}
 .fx-seq{position:relative;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding-bottom:70px}
@@ -972,90 +1010,178 @@ function sfx(kind){
     if(kind==="ur"){[523,659,784,1047,1319,1568].forEach((f,i)=>tone(f,f*1.01,.3,"square",.07,i*.08));noise(.6,.1,.5)}
     if(kind==="up")tone(400,1600,.5,"sawtooth",.07);
     if(kind==="flip")tone(1200,600,.12,"triangle",.08);
+    if(kind==="rankup"){[392,523,659,784,1047].forEach((f,i)=>tone(f,f*1.02,.18,"square",.07,i*.05));noise(.25,.08)}
+    if(kind==="thunder"){noise(.9,.3);tone(90,40,.8,"sawtooth",.1)}
+    if(kind==="boom"){noise(.7,.28);tone(160,30,.7,"sine",.25);[784,988,1175,1568].forEach((f,i)=>tone(f,f,.4,"triangle",.06,.15+i*.07))}
   }catch(e){}
 }
+
+// wait for a tap only (no timer). Taps in the first 250 ms are ignored so a double tap does not skip a card.
+function fxTapOnly(){
+  return new Promise(res=>{
+    if(fxSkipping)return res();
+    const t0=Date.now();
+    fxWake={tap:true,done:()=>{if(Date.now()-t0<250&&!fxSkipping)return;fxWake=null;res()}};
+  });
+}
+
+// canvas confetti, sparkles and stars
+function fxParticles(cv){
+  const ctx=cv.getContext("2d");let parts=[],rain=null,raf=0,alive=true;
+  const fit=()=>{const d=Math.min(2,window.devicePixelRatio||1);cv.width=innerWidth*d;cv.height=innerHeight*d;ctx.setTransform(d,0,0,d,0,0)};
+  fit();addEventListener("resize",fit);
+  const star=(r)=>{ctx.beginPath();for(let i=0;i<10;i++){const a=Math.PI/5*i-Math.PI/2,rr=i%2?r*.45:r;ctx.lineTo(Math.cos(a)*rr,Math.sin(a)*rr)}ctx.closePath()};
+  const add=(x,y,o)=>parts.push(Object.assign({x,y,vx:0,vy:0,g:.12,r:Math.random()*6.28,vr:(Math.random()-.5)*.3,life:90,max:90,size:6,shape:"rect",col:"#fff"},o));
+  const loop=()=>{
+    if(!alive)return;
+    ctx.clearRect(0,0,innerWidth,innerHeight);
+    if(rain&&Math.random()<.9)for(let k=0;k<2;k++)add(Math.random()*innerWidth,-20,{vx:(Math.random()-.5)*1.5,vy:2+Math.random()*2,g:.03,life:260,max:260,size:5+Math.random()*6,shape:Math.random()<.3?"star":"rect",col:rain[Math.floor(Math.random()*rain.length)]});
+    parts=parts.filter(p=>p.life>0&&p.y<innerHeight+40);
+    for(const p of parts){
+      p.x+=p.vx;p.y+=p.vy;p.vy+=p.g;p.vx*=.99;p.r+=p.vr;p.life--;
+      ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.r);ctx.globalAlpha=Math.min(1,p.life/(p.max*.35));
+      ctx.fillStyle=p.col;ctx.strokeStyle="#141414";ctx.lineWidth=1.5;
+      if(p.shape==="star"){star(p.size);ctx.fill();ctx.stroke()}
+      else if(p.shape==="spark"){ctx.beginPath();ctx.moveTo(0,-p.size);ctx.quadraticCurveTo(0,0,p.size,0);ctx.quadraticCurveTo(0,0,0,p.size);ctx.quadraticCurveTo(0,0,-p.size,0);ctx.quadraticCurveTo(0,0,0,-p.size);ctx.fill()}
+      else{ctx.fillRect(-p.size/2,-p.size/4,p.size,p.size/2);ctx.strokeRect(-p.size/2,-p.size/4,p.size,p.size/2)}
+      ctx.restore();
+    }
+    raf=requestAnimationFrame(loop);
+  };
+  loop();
+  return{
+    burst(x,y,n,cols,power=9){for(let i=0;i<n;i++){const a=Math.random()*Math.PI*2,v=power*(.35+Math.random()*.75);
+      add(x,y,{vx:Math.cos(a)*v,vy:Math.sin(a)*v-2,size:5+Math.random()*8,shape:["rect","star","spark"][i%3],col:cols[i%cols.length],life:70+Math.random()*50,max:120})}},
+    rain(cols){rain=cols},
+    stop(){alive=false;cancelAnimationFrame(raf);removeEventListener("resize",fit)}
+  };
+}
+
+const RANKS=["blue","red","gold","rainbow"];
+const RANK_OF={N:0,R:0,SR:1,SSR:2,UR:3};
+const RANK_COLORS={blue:["#1d5fd6","#21b5e0","#fff"],red:["#e2231a","#ff7a5c","#ffd21f"],gold:["#ffb000","#ffe36b","#fff","#ff7a00"],rainbow:["#ff5bd1","#ffd21f","#21e0a0","#21b5e0","#b04dff","#fff"]};
+const BACK_CLASS={blue:"hint-sr",red:"",gold:"hint-ssr",rainbow:"hint-ur back-rainbow"};
 
 async function playPullFx(got,n,label,fresh){
   if(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches)return false;
   const best=ORDER.find(r=>got.some(c=>c.r===r));
+  const target=RANK_OF[best];
+  // where the pack starts: rarer pulls often start lower and rank up on screen; a UR always does
+  let start=target;
+  if(target===3)start=Math.floor(Math.random()*3);
+  else if(target>0&&Math.random()<.6)start=Math.floor(Math.random()*target);
   const fx=$("pullFx");fxSkipping=false;
-  // a UR pack first shows up gold, then "upgrades" to rainbow
-  const startTier=best==="UR"?"gold":TIER_INFO[best].c;
-  fx.innerHTML=`<div class="fx-rays"></div><div class="fx-dots"></div>
+  fx.innerHTML=`<div class="fx-rays"></div><div class="fx-dots"></div><div class="fx-dim"></div><canvas class="fx-canvas" id="fxCanvas"></canvas>
     <button type="button" class="fx-skip" id="fxSkipBtn">SKIP ▶▶</button>
     <div class="fx-stage" id="fxStage"></div>
     <div class="fx-hint" id="fxHint"></div><div class="fx-flash" id="fxFlash"></div>`;
-  fx.className="pull-fx tier-"+startTier;fx.hidden=false;document.body.style.overflow="hidden";
+  const setTier=t=>{fx.className="pull-fx tier-"+t};
+  setTier(RANKS[start]);fx.hidden=false;document.body.style.overflow="hidden";
   $("fxSkipBtn").onclick=e=>{e.stopPropagation();if($("fxGrid"))return;fxSkip()};
   fx.onclick=fxTap;
   const stage=$("fxStage"),hint=$("fxHint"),flash=$("fxFlash");
+  const P=fxParticles($("fxCanvas"));
+  const cx=()=>innerWidth/2,cy=()=>innerHeight*.45;
   const doFlash=(col="#fff")=>{flash.style.background=col;flash.classList.remove("on");void flash.offsetWidth;flash.classList.add("on")};
+  const quake=(hard)=>{stage.classList.remove("quake","quake-hard");void stage.offsetWidth;stage.classList.add(hard?"quake-hard":"quake")};
+  const ring=(col)=>{const r=document.createElement("div");r.className="fx-ring";r.style.borderColor=col;stage.appendChild(r);setTimeout(()=>r.remove(),900)};
+  const bolts=(k)=>{for(let i=0;i<k;i++){const b=document.createElement("div");b.className="fx-bolt";b.style.left=(10+Math.random()*80)+"%";b.style.transform=`rotate(${(Math.random()-.5)*40}deg) scale(${.7+Math.random()*.8})`;b.style.animationDelay=(i*90)+"ms";stage.appendChild(b);setTimeout(()=>b.remove(),900)}};
+  const word=(txt,cls="")=>{const w=document.createElement("div");w.className="fx-word "+cls;w.textContent=txt;stage.appendChild(w);setTimeout(()=>w.remove(),1100)};
+  // one rank-up beat, used for the pack and for a rare card's back
+  const rankUp=async(toRank,el,isCard)=>{
+    sfx("up");el.classList.add("charge");bolts(toRank==="rainbow"?5:3);quake(false);
+    fx.classList.add("dark");
+    await fxWait(750);
+    el.classList.remove("charge");
+    setTier(toRank);fx.classList.add("dark");
+    if(isCard){const back=el.querySelector(".card")||el;back.classList.remove("hint-sr","hint-ssr","hint-ur","back-rainbow");BACK_CLASS[toRank].split(" ").filter(Boolean).forEach(k=>back.classList.add(k))}
+    doFlash(toRank==="rainbow"?"#fff6c2":"#fff");ring(RANK_COLORS[toRank][0]);ring(RANK_COLORS[toRank][1]);
+    P.burst(cx(),cy(),toRank==="rainbow"?90:55,RANK_COLORS[toRank],toRank==="rainbow"?13:10);
+    quake(true);sfx("rankup");
+    word(toRank==="rainbow"?"RANK MAX!!":"RANK UP!","rank");
+    await fxWait(1000);
+    fx.classList.remove("dark");
+  };
   try{
-    // 1) the pack drops in
+    // 1) the pack drops in and shakes
     stage.innerHTML=`<div class="fx-pack" id="fxPack"><span class="fx-pack-top">${n===10?"10-PACK!":"SINGLE"}</span><span class="fx-pack-title">${esc(label)}</span><span class="fx-pack-star">★</span><span class="fx-pack-price">${n===10?"10 CARDS":"1 CARD"}</span></div>`;
     const pack=$("fxPack");
     sfx("drop");
     await fxWait(700);
-    // 2) it shakes; rarer packs shake harder. Tap opens it.
-    pack.classList.add("shake",best==="SSR"||best==="UR"?"shake-hard":"x");
-    hint.textContent="タップして開ける！";
+    pack.classList.add("shake");
     const shaker=setInterval(()=>sfx("shake"),260);
-    await fxWait(best==="SSR"||best==="UR"?2200:1600,true);
+    await fxWait(900);
+    // 2) rank-ups on the pack, one step at a time
+    for(let r=start+1;r<=target&&!fxSkipping;r++){pack.classList.remove("shake");await rankUp(RANKS[r],pack,false);pack.classList.add("shake")}
+    if(target>=2)pack.classList.add("shake-hard");
+    hint.textContent="タップして開ける！";
+    await fxTapOnly();
     clearInterval(shaker);
-    // 2b) UR promotion
-    if(best==="UR"&&!fxSkipping){
-      hint.textContent="";pack.classList.add("charge");sfx("up");
-      await fxWait(650);
-      doFlash("#fff");fx.className="pull-fx tier-rainbow";
-      stage.insertAdjacentHTML("beforeend",`<div class="fx-word fx-q">!?</div>`);
-      await fxWait(900);
-      stage.querySelector(".fx-q")?.remove();
-    }
     // 3) burst open
     hint.textContent="";
-    pack.classList.add("open");sfx("open");doFlash(best==="UR"?"#fff6c2":"#fff");
-    stage.insertAdjacentHTML("beforeend",`<div class="fx-word">${TIER_INFO[best].w}</div>`);
+    pack.classList.add("open");sfx("open");doFlash("#fff");quake(true);ring(RANK_COLORS[RANKS[target]][0]);
+    P.burst(cx(),cy(),40+target*25,RANK_COLORS[RANKS[target]],11);
+    word(TIER_INFO[best].w);
     await fxWait(900);
-    // 4) the cards come out of the pack one by one
+    // 4) cards come out one by one
     stage.innerHTML=`<div class="fx-seq"><div class="fx-count" id="fxCount"></div><div class="fx-slot" id="fxSlot"></div><div class="fx-mouth"><span>${esc(label)}</span></div></div>`;
     for(let i=0;i<got.length&&!fxSkipping;i++){
-      const c=got[i],rare=c.r==="SSR"||c.r==="UR";
-      // SSR / UR get the cut-in first
-      if(rare){
-        fx.className="pull-fx tier-"+TIER_INFO[c.r].c;
-        const cut=document.createElement("div");cut.className="fx-cutin";
-        cut.innerHTML=`<div class="fx-band"><span>${c.r==="UR"?"ULTRA RARE!!!":"SUPER RARE!!"}</span></div>`;
-        stage.appendChild(cut);sfx(c.r==="UR"?"ur":"rare");
-        await fxWait(1300);cut.remove();
-        if(fxSkipping)break;
-      }else fx.className="pull-fx tier-"+TIER_INFO[c.r].c+" calm";
+      const c=got[i],rare=c.r==="SSR"||c.r==="UR",cr=RANK_OF[c.r];
+      setTier(rare?"blue":RANKS[cr]);fx.classList.add("calm");
       $("fxCount").textContent=got.length>1?`${i+1} / ${got.length}`:"";
       const slot=$("fxSlot");
-      slot.innerHTML=`${rare?'<div class="fx-glow"></div>':""}<div class="fx-card ${rare?"big":""}" id="fxCard"></div><div class="fx-name"><span class="fx-rar r-${c.r}">${c.r}</span><b>${esc(c.name)}</b><small>${esc(c.kana||"")}</small>${fresh[i]?'<em>NEW!</em>':""}</div>`;
-      const card=cardEl(c,{});$("fxCard").appendChild(card);
+      slot.innerHTML=`<div class="fx-glow" hidden></div><div class="fx-card ${rare?"big":""}" id="fxCard"></div><div class="fx-name" hidden><span class="fx-rar r-${c.r}">${c.r}</span><div class="fx-stars">${"★".repeat({N:1,R:2,SR:3,SSR:4,UR:5}[c.r])}</div><b>${esc(c.name)}</b><small>${esc(c.kana||"")}</small>${fresh[i]?'<em>NEW!</em>':""}</div>`;
+      const holder=$("fxCard"),card=cardEl(c,{});if(rare)card.classList.add("hint-sr");holder.appendChild(card);
+      const nameBox=slot.querySelector(".fx-name"),glow=slot.querySelector(".fx-glow");
       sfx("drop");
-      await fxWait(rare?420:300);
-      card.classList.add("flipped");sfx("flip");
-      if(rare||c.r==="SR")doFlash(rare?"rgba(255,255,255,.75)":"rgba(255,255,255,.35)");
+      hint.textContent="";
+      await fxWait(rare?500:320);
+      if(rare&&!fxSkipping){
+        // the card trembles, then ranks up on its back: blue → red → gold (→ rainbow)
+        card.classList.add("tremble");fx.classList.remove("calm");
+        await fxWait(600);
+        for(let r=1;r<=cr&&!fxSkipping;r++)await rankUp(RANKS[r],holder,true);
+        card.classList.remove("tremble");
+        if(fxSkipping)break;
+        // double cut-in
+        const cut=document.createElement("div");cut.className="fx-cutin";
+        cut.innerHTML=`<div class="fx-speed"></div><div class="fx-band b1"><span>${c.r==="UR"?"ULTRA RARE!!!":"SUPER RARE!!"}</span></div><div class="fx-band b2"><span>${c.r==="UR"?"★ LEGENDARY HERO ★":"★ RARE HERO ★"}</span></div>`;
+        stage.appendChild(cut);sfx("thunder");sfx(c.r==="UR"?"ur":"rare");quake(true);
+        P.burst(0,innerHeight*.4,40,RANK_COLORS[RANKS[cr]],12);P.burst(innerWidth,innerHeight*.6,40,RANK_COLORS[RANKS[cr]],12);
+        await fxWait(1600);cut.remove();
+        if(fxSkipping)break;
+        // the big flip
+        glow.hidden=false;
+        card.classList.add("flipped");sfx("boom");doFlash("#fff");quake(true);
+        ring(RANK_COLORS[RANKS[cr]][0]);setTimeout(()=>ring(RANK_COLORS[RANKS[cr]][1]),150);setTimeout(()=>ring("#fff"),300);
+        P.burst(cx(),cy(),c.r==="UR"?160:110,RANK_COLORS[RANKS[cr]],c.r==="UR"?15:12);
+        if(c.r==="UR")P.rain(RANK_COLORS.rainbow);
+        nameBox.hidden=false;nameBox.classList.add("grand");
+        if(c.r==="UR")slot.insertAdjacentHTML("beforeend",`<div class="fx-legend">LEGENDARY!</div>`);
+      }else{
+        card.classList.add("flipped");sfx("flip");nameBox.hidden=false;
+        if(c.r==="SR"){doFlash("rgba(255,255,255,.35)");P.burst(cx(),cy(),24,RANK_COLORS.red,7)}
+      }
       hint.textContent=i<got.length-1?"タップで次へ":"タップで結果へ";
-      await fxWait(rare?3200:c.r==="SR"?1500:950,true);
+      await fxTapOnly();
+      P.rain(null);
     }
-    fxSkipping=false;
+    fxSkipping=false;P.rain(null);
     // 5) results: every card face up
-    fx.className="pull-fx tier-"+TIER_INFO[best].c+" calm";
-    hint.textContent="";
-    $("fxSkipBtn").hidden=true;
+    setTier(RANKS[target]);fx.classList.add("calm");
+    hint.textContent="";$("fxSkipBtn").hidden=true;
     stage.innerHTML=`<div class="fx-results"><h3>RESULTS<small>${got.length===10?"十連の結果":"単発の結果"} ・ 最高 ${best}</small></h3><div class="fx-grid ${got.length===1?"one":""}" id="fxGrid"></div><button type="button" class="btn-main" id="fxOk">OK!</button></div>`;
     const g=$("fxGrid");
     got.forEach((c,i)=>{
       const w=document.createElement("div");w.className="fx-cell";w.style.animationDelay=(i*60)+"ms";
       w.appendChild(cardEl(c,{flipped:true,isNew:fresh[i]}));g.appendChild(w);
     });
+    if(target>=2)P.burst(cx(),innerHeight*.2,60,RANK_COLORS[RANKS[target]],9);
     sfx("rare");
     await new Promise(res=>{$("fxOk").onclick=e=>{e.stopPropagation();res()};fxWake={done:res,tap:false}});
     return true;
   }finally{
-    fx.hidden=true;fx.innerHTML="";fx.onclick=null;fxWake=null;document.body.style.overflow="";
+    P.stop();fx.hidden=true;fx.innerHTML="";fx.onclick=null;fxWake=null;document.body.style.overflow="";
   }
 }
 function checkAll(){if(![...$("grid").querySelectorAll(".card")].some(c=>!c.classList.contains("flipped")))$("flipAll").hidden=true}
