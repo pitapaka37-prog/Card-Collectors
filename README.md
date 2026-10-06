@@ -26,10 +26,11 @@
 | `manifest.webmanifest` | アプリ名・アイコン・テーマ色 |
 | `sw.js` | オフライン用のキャッシュ（Service Worker） |
 | `icon-*.png` | アプリのアイコン |
+| `rubber-duck.jpg` | Rubber Duck のカード画像 |
 
 ## 更新するとき
 
-`sw.js` の `VERSION`（いまは `cc-v2`）を `cc-v3` のように上げると、利用者の端末の古いキャッシュが入れ替わります。
+`sw.js` の `VERSION`（いまは `cc-v3`）を `cc-v4` のように上げると、利用者の端末の古いキャッシュが入れ替わります。
 
 ## データについて
 
