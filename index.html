@@ -200,6 +200,28 @@ nav button span{font-family:var(--body);font-size:13px;font-weight:700}
 .binder .progress span{display:block;height:100%;background:var(--yellow)}
 #dexView.my .progress div{background:repeating-linear-gradient(45deg,var(--cyan) 0 8px,#5fd0f0 8px 16px)}
 
+/* coins: idle, login, selling */
+.ghost.idle{display:flex;align-items:center;gap:6px;background:var(--yellow)}
+.ghost.idle b{font-variant-numeric:tabular-nums}
+.ghost.idle:disabled{background:#fff}
+.sellbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;background:var(--paper2);border:3px solid var(--ink);padding:8px 12px}
+.sellbar span{font-size:13px;font-weight:700}
+.sell{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+.sell .ghost b{font-variant-numeric:tabular-nums}
+.bonus-box{position:relative;width:min(560px,100%);background:var(--paper);border:4px solid var(--ink);box-shadow:10px 10px 0 var(--ink);padding:22px;display:flex;flex-direction:column;gap:16px;align-items:center;text-align:center;animation:pop-in .28s cubic-bezier(.3,1.6,.5,1)}
+.bonus-box h3{margin:0;font-family:var(--display);font-weight:400;font-size:clamp(36px,9vw,52px);line-height:.95;letter-spacing:.03em;color:var(--yellow);-webkit-text-stroke:2px var(--ink);text-shadow:4px 4px 0 var(--red),6px 6px 0 var(--ink)}
+.bonus-box p{margin:0;font-weight:700}
+.days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;width:100%}
+.day{position:relative;border:3px solid var(--ink);background:#fff;padding:6px 2px;display:flex;flex-direction:column;align-items:center;gap:2px;font-variant-numeric:tabular-nums}
+.day small{font-size:10px;font-weight:700}
+.day b{font-family:var(--display);font-weight:400;font-size:clamp(14px,3.6vw,20px);letter-spacing:.02em;line-height:1}
+.day.big{background:var(--paper2)}
+.day.today{background:var(--yellow);transform:translateY(-4px) rotate(-2deg);box-shadow:3px 3px 0 var(--ink)}
+.day.done::after{content:"✓";position:absolute;inset:0;display:grid;place-items:center;font-size:26px;font-weight:700;color:var(--red);background:rgba(255,255,255,.65)}
+.bonus-got{font-family:var(--display);font-size:40px;letter-spacing:.03em;color:var(--red);-webkit-text-stroke:1px var(--ink)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:60;transform:translate(-50%,20px);background:var(--ink);color:var(--yellow);font-weight:700;padding:8px 16px;border:3px solid var(--yellow);box-shadow:4px 4px 0 var(--red);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;max-width:calc(100% - 32px);text-align:center}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
 /* backup */
 .backup{display:flex;flex-direction:column;gap:10px;border-top:3px solid var(--ink);padding-top:14px}
 .backup-text{display:flex;flex-direction:column;font-size:13px;max-width:60ch}
@@ -309,7 +331,7 @@ nav button span{font-family:var(--body);font-size:13px;font-weight:700}
     <div class="wallet">
       <span class="chip" aria-label="所持コイン"><i></i><span id="gems">3000</span></span>
       <span class="chip pity">天井まで <b id="pity">80</b> 回</span>
-      <button class="ghost" id="refill">コインを拾う ＋500</button>
+      <button class="ghost idle" id="idleBtn" title="カードを集めるほど速く貯まります">放置ボーナス <b id="idleAmt">0</b></button>
     </div>
   </header>
 
@@ -365,6 +387,7 @@ nav button span{font-family:var(--body);font-size:13px;font-weight:700}
       <div><button class="ghost" id="dexBack">← 図鑑をえらぶ</button></div>
       <div class="panel-head"><h3 id="dexTitle"></h3><span id="dexPct" style="font-weight:700;font-variant-numeric:tabular-nums"></span></div>
       <div class="progress"><div id="dexBar" style="width:0"></div></div>
+      <div class="sellbar" id="sellbar"><span id="sellInfo"></span><button type="button" class="ghost" id="sellAll">ダブりをまとめて売る</button></div>
       <div class="detail" id="detail" hidden></div>
       <div id="dexBody"></div>
     </div>
@@ -415,6 +438,8 @@ nav button span{font-family:var(--body);font-size:13px;font-weight:700}
       <div id="mine"></div>
     </div>
   </section>
+  <div class="detail bonus" id="bonus" hidden role="dialog" aria-modal="true" aria-label="ログインボーナス"></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
 </div>
 
 <script>
@@ -458,7 +483,7 @@ const SFX={SR:"WHAM!",SSR:"KA-POW!!",UR:"KRAKA-BOOM!!!"};
 const PACK_COLORS=["#e2231a","#1d9e5a","#ff7a00","#7a3cff","#e0218a","#0f8f8f","#3d3d3d"];
 const STD_TEXT="十連なら最後の1枚は SR 以上が確定。80 回 SSR が出なければ、次の1枚は SSR 以上になります。";
 
-const DEFAULT={gems:3000,pity:0,owned:{},refillAt:0,custom:[],packs:[],pityBy:{},banner:"std"};
+const DEFAULT={gems:3000,pity:0,owned:{},custom:[],packs:[],pityBy:{},banner:"std",loginLast:"",streak:0,idleAt:0};
 const KEY="cch-gacha";
 const newId=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
 let S=load();
@@ -486,7 +511,16 @@ function load(){
   }
   const first=s.packs[0].id;
   s.custom.forEach(c=>{if(!s.packs.some(p=>p.id===c.pack))c.pack=first});
-  delete s.packName;delete s.pityMy;
+  delete s.packName;delete s.pityMy;delete s.refillAt;
+  // numbers and dates must have the right type (data may come from an imported file)
+  const num=(x,def,min,max)=>{x=Number(x);return Number.isFinite(x)?Math.min(max,Math.max(min,Math.floor(x))):def};
+  s.gems=num(s.gems,3000,0,1e9);s.pity=num(s.pity,0,0,PITY);s.streak=num(s.streak,0,0,1e6);
+  s.idleAt=num(s.idleAt,0,0,Date.now());
+  if(typeof s.loginLast!=="string"||!/^\d{4}-\d{2}-\d{2}$/.test(s.loginLast))s.loginLast="";
+  if(typeof s.banner!=="string")s.banner="std";
+  const owned={};Object.keys(s.owned).forEach(k=>{const n=num(s.owned[k],0,0,1e6);if(n)owned[k]=n});s.owned=owned;
+  const pb={};Object.keys(s.pityBy).forEach(k=>{pb[k]=num(s.pityBy[k],0,0,PITY)});s.pityBy=pb;
+  if(!s.idleAt)s.idleAt=Date.now();
   return s;
 }
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S));return true}catch(e){return false}}
@@ -763,9 +797,73 @@ $("flipAll").onclick=()=>{[...$("grid").querySelectorAll(".card:not(.flipped)")]
 $("pull1").onclick=()=>pull(1);
 $("pull10").onclick=()=>pull(10);
 
-const COOLDOWN=20000;
-$("refill").onclick=()=>{S.gems+=500;S.refillAt=Date.now()+COOLDOWN;save();render();$("msg").textContent="路地裏で 25¢ コインを 500 枚見つけた！"};
-setInterval(()=>{const left=Math.ceil((S.refillAt-Date.now())/1000);const b=$("refill");if(left>0){b.disabled=true;b.textContent=`次に拾えるまで ${left} 秒`}else if(b.disabled){b.disabled=false;b.textContent="コインを拾う ＋500"}},500);
+/* ---- coins: toast ---- */
+let toastTimer=0;
+function toast(msg){const t=$("toast");t.textContent=msg;t.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove("show"),2200)}
+function addGems(n){S.gems+=n;save();$("gems").textContent=S.gems.toLocaleString();renderCover()}
+
+/* ---- coins: idle earnings ---- */
+// more different cards owned = faster; stored up to IDLE_CAP_H hours
+const IDLE_BASE=30,IDLE_PER_CARD=4,IDLE_CAP_H=12;
+function uniqueOwned(){return Object.keys(S.owned).filter(k=>S.owned[k]>0).length}
+function idleRate(){return IDLE_BASE+IDLE_PER_CARD*uniqueOwned()} // coins per hour
+function idleEarned(){
+  const ms=Math.min(Date.now()-S.idleAt,IDLE_CAP_H*3600000);
+  return Math.max(0,Math.floor(ms/3600000*idleRate()));
+}
+function updateIdle(){
+  const n=idleEarned(),b=$("idleBtn");
+  $("idleAmt").textContent="＋"+n.toLocaleString();
+  b.disabled=n<1;
+  const full=Date.now()-S.idleAt>=IDLE_CAP_H*3600000;
+  b.title=`1時間に ${idleRate()} 枚貯まります（集めたカード ${uniqueOwned()} 種類）。最大 ${IDLE_CAP_H} 時間分まで${full?"。いっぱいです！":""}`;
+}
+$("idleBtn").onclick=()=>{
+  const n=idleEarned();if(n<1)return;
+  S.idleAt=Date.now();addGems(n);updateIdle();
+  toast(`放置ボーナス ＋${n.toLocaleString()} コイン！`);
+};
+setInterval(updateIdle,5000);
+
+/* ---- coins: daily login bonus ---- */
+const LOGIN_REWARDS=[300,300,400,400,500,500,1500];
+const dayKey=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+function loginState(){
+  const now=new Date(),today=dayKey(now);
+  const y=new Date(now);y.setDate(y.getDate()-1);
+  if(S.loginLast===today)return{claimed:true,day:((S.streak-1)%7)+1};
+  const cont=S.loginLast===dayKey(y);
+  return{claimed:false,day:cont?(S.streak%7)+1:1,streak:cont?S.streak+1:1};
+}
+function showLoginBonus(){
+  const st=loginState();if(st.claimed)return;
+  const box=$("bonus");box.hidden=false;
+  const amt=LOGIN_REWARDS[st.day-1];
+  box.innerHTML=`<div class="bonus-box"><h3>LOGIN BONUS!</h3><p>${st.streak>1?`${st.streak} 日連続ログイン！`:"今日もようこそ！"} 7日目はボーナスが大きくなります。</p>
+    <div class="days">${LOGIN_REWARDS.map((r,i)=>`<div class="day${i+1<st.day?" done":""}${i+1===st.day?" today":""}${i===6?" big":""}"><small>${i+1}日目</small><b>${r.toLocaleString()}</b></div>`).join("")}</div>
+    <button type="button" class="btn-main" id="bonusGet">${amt.toLocaleString()} コイン受け取る！</button></div>`;
+  document.body.style.overflow="hidden";
+  $("bonusGet").focus({preventScroll:true});
+  $("bonusGet").onclick=()=>{
+    S.loginLast=dayKey(new Date());S.streak=st.streak;addGems(amt);
+    box.querySelector(".day.today").classList.add("done");
+    const btn=$("bonusGet");btn.textContent="とじる";btn.insertAdjacentHTML("beforebegin",`<div class="bonus-got">＋${amt.toLocaleString()} COINS!</div>`);
+    btn.onclick=()=>{box.hidden=true;box.innerHTML="";document.body.style.overflow=""};
+  };
+}
+// a new day can start while the app stays open
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"){updateIdle();if($("bonus").hidden)showLoginBonus()}});
+
+/* ---- coins: selling duplicates ---- */
+const SELL_PRICE={N:20,R:50,SR:150,SSR:500,UR:1500};
+function sellCards(list){ // list of [card, count]
+  let total=0,n=0;
+  list.forEach(([c,k])=>{k=Math.min(k,(S.owned[c.id]||0)-1);if(k>0){S.owned[c.id]-=k;total+=k*SELL_PRICE[c.r];n+=k}});
+  if(!n)return;
+  addGems(total);render();
+  toast(`${n} 枚売って ＋${total.toLocaleString()} コイン！`);
+}
+function dupesIn(pool){return ORDER.flatMap(r=>pool[r]).filter(c=>(S.owned[c.id]||0)>1).map(c=>[c,S.owned[c.id]-1])}
 
 /* two-step button helper (the viewer has no confirm dialogs) */
 function armed(btn,label,armedLabel,action){
@@ -777,7 +875,7 @@ function armed(btn,label,armedLabel,action){
   };
 }
 armed($("resetBtn"),"記録をリセット","もう一度押すとリセットします",()=>{
-  const keep={custom:S.custom,packs:S.packs,banner:S.banner};
+  const keep={custom:S.custom,packs:S.packs,banner:S.banner,loginLast:S.loginLast,streak:S.streak,idleAt:Date.now()};
   S=Object.assign(JSON.parse(JSON.stringify(DEFAULT)),keep);save();closeDetail();render();
   $("backupMsg").textContent="所持カードとコインをリセットしました。自作カードとガチャは残っています。";
 });
@@ -907,10 +1005,14 @@ function drawDetail(){
   t.innerHTML=`<div class="rates" style="margin:0 0 8px"><span><b>${c.r}</b>${esc(where)}</span></div>
     <h4>${esc(c.name)}</h4><div class="jp">${esc(c.kana||"")}</div>
     <div class="stats"><div><small>レアリティ</small><b>${c.r}</b></div><div><small>所持数</small><b>×${S.owned[c.id]}</b></div><div><small>No.</small><b>${no}</b></div></div>
+    ${S.owned[c.id]>1?`<div class="sell"><button type="button" class="ghost" id="sell1">1枚売る <b>＋${SELL_PRICE[c.r]}</b></button>${S.owned[c.id]>2?`<button type="button" class="ghost" id="sellN">ダブり ${S.owned[c.id]-1} 枚を全部売る <b>＋${((S.owned[c.id]-1)*SELL_PRICE[c.r]).toLocaleString()}</b></button>`:""}</div>`:""}
     ${c.flavor?`<p>${esc(c.flavor)}</p>`:""}
     <div class="nav"><button type="button" class="ghost" id="dPrev">← 前のカード</button><span style="align-self:center;font-weight:700;font-variant-numeric:tabular-nums">${detailIdx+1} / ${detailList.length}</span><button type="button" class="ghost" id="dNext">次のカード →</button></div>`;
   const close=document.createElement("button");close.type="button";close.className="close";close.textContent="×";close.setAttribute("aria-label","閉じる");close.onclick=closeDetail;
   box.append(close,cw,t);d.appendChild(box);
+  const s1=t.querySelector("#sell1"),sN=t.querySelector("#sellN");
+  if(s1)s1.onclick=()=>{sellCards([[c,1]]);drawDetail()};
+  if(sN)sN.onclick=()=>{sellCards([[c,S.owned[c.id]-1]]);drawDetail()};
   const prev=t.querySelector("#dPrev"),next=t.querySelector("#dNext");
   prev.disabled=detailList.length<2;next.disabled=detailList.length<2;
   prev.onclick=()=>{detailIdx=(detailIdx-1+detailList.length)%detailList.length;drawDetail()};
@@ -977,6 +1079,14 @@ function renderDex(){
   $("dexView").classList.toggle("my",dexSel!=="std");
   $("dexPct").textContent=`${s.have} / ${s.total} 人 ・ ${Math.round(s.have/s.total*100)}%`;
   $("dexBar").style.width=s.have/s.total*100+"%";
+  const dupes=dupesIn(poolOf(dexSel));
+  const dn=dupes.reduce((a,[,k])=>a+k,0),dt=dupes.reduce((a,[c,k])=>a+k*SELL_PRICE[c.r],0);
+  $("sellbar").hidden=!dn;
+  if(dn){
+    $("sellInfo").textContent=`ダブっているカード ${dn} 枚（各1枚は残します）`;
+    armed($("sellAll"),`ダブりをまとめて売る ＋${dt.toLocaleString()}`,`もう一度押すと ${dn} 枚売ります`,()=>sellCards(dupesIn(poolOf(dexSel))));
+    $("sellAll").textContent=`ダブりをまとめて売る ＋${dt.toLocaleString()}`;
+  }
   const body=$("dexBody");body.innerHTML="";
   dexGroup(body,poolOf(dexSel));
 }
@@ -1078,7 +1188,7 @@ function updateDexCount(){
 }
 function render(){
   $("gems").textContent=S.gems.toLocaleString();
-  renderCover();updateDexCount();
+  renderCover();updateDexCount();if(typeof updateIdle==="function"&&$("idleAmt"))updateIdle();
   if(!$("view-dex").hidden){renderDex();dexStale=false}else dexStale=true;
   if(!$("view-make").hidden){renderMine();mineStale=false}else mineStale=true;
 }
@@ -1156,6 +1266,8 @@ $("mkForm").addEventListener("submit",e=>{
 });
 fillPackSelect();
 render();
+updateIdle();
+setTimeout(showLoginBonus,400);
 </script>
 
 <script>
