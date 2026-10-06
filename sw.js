@@ -1,5 +1,5 @@
 // STAR LIGHT COMICS CARD service worker: works offline after the first visit.
-const VERSION = "cc-v92";
+const VERSION = "cc-v93";
 const CORE = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png", "icon-180.png", "rubber-duck.jpg", "atlas-prime.jpg", "nova-mae.jpg", "skyline-sentinel.jpg", "queen-quasar.jpg", "thunder-hound.jpg", "atomic-bee.jpg", "radio-ranger.jpg", "mirror-max.jpg", "velvet-comet.jpg", "doctor-fuse.jpg", "neon-noodle.jpg", "jukebox-jane.jpg", "skate-saint.jpg", "diner-dynamo.jpg", "tornado-tess.jpg", "captain-cactus.jpg", "glitter-gator.jpg", "gumball-kid.jpg", "traffic-cone.jpg", "lunchbox-larry.jpg", "static-sally.jpg", "paper-boy.jpg", "star-velvet.jpg", "night-janitor.jpg", "hot-dog-man.jpg", "mailbox-mike.jpg", "coin-op.jpg", "solar-sovereign.jpg", "omega-paragon.jpg", "echo-valkyrie.jpg", "professor-prism.jpg", "crimson-kite.jpg", "granite-grizzly.jpg"];
 
 self.addEventListener("install", e => {

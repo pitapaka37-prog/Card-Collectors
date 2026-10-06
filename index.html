@@ -745,7 +745,8 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
 .bt-rank>small:first-of-type{font-size:15px}
 .bt-rbar{grid-column:1/-1;height:12px;border:2px solid #fff;background:#333;overflow:hidden}
 .bt-rbar span{display:block;height:100%;background:linear-gradient(90deg,var(--yellow),#ff7a00)}
-.bt-rank>small:last-child{grid-column:1/-1}
+.bt-rank>small:nth-last-child(-n+2){grid-column:1/-1}
+.bt-season{opacity:.75;font-weight:400!important}
 .bt-bpgot{font-family:var(--display);font-size:24px;letter-spacing:.04em;color:#1d9e5a}
 .bt-bpgot.neg{color:var(--red)}
 .bt-rankup{font-family:var(--display);font-size:46px;line-height:1;color:var(--yellow);-webkit-text-stroke:2px var(--ink);text-shadow:4px 4px 0 var(--red);animation:pop-in .4s cubic-bezier(.3,1.6,.5,1)}
@@ -1064,7 +1065,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
         </ul>
         <p>有利な相手にはダメージ1.5倍、不利だと0.75倍。SPD が高いほうが先に動ける。SR以上のカードには、いつも効いている「とくせい」もあるよ。カードの能力は図鑑でカードをタップすると見られます。</p>
         <p>勝つと <b>100コイン</b>もらえる！ 負けると <b>10コイン失う</b>ので注意（引き分けは 10コイン）。降参も負けになります。</p>
-        <p>バトルポイント（BP）：勝ち <b>+20</b> ・ 引き分け <b>+10</b> ・ 負け <b>−10</b>。<b>100 BP ごとにランクアップ！</b></p>
+        <p>バトルポイント（BP）：勝ち <b>+20</b> ・ 引き分け <b>+10</b> ・ 負け <b>−10</b>。<b>100 BP ごとにランクアップ！</b> ランクは毎月1日にリセットされて、RANK 1 からやり直しです。</p>
         <div class="dk-panel">
           <div class="dk-head"><b>MY DECK</b><span class="dk-tabs" id="dkTabs" role="tablist"></span></div>
           <div class="dk-row" id="dkRow"></div>
@@ -1339,7 +1340,7 @@ function load(){
   const nc=s.normalClaimed&&typeof s.normalClaimed==="object"?s.normalClaimed:{};s.normalClaimed=Object.fromEntries(Object.entries(nc).map(([k,v])=>[k,!!v]));
   // players who already earned Star Velvet before missions existed
   if(s.owned.r1>0){s.normalClaimed.vcm50=true;s.stats.bestWave=50}
-  if(!s.battle||typeof s.battle!=="object")s.battle={};s.battle={w:num(s.battle.w,0,0,1e7),l:num(s.battle.l,0,0,1e7),d:num(s.battle.d,0,0,1e7),bp:num(s.battle.bp,0,0,1e9)};
+  if(!s.battle||typeof s.battle!=="object")s.battle={};s.battle={w:num(s.battle.w,0,0,1e7),l:num(s.battle.l,0,0,1e7),d:num(s.battle.d,0,0,1e7),bp:num(s.battle.bp,0,0,1e9),season:typeof s.battle.season==="string"?s.battle.season.slice(0,7):"",last:s.battle.last&&typeof s.battle.last==="object"?{season:String(s.battle.last.season||"").slice(0,7),rank:num(s.battle.last.rank,1,1,1e6),bp:num(s.battle.last.bp,0,0,1e9)}:null};
   if(!Array.isArray(s.decks))s.decks=[];
   s.decks=[0,1,2].map(k=>Array.isArray(s.decks[k])?s.decks[k].filter(x=>typeof x==="number"||typeof x==="string").map(String).filter((x,i,a)=>a.indexOf(x)===i).slice(0,5):[]);
   s.deckSel=num(s.deckSel,0,0,2);
@@ -2943,8 +2944,24 @@ const BT_REWARD={win:100,draw:10,lose:-10};
 const BT_BP={win:20,draw:10,lose:-10}; // battle points: every 100 BP is one rank
 const BT_RANKS=["ルーキー","サイドキック","ヒーロー","エース","スーパーヒーロー","レジェンド","コズミック"];
 function btRankOf(bp){return Math.floor((bp||0)/100)+1}
+// ranks are monthly seasons: on the 1st of each month BP goes back to 0
+function btSeasonKey(d){d=d||new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`}
+function btSeasonCheck(){
+  const b=S.battle,now=btSeasonKey();
+  if(b.season===now)return false;
+  if(!b.season){b.season=now;save();return false} // first time: start the current season with the BP you already have
+  if((b.bp||0)>0){b.last={season:b.season,rank:btRankOf(b.bp),bp:b.bp}}
+  const reset=!!b.season&&(b.bp||0)>0;
+  b.season=now;b.bp=0;save();
+  return reset;
+}
+function btSeasonText(){
+  const d=new Date(),next=new Date(d.getFullYear(),d.getMonth()+1,1),days=Math.ceil((next-d)/86400000);
+  const last=S.battle.last?` ・ 前のシーズン（${+S.battle.last.season.slice(5)}月）は RANK ${S.battle.last.rank}`:"";
+  return `${d.getMonth()+1}月シーズン ・ ランクリセットまで あと ${days} 日${last}`;
+}
 function btRankName(r){return BT_RANKS[Math.min(r,BT_RANKS.length)-1]}
-function btRankHTML(){const bp=S.battle.bp||0,r=btRankOf(bp),p=bp%100;return `<span class="bt-rank"><b>RANK ${r}</b><small>${btRankName(r)}</small><span class="bt-rbar"><span style="width:${p}%"></span></span><small>BP ${bp} ・ 次のランクまで ${100-p}</small></span>`}
+function btRankHTML(){const bp=S.battle.bp||0,r=btRankOf(bp),p=bp%100;return `<span class="bt-rank"><b>RANK ${r}</b><small>${btRankName(r)}</small><span class="bt-rbar"><span style="width:${p}%"></span></span><small>BP ${bp} ・ 次のランクまで ${100-p}</small><small class="bt-season">${btSeasonText()}</small></span>`}
 const BT_HP={N:70,R:85,SR:100,SSR:120,UR:140},BT_ATK={N:20,R:24,SR:29,SSR:34,UR:39},BT_RANK={N:0,R:1,SR:2,SSR:3,UR:4};
 const BT_MAX_TURNS=40;
 const btH=(m,n,o)=>Object.assign({k:"hit",m,n:n||1},o||{});
@@ -3274,6 +3291,7 @@ function btDraw(){
 }
 function renderBattle(){
   const rec=S.battle;
+  if(btSeasonCheck())toast("新しいシーズンが始まりました！ ランクがリセットされました");
   $("btRecord").textContent=`RANK ${btRankOf(rec.bp)} ・ ${rec.w}勝 ${rec.l}敗 ${rec.d}分`;
   $("btRankBox").innerHTML=btRankHTML();
   if(BT&&!BT.over){$("btIntro").hidden=true;$("btArena").hidden=false;btDraw();return}
@@ -3433,6 +3451,7 @@ function btEnd(r){
   BT.over=true;BT.busy=true;
   const coins=Math.max(BT_REWARD[r],-S.gems); // coins never go below zero
   S.gems+=coins;
+  btSeasonCheck();
   const bp0=S.battle.bp||0,rk0=btRankOf(bp0);
   S.battle.bp=Math.max(0,bp0+BT_BP[r]);
   const bpGot=S.battle.bp-bp0,rk1=btRankOf(S.battle.bp);
@@ -3485,6 +3504,7 @@ function renderHome(){
   const open=SHOP_CARDS.filter(c=>!S.owned[c.id]).length;
   $("hpShop").textContent=`★${S.points.toLocaleString()} ・ 交換できるカード ${open} 枚`;
   $("hpGames").textContent=`HIGH SCORE ${(S.hiScore||0).toLocaleString()}`;
+  btSeasonCheck();
   $("hpBattle").textContent=`RANK ${btRankOf(S.battle.bp)} ・ BP ${S.battle.bp||0}`;
   $("hpMake").textContent=`自作 ${S.custom.length} 枚 ・ ガチャ ${S.packs.length} 個`;
 }
