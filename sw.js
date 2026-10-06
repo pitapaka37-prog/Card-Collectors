@@ -1,9 +1,9 @@
 // CARD COLLECTORS service worker: works offline after the first visit.
-const VERSION = "cc-v6";
+const VERSION = "cc-v7";
 const CORE = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png", "icon-180.png", "rubber-duck.jpg"];
 
 self.addEventListener("install", e => {
-  e.waitUntil(caches.open(VERSION).then(c => c.addAll(CORE)).then(() => self.skipWaiting()));
+  e.waitUntil(caches.open(VERSION).then(c => c.addAll(CORE.map(u => new Request(u, { cache: "reload" })))).then(() => self.skipWaiting()));
 });
 
 self.addEventListener("activate", e => {
@@ -21,7 +21,7 @@ self.addEventListener("fetch", e => {
   // Page itself: try the network first so updates arrive, fall back to the cached copy offline.
   if (req.mode === "navigate") {
     e.respondWith(
-      fetch(req).then(res => { const copy = res.clone(); caches.open(VERSION).then(c => c.put("index.html", copy)); return res; })
+      fetch(req, { cache: "no-cache" }).then(res => { const copy = res.clone(); caches.open(VERSION).then(c => c.put("index.html", copy)); return res; })
         .catch(() => caches.match("index.html"))
     );
     return;
