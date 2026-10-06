@@ -492,7 +492,7 @@ const CARDS=[
  ["N","MM","Mailbox Mike","メールボックス・マイク","手紙は必ず届ける。たとえ宛先が月面でも。",215,"shield"],
  ["N","CO","Coin Op","コイン・オップ","25セント入れると一回だけ本気を出す。",95,"circle"],
  ["R","NN","Neon Noodle","ネオン・ヌードル","全身に仕込んだネオンライトと巨大な油切りを武器に、夜の街でひっそり悪と戦うちょっとダサめのB級ヒーロー。",300,"diamond"],
- ["R","JJ","Jukebox Jane","ジュークボックス・ジェーン","かける曲で能力が変わる。リクエストは受け付けない。",340,"diamond"],
+ ["R","JJ","Jukebox Jane","ジュークボックス・ジェーン","特殊なラジオ装置であらゆる電波を操るファンキーなヒーロー。強烈な音波と放送ジャックを武器に街を守る。",340,"diamond"],
  ["R","SK","Skate Saint","スケート・セイント","下り坂ならパトカーより速い。上り坂は苦手。",180,"diamond"],
  ["R","DD","Diner Dynamo","ダイナー・ダイナモ","24時間営業の店主。コーヒーを飲むほど強くなる。",28,"diamond"],
  ["R","TT","Tornado Tess","トルネード・テス","回るほど強くなる。止まったあと少し目が回る。",190,"diamond"],
@@ -510,7 +510,7 @@ const CARDS=[
  ["UR","NM","Nova Mae","ノヴァ・メイ","宇宙の光「ノヴァ・エネルギー」を操り、闇に希望を灯す若きヒーロー。",320,"burst"],
 ].map((c,i)=>({id:i,r:c[0],m:c[1],name:c[2],kana:c[3],flavor:c[4],h:c[5],shape:c[6]}));
 // standard cards that use a picture instead of the drawn portrait
-const PHOTOS={"Rubber Duck":"rubber-duck.jpg","Atlas Prime":"atlas-prime.jpg","Nova Mae":"nova-mae.jpg","Skyline Sentinel":"skyline-sentinel.jpg","Queen Quasar":"queen-quasar.jpg","Thunder Hound":"thunder-hound.jpg","Atomic Bee":"atomic-bee.jpg","Radio Ranger":"radio-ranger.jpg","Mirror Max":"mirror-max.jpg","Velvet Comet":"velvet-comet.jpg","Doctor Fuse":"doctor-fuse.jpg","Neon Noodle":"neon-noodle.jpg"};
+const PHOTOS={"Rubber Duck":"rubber-duck.jpg","Atlas Prime":"atlas-prime.jpg","Nova Mae":"nova-mae.jpg","Skyline Sentinel":"skyline-sentinel.jpg","Queen Quasar":"queen-quasar.jpg","Thunder Hound":"thunder-hound.jpg","Atomic Bee":"atomic-bee.jpg","Radio Ranger":"radio-ranger.jpg","Mirror Max":"mirror-max.jpg","Velvet Comet":"velvet-comet.jpg","Doctor Fuse":"doctor-fuse.jpg","Neon Noodle":"neon-noodle.jpg","Jukebox Jane":"jukebox-jane.jpg"};
 const PHOTO_V="2";
 CARDS.forEach(c=>{if(PHOTOS[c.name])c.photo=PHOTOS[c.name]+"?v="+PHOTO_V});
 /* ---- star shop: cards that never come from a gacha ---- */

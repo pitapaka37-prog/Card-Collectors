@@ -1,6 +1,6 @@
 // CARD COLLECTORS service worker: works offline after the first visit.
-const VERSION = "cc-v26";
-const CORE = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png", "icon-180.png", "rubber-duck.jpg", "atlas-prime.jpg", "nova-mae.jpg", "skyline-sentinel.jpg", "queen-quasar.jpg", "thunder-hound.jpg", "atomic-bee.jpg", "radio-ranger.jpg", "mirror-max.jpg", "velvet-comet.jpg", "doctor-fuse.jpg", "neon-noodle.jpg"];
+const VERSION = "cc-v27";
+const CORE = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png", "icon-180.png", "rubber-duck.jpg", "atlas-prime.jpg", "nova-mae.jpg", "skyline-sentinel.jpg", "queen-quasar.jpg", "thunder-hound.jpg", "atomic-bee.jpg", "radio-ranger.jpg", "mirror-max.jpg", "velvet-comet.jpg", "doctor-fuse.jpg", "neon-noodle.jpg", "jukebox-jane.jpg"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(VERSION).then(c => c.addAll(CORE.map(u => new Request(u, { cache: "reload" })))).then(() => self.skipWaiting()));
