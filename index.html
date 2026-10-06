@@ -212,6 +212,11 @@ nav button span{font-family:var(--body);font-size:13px;font-weight:700}
 .shop-item .ghost.buy:not(:disabled){background:var(--yellow)}
 .shop-item.owned .card{filter:none}
 .shop-item .got{text-align:center;font-weight:700;font-size:13px;color:var(--red)}
+.shop-item .card.mystery .back{background-color:#7a3cff;background-image:radial-gradient(rgba(0,0,0,.25) 1.5px,transparent 1.8px),repeating-conic-gradient(from 0deg at 50% 50%,#9a63ff 0 10deg,#7a3cff 10deg 20deg)}
+.shop-item .card.mystery .back::after{content:"?";font-size:clamp(30px,7vw,44px)}
+.shop-name{text-align:center;line-height:1.15}
+.shop-name b{display:block;font-family:var(--display);font-weight:400;font-size:17px;letter-spacing:.03em}
+.shop-name small{font-family:var(--jp);font-size:10px;color:var(--mute)}
 .shop-rates{font-size:12px;color:var(--mute)}
 .custom-tag.ltd{background:#7a3cff;color:#fff}
 
@@ -1254,7 +1259,11 @@ function renderShop(){
   SHOP_CARDS.forEach(c=>{
     const have=(S.owned[c.id]||0)>0;
     const it=document.createElement("div");it.className="shop-item"+(have?" owned":"");
-    it.appendChild(cardEl(c,{flipped:true}));
+    // the picture stays hidden (card back) until the card is exchanged
+    const card=cardEl(c,{flipped:have});
+    if(!have){card.classList.add("mystery");card.setAttribute("aria-label",`${c.name}（交換するまで絵は見えません）`)}
+    it.appendChild(card);
+    if(!have)it.insertAdjacentHTML("beforeend",`<div class="shop-name"><b>${esc(c.name)}</b><small>${esc(c.kana)}</small></div>`);
     it.insertAdjacentHTML("beforeend",`<div class="price"><span>${c.r}</span><b><i></i>${c.price.toLocaleString()}</b></div>`);
     if(have){it.insertAdjacentHTML("beforeend",`<div class="got">交換済み・図鑑で見られます</div>`)}
     else{
@@ -1265,6 +1274,10 @@ function renderShop(){
         if(S.points<c.price||(S.owned[c.id]||0)>0)return;
         S.points-=c.price;S.owned[c.id]=1;save();render();
         toast(`「${c.name}」と交換しました！`);
+        // reveal: flip the newly exchanged card in the shop
+        const fresh=[...$("shopGrid").children][SHOP_CARDS.indexOf(c)];
+        const fc=fresh&&fresh.querySelector(".card");
+        if(fc){fc.classList.remove("flipped");requestAnimationFrame(()=>requestAnimationFrame(()=>fc.classList.add("flipped")))}
       });
       if(short<=0)b.textContent="交換する";
       it.appendChild(b);
