@@ -574,6 +574,8 @@ const byR={};ORDER.forEach(r=>byR[r]=CARDS.filter(c=>c.r===r));
 const packOf=id=>S.packs.find(p=>p.id===id);
 const pname=p=>(p&&p.name.trim())||"NO NAME";
 const cardsIn=id=>S.custom.filter(c=>c.pack===id);
+// dex books: STANDARD also lists the shop-only cards (they never come from the gacha)
+function dexPoolOf(id){if(id==="std"){const o={};ORDER.forEach(r=>o[r]=byR[r].concat(shopByR[r]));return o}return poolOf(id)}
 function poolOf(id){if(id==="std")return byR;if(id==="shop")return shopByR;const list=cardsIn(id);const o={};ORDER.forEach(r=>o[r]=list.filter(c=>c.r===r));return o}
 function getPity(id){return id==="std"?S.pity:(S.pityBy[id]||0)}
 function setPity(id,v){if(id==="std")S.pity=v;else S.pityBy[id]=v}
@@ -1030,7 +1032,7 @@ let detailList=[],detailIdx=0,detailReturn=null;
 function showDetail(c,fromEl){
   if(fromEl)detailReturn=fromEl;
   // owned cards of the open dex, in dex order, for prev / next
-  const pool=poolOf(dexSel||"std");
+  const pool=dexPoolOf(dexSel||"std");
   detailList=ORDER.flatMap(r=>pool[r]).filter(x=>S.owned[x.id]);
   detailIdx=Math.max(0,detailList.findIndex(x=>x.id===c.id));
   drawDetail();
@@ -1095,11 +1097,12 @@ function dexStats(pool){
   return{list,total:list.length,have:list.filter(c=>S.owned[c.id]).length};
 }
 function renderDex(){
-  const books=[{id:"std",title:"STANDARD",sub:"通常ガチャのヒーロー",color:null},{id:"shop",title:"LIMITED",sub:"スターショップ限定のヒーロー",color:"#7a3cff"}].concat(S.packs.map(p=>({id:p.id,title:pname(p),sub:"あなたが作ったガチャ",color:p.color})));
-  books.forEach(b=>b.s=dexStats(poolOf(b.id)));
+  const books=[{id:"std",title:"STANDARD",sub:"通常ガチャとショップ限定のヒーロー",color:null}].concat(S.packs.map(p=>({id:p.id,title:pname(p),sub:"あなたが作ったガチャ",color:p.color})));
+  books.forEach(b=>b.s=dexStats(dexPoolOf(b.id)));
   const allHave=books.reduce((a,b)=>a+b.s.have,0),allTotal=books.reduce((a,b)=>a+b.s.total,0);
   $("dexCount").textContent=`${allHave}/${allTotal}`;
-  if(dexSel&&dexSel!=="std"&&dexSel!=="shop"&&(!packOf(dexSel)||!cardsIn(dexSel).length))dexSel=null;
+  if(dexSel==="shop")dexSel="std";
+  if(dexSel&&dexSel!=="std"&&(!packOf(dexSel)||!cardsIn(dexSel).length))dexSel=null;
   $("dexPick").hidden=!!dexSel;$("dexView").hidden=!dexSel;
   const box=$("binders");box.innerHTML="";
   books.forEach(({id,title,sub,color,s})=>{
@@ -1119,20 +1122,20 @@ function renderDex(){
   });
   if(!dexSel)return;
   const book=books.find(b=>b.id===dexSel),s=book.s;
-  $("dexTitle").innerHTML=`${esc(book.title)}<small>${dexSel==="std"?"通常ガチャの図鑑":dexSel==="shop"?"ショップ限定カードの図鑑":"自作ガチャの図鑑"}</small>`;
+  $("dexTitle").innerHTML=`${esc(book.title)}<small>${dexSel==="std"?"通常ガチャ・ショップ限定の図鑑":"自作ガチャの図鑑"}</small>`;
   $("dexView").classList.toggle("my",dexSel!=="std");
   $("dexPct").textContent=`${s.have} / ${s.total} 人 ・ ${Math.round(s.have/s.total*100)}%`;
   $("dexBar").style.width=s.have/s.total*100+"%";
-  const dupes=dupesIn(poolOf(dexSel));
+  const dupes=dupesIn(dexPoolOf(dexSel));
   const dn=dupes.reduce((a,[,k])=>a+k,0),dt=dupes.reduce((a,[c,k])=>a+k*SELL_PRICE[c.r],0),ds=dupes.reduce((a,[c,k])=>a+k*SELL_STARS[c.r],0);
   $("sellbar").hidden=!dn;
   if(dn){
     $("sellInfo").textContent=`ダブっているカード ${dn} 枚（各1枚は残します）`;
-    armed($("sellAll"),`ダブりをまとめて売る ＋${dt.toLocaleString()}・★${ds.toLocaleString()}`,`もう一度押すと ${dn} 枚売ります`,()=>sellCards(dupesIn(poolOf(dexSel))));
+    armed($("sellAll"),`ダブりをまとめて売る ＋${dt.toLocaleString()}・★${ds.toLocaleString()}`,`もう一度押すと ${dn} 枚売ります`,()=>sellCards(dupesIn(dexPoolOf(dexSel))));
     $("sellAll").textContent=`ダブりをまとめて売る ＋${dt.toLocaleString()}・★${ds.toLocaleString()}`;
   }
   const body=$("dexBody");body.innerHTML="";
-  dexGroup(body,poolOf(dexSel));
+  dexGroup(body,dexPoolOf(dexSel));
 }
 $("dexBack").onclick=()=>{dexSel=null;renderDex()};
 function dexGroup(body,pool){
