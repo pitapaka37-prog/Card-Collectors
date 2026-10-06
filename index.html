@@ -608,6 +608,15 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
 .dk-sn{display:flex;align-items:center;gap:3px;font-size:11px;font-weight:700;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .dk-sn .bt-type{width:16px;height:16px;font-size:9px}
 .dk-caps{display:flex;flex-wrap:wrap;gap:6px}
+.dk-cost{display:flex;align-items:center;gap:4px;font-weight:700;border:3px solid var(--ink);padding:1px 8px;background:#fff;font-variant-numeric:tabular-nums;font-size:16px}
+.dk-cost b{font-family:var(--display);font-weight:400;font-size:16px;letter-spacing:.05em}
+.dk-cost i{font-style:normal;font-size:12px;opacity:.6}
+.dk-meter{display:inline-block;width:70px;height:10px;margin-left:4px;border:2px solid var(--ink);background:#eee;overflow:hidden}
+.dk-meter span{display:block;height:100%;background:#2fbf4a}
+.dk-cost.full .dk-meter span{background:var(--yellow)}.dk-cost.over{background:#ffd9d6;color:var(--red)}.dk-cost.over .dk-meter span{background:var(--red)}
+.dk-slot{position:relative}
+.dk-cc{position:absolute;left:-5px;top:-6px;z-index:4;display:grid;place-items:center;width:22px;height:22px;border:2px solid var(--ink);border-radius:50%;background:var(--yellow);font-family:var(--display);font-size:15px;line-height:1;box-shadow:2px 2px 0 var(--ink)}
+.dk-cc.big{width:30px;height:30px;font-size:20px;left:-8px;top:-8px}
 .dk-cap{font-size:12px;font-weight:700;border:2px solid var(--ink);padding:0 6px;background:#fff;font-variant-numeric:tabular-nums}
 .dk-cap b{margin-right:4px;font-family:var(--display);font-weight:400;font-size:14px}
 .dk-cap.full{background:var(--yellow)}.dk-cap.over{background:#ffd9d6;color:var(--red)}
@@ -1087,7 +1096,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
       <div class="dk-top">
         <div class="dk-head"><span class="dk-tabs" id="dkEditTabs" role="tablist"></span><span class="dk-caps" id="dkEditCaps"></span></div>
         <div class="dk-row edit" id="dkEditRow"></div>
-        <p class="dk-note">下のカードをタップすると入れる・外すができます。デッキは5枚で、入れられるのは <b>UR 1枚・SSR 2枚・SR 3枚・R 4枚・N 5枚</b> まで。「詳しく」で能力が見られます。</p>
+        <p class="dk-note">下のカードをタップすると入れる・外すができます。デッキは5枚で、<b>コストの合計が15以内</b>になるように作ろう。コストは <b>UR 5・SSR 4・SR 3・R 2・N 1</b>。カードの左上の数字がコストです。「詳しく」で能力が見られます。</p>
         <div class="dk-btns"><button type="button" class="ghost" id="dkAuto">おまかせ</button><button type="button" class="ghost" id="dkClear">ぜんぶ外す</button><button type="button" class="btn-main" id="dkDone">このデッキでバトル！</button></div>
       </div>
       <div class="dk-filter" id="dkFilter" role="tablist"></div>
@@ -3253,21 +3262,30 @@ function renderBattle(){
   dkRender();
   $("btNeed").textContent=`バトルには STAR LIGHT のカードが5種類以上必要です（いま ${n} 種類）。ガチャでカードを集めよう！`;
 }
-/* ---- decks: 5 cards, at most UR 1 / SSR 2 / SR 3 / R 4 / N 5 ---- */
-const DK_MAX={UR:1,SSR:2,SR:3,R:4,N:5};
+/* ---- decks: 5 cards within 15 cost (UR 5 / SSR 4 / SR 3 / R 2 / N 1) ---- */
+const DK_COST={UR:5,SSR:4,SR:3,R:2,N:1};
+const DK_MAXCOST=15;
 const DK_SIZE=5;
 let dkEditK=0;
 function dkCard(id){return CARDS.concat(SHOP_CARDS,REWARD_CARDS).find(c=>String(c.id)===String(id))}
 function dkCards(k){return S.decks[k].map(dkCard).filter(c=>c&&S.owned[c.id])}
-function dkCount(list){const o={UR:0,SSR:0,SR:0,R:0,N:0};list.forEach(c=>o[c.r]++);return o}
-function dkValid(list){const o=dkCount(list);return list.length===DK_SIZE&&ORDER.every(r=>o[r]<=DK_MAX[r])}
-function dkCapsHTML(list){const o=dkCount(list);return ORDER.map(r=>`<span class="dk-cap r-${r} ${o[r]>DK_MAX[r]?"over":o[r]===DK_MAX[r]?"full":""}"><b>${r}</b>${o[r]}/${DK_MAX[r]}</span>`).join("")+`<span class="dk-cap tot ${list.length===DK_SIZE?"full":""}"><b>合計</b>${list.length}/${DK_SIZE}</span>`}
+function dkCost(list){return list.reduce((a,c)=>a+DK_COST[c.r],0)}
+function dkValid(list){return list.length===DK_SIZE&&dkCost(list)<=DK_MAXCOST}
+// can c be added and still leave room (cost-wise) to fill the rest of the deck with cards you own?
+function dkCanAdd(list,c){
+  if(list.length>=DK_SIZE||list.includes(c))return false;
+  const left=DK_SIZE-list.length-1;
+  const cheap=btPool().filter(x=>x!==c&&!list.includes(x)).map(x=>DK_COST[x.r]).sort((a,b)=>a-b).slice(0,left);
+  const need=cheap.length<left?Infinity:cheap.reduce((a,b)=>a+b,0);
+  return dkCost(list)+DK_COST[c.r]+need<=DK_MAXCOST;
+}
+function dkCapsHTML(list){const c=dkCost(list);return `<span class="dk-cost ${c>DK_MAXCOST?"over":c===DK_MAXCOST?"full":""}"><b>COST</b>${c}<i>/${DK_MAXCOST}</i><span class="dk-meter"><span style="width:${Math.min(100,c/DK_MAXCOST*100)}%"></span></span></span><span class="dk-cap tot ${list.length===DK_SIZE?"full":""}"><b>枚数</b>${list.length}/${DK_SIZE}</span>`}
 function dkSlots(box,list,onTap){
   box.innerHTML="";
   for(let i=0;i<DK_SIZE;i++){
     const c=list[i];
     const b=document.createElement("button");b.type="button";b.className="dk-slot"+(c?"":" empty");
-    if(c){b.appendChild(btFace(c));const p=btProfile(c);b.insertAdjacentHTML("beforeend",`<span class="dk-sn"><span class="bt-type t${p.type}">${BT_TYPES[p.type]}</span>${esc(c.name)}</span>`)}
+    if(c){b.appendChild(btFace(c));b.insertAdjacentHTML("beforeend",`<span class="dk-cc">${DK_COST[c.r]}</span>`);const p=btProfile(c);b.insertAdjacentHTML("beforeend",`<span class="dk-sn"><span class="bt-type t${p.type}">${BT_TYPES[p.type]}</span>${esc(c.name)}</span>`)}
     else b.innerHTML=`<span class="dk-plus">＋</span>`;
     b.onclick=()=>onTap(c,i);
     box.appendChild(b);
@@ -3281,7 +3299,8 @@ function dkRender(){
   $("dkCaps").innerHTML=dkCapsHTML(list);
   const ok=dkValid(list);
   $("btStartDeck").disabled=!ok;
-  $("dkNote").textContent=ok?"このデッキで戦えます！ バトルでは、出す順番をその場で選べます。":list.length?`あと ${DK_SIZE-list.length} 枚入れるとバトルできます。`:"「デッキを編集」から、持っている STAR LIGHT のカードを5枚えらんでデッキを作ろう。";
+  const cost=dkCost(list);
+  $("dkNote").textContent=ok?`このデッキで戦えます！（コスト ${cost}/${DK_MAXCOST}） バトルでは、出す順番をその場で選べます。`:cost>DK_MAXCOST?`コストオーバー！（${cost}/${DK_MAXCOST}） 「DECK」からコスト15以内に作り直してね。`:list.length?`あと ${DK_SIZE-list.length} 枚入れるとバトルできます。`:"「DECK」から、持っている STAR LIGHT のカードを5枚、コスト15以内でえらんでデッキを作ろう。";
 }
 let dkFilterR="ALL";
 function dkOpen(k){dkEditK=k;tab("deck");window.scrollTo({top:0,behavior:"smooth"})}
@@ -3293,7 +3312,7 @@ function dkToggle(c){
   else{
     const list=dkCards(dkEditK);
     if(list.length>=DK_SIZE){toast("デッキは5枚までです");return}
-    if(dkCount(list)[c.r]>=DK_MAX[c.r]){toast(`${c.r} は ${DK_MAX[c.r]} 枚までしか入れられません`);return}
+    if(!dkCanAdd(list,c)){toast(dkCost(list)+DK_COST[c.r]>DK_MAXCOST?`コストオーバー！（いま ${dkCost(list)}、${c.name} はコスト${DK_COST[c.r]}）`:"このカードを入れると、残りの枠をコスト15以内で埋められません");return}
     S.decks[dkEditK]=list.map(x=>String(x.id)).concat(id);sfx("flip");
   }
   save();dkDrawEdit();
@@ -3301,7 +3320,7 @@ function dkToggle(c){
 function dkDrawEdit(){
   dkEditK=S.deckSel;
   S.decks[dkEditK]=dkCards(dkEditK).map(c=>String(c.id)); // drop cards that were sold
-  const list=dkCards(dkEditK),cnt=dkCount(list);
+  const list=dkCards(dkEditK);
   const tabs=$("dkEditTabs");tabs.innerHTML="";
   [0,1,2].forEach(k=>{const b=document.createElement("button");b.type="button";b.setAttribute("role","tab");b.setAttribute("aria-selected",dkEditK===k);b.textContent=`DECK ${k+1}`;b.onclick=()=>{S.deckSel=k;save();dkDrawEdit()};tabs.appendChild(b)});
   dkSlots($("dkEditRow"),list,c=>{if(c)dkToggle(c)});
@@ -3319,13 +3338,14 @@ function dkDrawEdit(){
   if(!shown.length)g.innerHTML=`<div class="empty">このレアリティのカードはまだ持っていません。</div>`;
   shown.forEach(c=>{
     const inDeck=list.includes(c);
-    const full=!inDeck&&list.length>=DK_SIZE,cap=!inDeck&&cnt[c.r]>=DK_MAX[c.r];
+    const full=!inDeck&&list.length>=DK_SIZE,cap=!inDeck&&!full&&!dkCanAdd(list,c);
     const p=btProfile(c);
     const w=document.createElement("div");w.className="dk-card"+(inDeck?" in":"")+(full||cap?" off":"");
     const b=document.createElement("button");b.type="button";b.className="dk-pick";b.setAttribute("aria-label",`${c.name} を${inDeck?"外す":"入れる"}`);
     b.appendChild(cardEl(c,{flipped:true}));
     if(inDeck)b.insertAdjacentHTML("beforeend",`<span class="dk-in">IN</span>`);
-    else if(cap)b.insertAdjacentHTML("beforeend",`<span class="dk-lock">${c.r} 上限</span>`);
+    else if(cap)b.insertAdjacentHTML("beforeend",`<span class="dk-lock">コストオーバー</span>`);
+    b.insertAdjacentHTML("beforeend",`<span class="dk-cc big">${DK_COST[c.r]}</span>`);
     b.onclick=()=>dkToggle(c);
     w.appendChild(b);
     w.insertAdjacentHTML("beforeend",`<div class="dk-st"><span class="bt-type t${p.type}">${BT_TYPES[p.type]}</span><span>HP <b>${p.hp}</b></span><span>ATK <b>${p.atk}</b></span><span>SPD <b>${p.spd}</b></span></div>`);
@@ -3350,11 +3370,11 @@ function dkInfo(c){
   $("dkInfoGo").onclick=()=>{shut();dkToggle(c)};
 }
 function dkAuto(){
-  // fill the empty slots with the strongest cards that still fit the rarity limits
-  const list=dkCards(dkEditK),cnt=dkCount(list);
+  // fill the empty slots with the strongest cards that still fit in the cost limit
+  const list=dkCards(dkEditK);
   const score=c=>{const p=btProfile(c);return p.hp*.6+p.atk*4+(p.passive?20:0)};
   const rest=btPool().filter(c=>!list.includes(c)).sort((a,b)=>score(b)-score(a));
-  for(const c of rest){if(list.length>=DK_SIZE)break;if(cnt[c.r]<DK_MAX[c.r]){list.push(c);cnt[c.r]++}}
+  for(const c of rest){if(list.length>=DK_SIZE)break;if(dkCanAdd(list,c))list.push(c)}
   S.decks[dkEditK]=list.map(c=>String(c.id));save();sfx("rankup");dkDrawEdit();
 }
 $("dkEdit").onclick=()=>dkOpen(S.deckSel);
