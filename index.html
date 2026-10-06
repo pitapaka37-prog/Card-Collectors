@@ -614,13 +614,30 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
 .dk-note{margin:0;font-size:13px;font-weight:700}
 .dk-btns{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
 .dk-rand{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;font-size:12px}
-.dk-modal .mission{width:min(680px,100%);display:flex;flex-direction:column;gap:10px}
-.dk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:10px;padding-top:6px;border-top:3px dashed rgba(0,0,0,.2)}
-.dk-card{position:relative;display:flex;flex-direction:column;gap:2px;padding:0;border:0;background:none;color:inherit;text-align:left;cursor:pointer;min-width:0}
-.dk-card.in .bt-face{outline:4px solid var(--red);outline-offset:1px}
-.dk-card.off{opacity:.4}
-.dk-st{font-size:10px;font-weight:700;opacity:.75;white-space:nowrap}
-.dk-in{position:absolute;top:-6px;right:-4px;z-index:2;font-family:var(--display);font-size:14px;background:var(--red);color:#fff;border:2px solid var(--ink);padding:0 5px;transform:rotate(8deg)}
+.dk-go{display:flex;flex-direction:column;align-items:center;line-height:1;padding:6px 18px;border:4px solid var(--ink);background:var(--blue);color:#fff;box-shadow:5px 5px 0 var(--ink)}
+.dk-go b{font-family:var(--display);font-weight:400;font-size:26px;letter-spacing:.06em;color:var(--yellow);-webkit-text-stroke:1px var(--ink);text-shadow:2px 2px 0 var(--ink)}
+.dk-go small{font-size:11px;font-weight:700}
+.dk-go:active{transform:translate(3px,3px);box-shadow:2px 2px 0 var(--ink)}
+.dk-top{display:flex;flex-direction:column;gap:10px;padding:12px;margin-bottom:14px;background:var(--paper);border:4px solid var(--ink);box-shadow:6px 6px 0 var(--ink)}
+.dk-top .dk-row{max-width:560px}
+.dk-filter{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.dk-filter button{display:flex;align-items:baseline;gap:4px;font-family:var(--display);font-size:18px;letter-spacing:.04em;border:3px solid var(--ink);background:#fff;padding:2px 12px;box-shadow:3px 3px 0 var(--ink)}
+.dk-filter button small{font-size:12px;opacity:.7}
+.dk-filter button[aria-selected="true"]{background:var(--ink);color:var(--yellow)}
+.dk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:18px 14px}
+.dk-card{position:relative;display:flex;flex-direction:column;gap:6px;min-width:0}
+.dk-pick{position:relative;display:block;padding:0;border:0;background:none;cursor:pointer;transition:transform .12s}
+.dk-pick:hover{transform:translateY(-4px)}
+.dk-pick .card .inner{transform:rotateY(180deg)}
+.dk-card.in .dk-pick{outline:5px solid var(--red);outline-offset:3px;border-radius:10px}
+.dk-card.off .dk-pick{opacity:.4;filter:grayscale(.6)}
+.dk-st{display:flex;flex-wrap:wrap;align-items:center;gap:2px 8px;font-size:11px;font-weight:700;font-variant-numeric:tabular-nums}
+.dk-st .bt-type{width:18px;height:18px;font-size:10px}
+.dk-st b{font-size:13px}
+.dk-more{align-self:flex-start;font-size:12px;font-weight:700;border:2px solid var(--ink);background:#fff;padding:0 8px;box-shadow:2px 2px 0 var(--ink)}
+.dk-in{position:absolute;top:-8px;right:-6px;z-index:4;font-family:var(--display);font-size:18px;background:var(--red);color:#fff;border:3px solid var(--ink);padding:0 7px;transform:rotate(8deg);box-shadow:2px 2px 0 var(--ink)}
+.dk-lock{position:absolute;left:50%;top:45%;z-index:4;transform:translate(-50%,-50%) rotate(-8deg);font-family:var(--display);font-size:16px;white-space:nowrap;background:var(--ink);color:#fff;padding:0 8px}
+@media (max-width:640px){.dk-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px 8px}.dk-top{padding:10px}.dk-filter button{font-size:16px;padding:2px 9px}}
 .bt-arena{display:flex;flex-direction:column;gap:12px}
 .bt-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;font-family:var(--display);font-size:20px;letter-spacing:.04em}
 .bt-turn{font-weight:400;background:var(--ink);color:var(--yellow);padding:0 10px}
@@ -1030,7 +1047,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
           <p class="dk-note" id="dkNote"></p>
           <div class="dk-btns">
             <button type="button" class="btn-main" id="btStartDeck">デッキでバトル！</button>
-            <button type="button" class="ghost" id="dkEdit">デッキを編集</button>
+            <button type="button" class="dk-go" id="dkEdit"><b>DECK</b><small>デッキを作る</small></button>
           </div>
         </div>
         <div class="dk-rand">
@@ -1057,23 +1074,26 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
       </div>
     </div>
   </section>
-  <div class="detail ms-modal dk-modal" id="dkModal" hidden role="dialog" aria-modal="true" aria-label="デッキ編集">
-    <div class="mission">
-      <button type="button" class="close" id="dkClose" aria-label="閉じる">×</button>
-      <div class="ms-head"><b id="dkTitle">DECK 1</b></div>
-      <p class="dk-note">カードをタップして入れる・外す。デッキは5枚で、入れられるのは <b>UR 1枚・SSR 2枚・SR 3枚・R 4枚・N 5枚</b> まで。</p>
-      <div class="dk-row edit" id="dkEditRow"></div>
-      <div class="dk-caps" id="dkEditCaps"></div>
-      <div class="dk-btns"><button type="button" class="ghost" id="dkAuto">おまかせ</button><button type="button" class="ghost" id="dkClear">ぜんぶ外す</button><button type="button" class="btn-main" id="dkDone">完了</button></div>
-      <div class="dk-grid" id="dkGrid"></div>
-    </div>
-  </div>
   <div class="detail ms-modal bt-iv" id="btInfo" hidden role="dialog" aria-modal="true" aria-label="カードのステータス">
     <div class="mission" id="btInfoBox"></div>
   </div>
   <div class="detail ms-modal" id="btResult" hidden role="dialog" aria-modal="true" aria-label="バトル結果">
     <div class="mission bt-res" id="btResBox"></div>
   </div>
+
+  <section id="view-deck" hidden>
+    <div class="panel">
+      <div class="panel-head"><h3>DECK<small>デッキを作る</small></h3><button type="button" class="ghost" id="dkBack">← バトルにもどる</button></div>
+      <div class="dk-top">
+        <div class="dk-head"><span class="dk-tabs" id="dkEditTabs" role="tablist"></span><span class="dk-caps" id="dkEditCaps"></span></div>
+        <div class="dk-row edit" id="dkEditRow"></div>
+        <p class="dk-note">下のカードをタップすると入れる・外すができます。デッキは5枚で、入れられるのは <b>UR 1枚・SSR 2枚・SR 3枚・R 4枚・N 5枚</b> まで。「詳しく」で能力が見られます。</p>
+        <div class="dk-btns"><button type="button" class="ghost" id="dkAuto">おまかせ</button><button type="button" class="ghost" id="dkClear">ぜんぶ外す</button><button type="button" class="btn-main" id="dkDone">このデッキでバトル！</button></div>
+      </div>
+      <div class="dk-filter" id="dkFilter" role="tablist"></div>
+      <div class="dk-grid" id="dkGrid"></div>
+    </div>
+  </section>
 
   <section id="view-shop" hidden>
     <div class="panel">
@@ -1700,7 +1720,7 @@ const BGM=(()=>{
   };
 })();
 let currentScreen="home",bgmReady=false;
-function screenMusic(){if(bgmReady)BGM.play(currentScreen)}
+function screenMusic(){if(bgmReady)BGM.play(currentScreen==="deck"?"games":currentScreen)}
 document.addEventListener("visibilitychange",()=>{if(!actx)return;if(document.visibilityState==="hidden")actx.suspend();else actx.resume()});
 function sfx(kind){
   if(!S.sound)return;
@@ -2328,8 +2348,8 @@ function render(){
 function tab(which){
   currentScreen=which;screenMusic();
   if(which==="home")setTimeout(renderHome,0);
-  ["home","gacha","dex","make","shop","games","battle"].forEach(t=>{
-    const on=t===which;const tb=document.getElementById("tab-"+t);if(tb)tb.setAttribute("aria-selected",on||(t==="games"&&which==="battle"));$("view-"+t).hidden=!on;
+  ["home","gacha","dex","make","shop","games","battle","deck"].forEach(t=>{
+    const on=t===which;const tb=document.getElementById("tab-"+t);if(tb)tb.setAttribute("aria-selected",on||(t==="games"&&(which==="battle"||which==="deck")));$("view-"+t).hidden=!on;
     if(on&&t==="make")$("view-make").style.display="flex";
     if(on&&t==="gacha")$("view-gacha").style.display="flex";
   });
@@ -2338,6 +2358,7 @@ function tab(which){
   if(which==="make"&&mineStale){renderMine();mineStale=false}
   if(which==="shop"&&shopStale){renderShop();shopStale=false}
   if(which==="battle"&&typeof renderBattle==="function")renderBattle();
+  if(which==="deck"&&typeof dkDrawEdit==="function")dkDrawEdit();
 }
 function renderShop(){
   $("shopPts").textContent=S.points.toLocaleString();
@@ -3262,11 +3283,9 @@ function dkRender(){
   $("btStartDeck").disabled=!ok;
   $("dkNote").textContent=ok?"このデッキで戦えます！ バトルでは、出す順番をその場で選べます。":list.length?`あと ${DK_SIZE-list.length} 枚入れるとバトルできます。`:"「デッキを編集」から、持っている STAR LIGHT のカードを5枚えらんでデッキを作ろう。";
 }
-function dkOpen(k){
-  dkEditK=k;$("dkTitle").textContent=`DECK ${k+1}`;
-  $("dkModal").hidden=false;document.body.style.overflow="hidden";dkDrawEdit();
-}
-function dkClose(){$("dkModal").hidden=true;document.body.style.overflow="";save();dkRender()}
+let dkFilterR="ALL";
+function dkOpen(k){dkEditK=k;tab("deck");window.scrollTo({top:0,behavior:"smooth"})}
+function dkClose(){save();tab("battle");window.scrollTo({top:0,behavior:"smooth"})}
 function dkToggle(c){
   const ids=S.decks[dkEditK];const id=String(c.id);
   const at=ids.indexOf(id);
@@ -3280,21 +3299,55 @@ function dkToggle(c){
   save();dkDrawEdit();
 }
 function dkDrawEdit(){
+  dkEditK=S.deckSel;
   S.decks[dkEditK]=dkCards(dkEditK).map(c=>String(c.id)); // drop cards that were sold
   const list=dkCards(dkEditK),cnt=dkCount(list);
+  const tabs=$("dkEditTabs");tabs.innerHTML="";
+  [0,1,2].forEach(k=>{const b=document.createElement("button");b.type="button";b.setAttribute("role","tab");b.setAttribute("aria-selected",dkEditK===k);b.textContent=`DECK ${k+1}`;b.onclick=()=>{S.deckSel=k;save();dkDrawEdit()};tabs.appendChild(b)});
   dkSlots($("dkEditRow"),list,c=>{if(c)dkToggle(c)});
   $("dkEditCaps").innerHTML=dkCapsHTML(list);
-  const g=$("dkGrid");g.innerHTML="";
-  btPool().sort((a,b)=>ORDER.indexOf(a.r)-ORDER.indexOf(b.r)).forEach(c=>{
-    const inDeck=list.includes(c);
-    const blocked=!inDeck&&(list.length>=DK_SIZE||cnt[c.r]>=DK_MAX[c.r]);
-    const p=btProfile(c);
-    const b=document.createElement("button");b.type="button";b.className="dk-card"+(inDeck?" in":"")+(blocked?" off":"");
-    b.appendChild(btFace(c));
-    b.insertAdjacentHTML("beforeend",`<span class="dk-sn"><span class="bt-type t${p.type}">${BT_TYPES[p.type]}</span>${esc(c.name)}</span><span class="dk-st">${c.r} ・ HP${p.hp} ・ ATK${p.atk}</span>${inDeck?`<span class="dk-in">IN</span>`:""}`);
-    b.onclick=()=>dkToggle(c);
-    g.appendChild(b);
+  $("dkDone").disabled=!dkValid(list);
+  const pool=btPool();
+  const f=$("dkFilter");f.innerHTML="";
+  ["ALL"].concat(ORDER).forEach(r=>{
+    const n=r==="ALL"?pool.length:pool.filter(c=>c.r===r).length;
+    const b=document.createElement("button");b.type="button";b.setAttribute("role","tab");b.setAttribute("aria-selected",dkFilterR===r);b.className="r-"+r;
+    b.innerHTML=`${r==="ALL"?"ぜんぶ":r}<small>${n}</small>`;b.onclick=()=>{dkFilterR=r;dkDrawEdit()};f.appendChild(b);
   });
+  const g=$("dkGrid");g.innerHTML="";
+  const shown=pool.filter(c=>dkFilterR==="ALL"||c.r===dkFilterR).sort((a,b)=>ORDER.indexOf(a.r)-ORDER.indexOf(b.r));
+  if(!shown.length)g.innerHTML=`<div class="empty">このレアリティのカードはまだ持っていません。</div>`;
+  shown.forEach(c=>{
+    const inDeck=list.includes(c);
+    const full=!inDeck&&list.length>=DK_SIZE,cap=!inDeck&&cnt[c.r]>=DK_MAX[c.r];
+    const p=btProfile(c);
+    const w=document.createElement("div");w.className="dk-card"+(inDeck?" in":"")+(full||cap?" off":"");
+    const b=document.createElement("button");b.type="button";b.className="dk-pick";b.setAttribute("aria-label",`${c.name} を${inDeck?"外す":"入れる"}`);
+    b.appendChild(cardEl(c,{flipped:true}));
+    if(inDeck)b.insertAdjacentHTML("beforeend",`<span class="dk-in">IN</span>`);
+    else if(cap)b.insertAdjacentHTML("beforeend",`<span class="dk-lock">${c.r} 上限</span>`);
+    b.onclick=()=>dkToggle(c);
+    w.appendChild(b);
+    w.insertAdjacentHTML("beforeend",`<div class="dk-st"><span class="bt-type t${p.type}">${BT_TYPES[p.type]}</span><span>HP <b>${p.hp}</b></span><span>ATK <b>${p.atk}</b></span><span>SPD <b>${p.spd}</b></span></div>`);
+    const more=document.createElement("button");more.type="button";more.className="dk-more";more.textContent="詳しく";more.onclick=()=>dkInfo(c);
+    w.appendChild(more);
+    g.appendChild(w);
+  });
+}
+function dkInfo(c){
+  const box=$("btInfoBox");box.innerHTML="";
+  const close=document.createElement("button");close.type="button";close.className="close";close.textContent="×";close.setAttribute("aria-label","閉じる");
+  const top=document.createElement("div");top.className="bt-iv-top";
+  const face=btFace(c);face.classList.add("big");top.appendChild(face);
+  top.insertAdjacentHTML("beforeend",`<div class="bt-iv-head"><small>${c.r}</small><b>${esc(c.name)}</b><span>${esc(c.kana||"")}</span></div>`);
+  box.append(close,top);
+  box.insertAdjacentHTML("beforeend",btAbilityHTML(c));
+  const inDeck=dkCards(dkEditK).includes(c);
+  box.insertAdjacentHTML("beforeend",`<div class="bt-iv-btn"><button type="button" class="btn-main" id="dkInfoGo">${inDeck?"デッキから外す":"デッキに入れる"}</button></div>`);
+  const m=$("btInfo");m.hidden=false;
+  const shut=()=>{m.hidden=true};
+  close.onclick=shut;m.onclick=e=>{if(e.target===m)shut()};
+  $("dkInfoGo").onclick=()=>{shut();dkToggle(c)};
 }
 function dkAuto(){
   // fill the empty slots with the strongest cards that still fit the rarity limits
@@ -3305,8 +3358,8 @@ function dkAuto(){
   S.decks[dkEditK]=list.map(c=>String(c.id));save();sfx("rankup");dkDrawEdit();
 }
 $("dkEdit").onclick=()=>dkOpen(S.deckSel);
-$("dkClose").onclick=dkClose;$("dkDone").onclick=dkClose;
-$("dkModal").addEventListener("click",e=>{if(e.target===$("dkModal"))dkClose()});
+$("dkBack").onclick=dkClose;
+$("dkDone").onclick=()=>{save();tab("battle");btStart("deck")};
 $("dkAuto").onclick=dkAuto;
 $("dkClear").onclick=()=>{S.decks[dkEditK]=[];save();dkDrawEdit()};
 
