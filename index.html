@@ -2071,11 +2071,10 @@ const VCM=(()=>{
       shots.forEach(a=>bullets.push({x:player.x,y:player.y-30,vx:Math.sin(a)*9,vy:-10}));
       sfx("pew");
     }
-    if(power>0)power-=dt;
     bullets.forEach(b=>{b.x+=b.vx*dt;b.y+=b.vy*dt});bullets=bullets.filter(b=>b.y>-20&&b.x>-20&&b.x<W+20);
     // formation sweep
     const alive=meteors.filter(m=>m.alive);
-    if(!alive.length){if(wave>=MAX_WAVE){cleared=true;end();return}words.push({t:`+${COINS_PER_WAVE} COINS`,x:W/2,y:H*.52,life:80,max:80,size:30,col:"#fff"});wave++;sfx("rankup");newWave();hud();return}
+    if(!alive.length){if(wave>=MAX_WAVE){cleared=true;end();return}words.push({t:`+${COINS_PER_WAVE} COINS`,x:W/2,y:H*.52,life:80,max:80,size:30,col:"#fff"});power=0;wave++;sfx("rankup");newWave();hud();return}
     const minX=Math.min(...alive.map(m=>m.cx)),maxX=Math.max(...alive.map(m=>m.cx)),r=alive[0].r;
     const speed=form.speed*(1+(1-alive.length/meteors.length)*1.6);
     form.x+=form.dir*speed*dt;
@@ -2115,7 +2114,7 @@ const VCM=(()=>{
     powerups.forEach(p=>p.y+=p.vy*dt);
     powerups=powerups.filter(p=>{if(hit(p.x,p.y,14,player.x,player.y,24)){
         starsTaken++;sfx("rare");
-        if(starsTaken===1){power=480;words.push({t:"TRIPLE SHOT!",x:player.x,y:player.y-60,life:60,max:60,size:30,col:"#ffd21f"})}
+        if(starsTaken===1){power=Infinity;words.push({t:"TRIPLE SHOT!",x:player.x,y:player.y-60,life:60,max:60,size:30,col:"#ffd21f"})}
         else{player.shield=SHIELD_TIME;words.push({t:"SHIELD!",x:player.x,y:player.y-60,life:60,max:60,size:34,col:"#7df9ff"})}
         return false}return p.y<H+20});
     // effects
@@ -2190,7 +2189,7 @@ const VCM=(()=>{
   function showTitle(){
     state="title";
     screen(`<div class="vcm-logo"><span class="v1">VELVET COMET</span><span class="v2">MISSION</span></div>
-      <p class="vcm-desc">ベルベット・コメットの宇宙船で、迫りくる隕石の群れを撃ち落とせ！<br>指でなぞって左右に移動、弾は自動で発射。全 50 ウェーブ。<br>★1個目は3連射、2個目からは5秒間の無敵シールド！</p>
+      <p class="vcm-desc">ベルベット・コメットの宇宙船で、迫りくる隕石の群れを撃ち落とせ！<br>指でなぞって左右に移動、弾は自動で発射。全 50 ウェーブ。<br>★1個目はそのウェーブ中ずっと3連射、2個目からは5秒間の無敵シールド！</p>
       <div class="vcm-best">HIGH SCORE <b>${(S.hiScore||0).toLocaleString()}</b></div>
       <button type="button" class="btn-main" id="vcmGo">LAUNCH!</button>
       <p class="vcm-note">ウェーブを1つクリアするごとにコイン ${COINS_PER_WAVE} 枚（全クリアで ${MAX_REWARD} 枚）</p>`);
