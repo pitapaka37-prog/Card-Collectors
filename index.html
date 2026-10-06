@@ -1228,6 +1228,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
       </div>
       <div id="msNormal" hidden>
         <div class="ms-head"><b>NORMAL MISSION</b><span id="msNormalCount"></span></div>
+        <button type="button" class="btn-main ms-allbtn" id="msNormalAll" hidden>まとめて受け取る</button>
         <ul class="ms-list" id="msNormalList"></ul>
       </div>
     </div>
@@ -1332,7 +1333,7 @@ const SFX={SR:"WHAM!",SSR:"KA-POW!!",UR:"KRAKA-BOOM!!!"};
 const PACK_COLORS=["#e2231a","#1d9e5a","#ff7a00","#7a3cff","#e0218a","#0f8f8f","#3d3d3d"];
 const STD_TEXT="十連なら最後の1枚は SR 以上が確定。80 回 SSR が出なければ、次の1枚は SSR 以上になります。";
 
-const DEFAULT={gems:3000,pity:0,owned:{},custom:[],packs:[],pityBy:{},banner:"std",loginLast:"",streak:0,idleAt:0,points:0,sound:true,bgm:true,hiScore:0,mission:null,stats:{pulls:0,bestWave:0},normalClaimed:{},battle:{w:0,l:0,d:0,bp:0},decks:[[],[],[]],deckSel:0};
+const DEFAULT={gems:3000,pity:0,owned:{},custom:[],packs:[],pityBy:{},banner:"std",loginLast:"",streak:0,idleAt:0,points:0,sound:true,bgm:true,hiScore:0,mission:null,stats:{pulls:0,bestWave:0,sold:0,games:0,bestRank:1,dailyAll:0,loginDays:0,bestStreak:0},normalClaimed:{},battle:{w:0,l:0,d:0,bp:0},decks:[[],[],[]],deckSel:0};
 const KEY="cch-gacha";
 const newId=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
 let S=load();
@@ -1367,7 +1368,7 @@ function load(){
   const num=(x,def,min,max)=>{x=Number(x);return Number.isFinite(x)?Math.min(max,Math.max(min,Math.floor(x))):def};
   if(!s.mission||typeof s.mission!=="object"||typeof s.mission.day!=="string")s.mission=null;
   else{const p=s.mission.prog||{},c=s.mission.claimed||{};s.mission={day:s.mission.day,prog:Object.fromEntries(Object.entries(p).map(([k,v])=>[k,num(v,0,0,1e6)])),claimed:Object.fromEntries(Object.entries(c).map(([k,v])=>[k,!!v]))}}
-  const st=s.stats&&typeof s.stats==="object"?s.stats:{};s.stats={pulls:num(st.pulls,0,0,1e9),bestWave:num(st.bestWave,0,0,50)};
+  const st=s.stats&&typeof s.stats==="object"?s.stats:{};s.stats={pulls:num(st.pulls,0,0,1e9),bestWave:num(st.bestWave,0,0,50),sold:num(st.sold,0,0,1e9),games:num(st.games,0,0,1e9),bestRank:num(st.bestRank,1,1,1e6),dailyAll:num(st.dailyAll,0,0,1e7),loginDays:num(st.loginDays,0,0,1e7),bestStreak:num(st.bestStreak,0,0,1e7)};
   const nc=s.normalClaimed&&typeof s.normalClaimed==="object"?s.normalClaimed:{};s.normalClaimed=Object.fromEntries(Object.entries(nc).map(([k,v])=>[k,!!v]));
   // players who already earned Star Velvet before missions existed
   if(s.owned.r1>0){s.normalClaimed.vcm50=true;s.stats.bestWave=50}
@@ -2032,7 +2033,7 @@ function showLoginBonus(){
   document.body.style.overflow="hidden";
   $("bonusGet").focus({preventScroll:true});
   $("bonusGet").onclick=()=>{
-    S.loginLast=dayKey(new Date());S.streak=st.streak;addGems(amt);
+    S.loginLast=dayKey(new Date());S.streak=st.streak;S.stats.loginDays=(S.stats.loginDays||0)+1;S.stats.bestStreak=Math.max(S.stats.bestStreak||0,S.streak);addGems(amt);
     box.querySelector(".day.today").classList.add("done");
     const btn=$("bonusGet");btn.textContent="とじる";btn.insertAdjacentHTML("beforebegin",`<div class="bonus-got">＋${amt.toLocaleString()} COINS!</div>`);
     btn.onclick=()=>{box.hidden=true;box.innerHTML="";document.body.style.overflow="";screenMusic()};
@@ -2053,7 +2054,7 @@ function sellCards(list){ // list of [card, count]
   let stars=0,coins=0,n=0;
   list.forEach(([c,k])=>{k=Math.min(k,(S.owned[c.id]||0)-1);if(k>0){S.owned[c.id]-=k;const v=sellValue(c);stars+=k*v.stars;coins+=k*v.coins;n+=k}});
   if(!n)return;
-  S.points+=stars;S.gems+=coins;missionAdd("sell",n);save();render();
+  S.points+=stars;S.gems+=coins;missionAdd("sell",n);S.stats.sold=(S.stats.sold||0)+n;save();render();
   toast(`${n} 枚売って ${[stars?`★${stars.toLocaleString()} スター`:"",coins?`${coins.toLocaleString()} コイン`:""].filter(Boolean).join("・")}！`);
 }
 function dupesIn(pool){return ORDER.flatMap(r=>pool[r]).filter(c=>(S.owned[c.id]||0)>1).map(c=>[c,S.owned[c.id]-1])}
@@ -2751,7 +2752,7 @@ const VCM=(()=>{
       <p class="vcm-note">ウェーブを1つクリアするごとにコイン ${COINS_PER_WAVE} 枚（全クリアで ${MAX_REWARD} 枚）</p>`);
     $g("vcmGo").onclick=e=>{e.stopPropagation();start()};
   }
-  function start(){reset();missionAdd("game",1);save();state="play";paused=false;screen("");$g("vcmPause").hidden=false;sfx("up");if(bgmReady)BGM.play("arcade")}
+  function start(){reset();missionAdd("game",1);S.stats.games=(S.stats.games||0)+1;save();state="play";paused=false;screen("");$g("vcmPause").hidden=false;sfx("up");if(bgmReady)BGM.play("arcade")}
   function end(){
     if(state!=="play")return;
     state="over";$g("vcmPause").hidden=true;
@@ -2890,7 +2891,7 @@ function renderMissions(){
   const b=document.createElement("button");b.type="button";b.className="btn-main ms-allbtn";
   b.textContent=allClaimed?"全達成ボーナス 受取済":`全部達成でボーナス ${rewardText(MISSION_ALL)}`;
   b.disabled=allClaimed||!allGot;
-  b.onclick=()=>{if(m.claimed.all||!MISSIONS.every(x=>m.claimed[x.id]))return;m.claimed.all=true;giveReward(MISSION_ALL);sfx("ur");toast(`デイリーミッション全達成！ ${rewardText(MISSION_ALL)}`)};
+  b.onclick=()=>{if(m.claimed.all||!MISSIONS.every(x=>m.claimed[x.id]))return;m.claimed.all=true;S.stats.dailyAll=(S.stats.dailyAll||0)+1;giveReward(MISSION_ALL);sfx("ur");toast(`デイリーミッション全達成！ ${rewardText(MISSION_ALL)}`)};
   box.appendChild(b);
   const now=new Date(),mid=new Date(now);mid.setHours(24,0,0,0);const h=Math.floor((mid-now)/3600000),mi=Math.floor((mid-now)%3600000/60000);
   $("msReset").textContent=`リセットまで ${h}時間${mi}分`;
@@ -2902,17 +2903,72 @@ function renderMissions(){
 var NORMAL_MISSIONS=null;
 function setupNormalMissions(){
   const own=list=>list.filter(c=>S.owned[c.id]).length;
+  const ofR=(list,r)=>list.filter(c=>c.r===r);
+  const ALL=CARDS.concat(SHOP_CARDS,REWARD_CARDS);
+  const battles=()=>S.battle?S.battle.w+S.battle.l+S.battle.d:0;
+  const wins=()=>S.battle?S.battle.w:0;
+  const byName=n=>()=>CARDS.concat(SHOP_CARDS).filter(c=>c.name===n&&S.owned[c.id]).length;
   NORMAL_MISSIONS=[
+    // collecting
+    {id:"dex5",label:"STAR LIGHT COMICS のカードを5種集める",goal:5,cur:()=>own(CARDS),reward:{coins:100}},
     {id:"dex10",label:"STAR LIGHT COMICS のカードを10種集める",goal:10,cur:()=>own(CARDS),reward:{coins:300}},
+    {id:"dex15",label:"STAR LIGHT COMICS のカードを15種集める",goal:15,cur:()=>own(CARDS),reward:{coins:400}},
     {id:"dex20",label:"STAR LIGHT COMICS のカードを20種集める",goal:20,cur:()=>own(CARDS),reward:{stars:50}},
+    {id:"dex25",label:"STAR LIGHT COMICS のカードを25種集める",goal:25,cur:()=>own(CARDS),reward:{stars:80}},
     {id:"dexAll",label:`ガチャのカードを全 ${CARDS.length} 種集める`,goal:CARDS.length,cur:()=>own(CARDS),reward:{coins:1000}},
+    {id:"nAll",label:`N のカードを全 ${ofR(CARDS,"N").length} 種集める`,goal:ofR(CARDS,"N").length,cur:()=>own(ofR(CARDS,"N")),reward:{coins:300}},
+    {id:"rAll",label:`R のカードを全 ${ofR(CARDS,"R").length} 種集める`,goal:ofR(CARDS,"R").length,cur:()=>own(ofR(CARDS,"R")),reward:{coins:500}},
+    {id:"srAll",label:`SR のカードを全 ${ofR(CARDS,"SR").length} 種集める`,goal:ofR(CARDS,"SR").length,cur:()=>own(ofR(CARDS,"SR")),reward:{stars:60}},
+    {id:"ssr",label:"SSR のカードを手に入れる",goal:1,cur:()=>own(ofR(CARDS,"SSR")),reward:{stars:20}},
+    {id:"ssrAll",label:`ガチャの SSR を全 ${ofR(CARDS,"SSR").length} 種集める`,goal:ofR(CARDS,"SSR").length,cur:()=>own(ofR(CARDS,"SSR")),reward:{stars:100}},
+    {id:"ur",label:"UR のカードを手に入れる",goal:1,cur:()=>own(ofR(CARDS,"UR")),reward:{stars:50}},
+    {id:"urAll",label:`ガチャの UR を全 ${ofR(CARDS,"UR").length} 種集める`,goal:ofR(CARDS,"UR").length,cur:()=>own(ofR(CARDS,"UR")),reward:{stars:150}},
+    {id:"atlas",label:"アトラス・プライムを手に入れる",goal:1,cur:byName("Atlas Prime"),reward:{coins:300}},
+    {id:"nova",label:"ノヴァ・メイを手に入れる",goal:1,cur:byName("Nova Mae"),reward:{coins:300}},
+    {id:"dup5",label:"同じカードを5枚持つ",goal:5,cur:()=>Math.max(0,...ALL.map(c=>S.owned[c.id]||0)),reward:{stars:10}},
+    {id:"fileAll",label:`図鑑（STANDARD）を全 ${ALL.length} 種コンプリート`,goal:ALL.length,cur:()=>own(ALL),reward:{coins:3000,stars:300}},
+    // gacha
+    {id:"pull10",label:"ガチャでカードを累計10枚引く",goal:10,cur:()=>S.stats.pulls,reward:{coins:100}},
+    {id:"pull50",label:"ガチャでカードを累計50枚引く",goal:50,cur:()=>S.stats.pulls,reward:{coins:300}},
     {id:"pull100",label:"ガチャでカードを累計100枚引く",goal:100,cur:()=>S.stats.pulls,reward:{coins:500}},
-    {id:"ssr",label:"SSR のカードを手に入れる",goal:1,cur:()=>own(CARDS.filter(c=>c.r==="SSR")),reward:{stars:20}},
-    {id:"ur",label:"UR のカードを手に入れる",goal:1,cur:()=>own(CARDS.filter(c=>c.r==="UR")),reward:{stars:50}},
+    {id:"pull300",label:"ガチャでカードを累計300枚引く",goal:300,cur:()=>S.stats.pulls,reward:{coins:1000}},
+    {id:"pull500",label:"ガチャでカードを累計500枚引く",goal:500,cur:()=>S.stats.pulls,reward:{stars:100}},
+    {id:"pull1000",label:"ガチャでカードを累計1000枚引く",goal:1000,cur:()=>S.stats.pulls,reward:{coins:3000}},
+    // shop and selling
+    {id:"sell10",label:"ダブったカードを累計10枚売る",goal:10,cur:()=>S.stats.sold,reward:{coins:100}},
+    {id:"sell50",label:"ダブったカードを累計50枚売る",goal:50,cur:()=>S.stats.sold,reward:{coins:300}},
+    {id:"sell200",label:"ダブったカードを累計200枚売る",goal:200,cur:()=>S.stats.sold,reward:{stars:50}},
     {id:"shop1",label:"スターショップでカードを交換する",goal:1,cur:()=>own(SHOP_CARDS),reward:{coins:200}},
+    {id:"shop3",label:"スターショップでカードを3種交換する",goal:3,cur:()=>own(SHOP_CARDS),reward:{coins:500}},
+    {id:"shopAll",label:`スターショップのカードを全 ${SHOP_CARDS.length} 種交換する`,goal:SHOP_CARDS.length,cur:()=>own(SHOP_CARDS),reward:{coins:2000}},
+    // making
     {id:"make1",label:"自分のカードを作る",goal:1,cur:()=>S.custom.length,reward:{coins:100}},
+    {id:"make5",label:"自分のカードを5枚作る",goal:5,cur:()=>S.custom.length,reward:{coins:200}},
+    {id:"make10",label:"自分のカードを10枚作る",goal:10,cur:()=>S.custom.length,reward:{coins:400}},
+    {id:"pack2",label:"自分のガチャを2個作る",goal:2,cur:()=>S.packs.length,reward:{coins:200}},
+    // mini game
+    {id:"game10",label:"VELVET COMET MISSION を10回遊ぶ",goal:10,cur:()=>S.stats.games,reward:{coins:200}},
     {id:"wave10",label:"VELVET COMET MISSION でウェーブ10までクリア",goal:10,cur:()=>S.stats.bestWave,reward:{coins:200}},
+    {id:"wave20",label:"VELVET COMET MISSION でウェーブ20までクリア",goal:20,cur:()=>S.stats.bestWave,reward:{coins:400}},
+    {id:"wave30",label:"VELVET COMET MISSION でウェーブ30までクリア",goal:30,cur:()=>S.stats.bestWave,reward:{stars:50}},
+    {id:"score5k",label:"VELVET COMET MISSION でスコア5,000点",goal:5000,cur:()=>S.hiScore||0,reward:{coins:300}},
     {id:"vcm50",label:"VELVET COMET MISSION を全50ウェーブクリア",goal:50,cur:()=>S.stats.bestWave,reward:{card:"r1"},special:true},
+    // battle
+    {id:"bt1",label:"カードバトルを1回遊ぶ",goal:1,cur:battles,reward:{coins:100}},
+    {id:"btw1",label:"カードバトルで1回勝つ",goal:1,cur:wins,reward:{coins:200}},
+    {id:"btw10",label:"カードバトルで累計10回勝つ",goal:10,cur:wins,reward:{coins:500}},
+    {id:"btw30",label:"カードバトルで累計30回勝つ",goal:30,cur:wins,reward:{stars:50}},
+    {id:"btw100",label:"カードバトルで累計100回勝つ",goal:100,cur:wins,reward:{coins:3000}},
+    {id:"bt50",label:"カードバトルを累計50回遊ぶ",goal:50,cur:battles,reward:{coins:500}},
+    {id:"deck1",label:"デッキを作る（5枚そろえる）",goal:1,cur:()=>S.decks?S.decks.filter(d=>d.length===5).length:0,reward:{coins:100}},
+    {id:"rank3",label:"バトルで RANK 3「ヒーロー」になる",goal:3,cur:()=>S.stats.bestRank||1,reward:{coins:500}},
+    {id:"rank5",label:"バトルで RANK 5「スーパーヒーロー」になる",goal:5,cur:()=>S.stats.bestRank||1,reward:{stars:100}},
+    {id:"rank7",label:"バトルで RANK 7「コズミック」になる",goal:7,cur:()=>S.stats.bestRank||1,reward:{coins:5000}},
+    // daily habits
+    {id:"login7",label:"7日連続でログインする",goal:7,cur:()=>Math.max(S.stats.bestStreak||0,S.streak||0),reward:{coins:500}},
+    {id:"login30",label:"累計30日ログインする",goal:30,cur:()=>S.stats.loginDays||0,reward:{stars:100}},
+    {id:"daily5",label:"デイリーミッションを5日ぶん全達成する",goal:5,cur:()=>S.stats.dailyAll||0,reward:{coins:500}},
+    {id:"daily20",label:"デイリーミッションを20日ぶん全達成する",goal:20,cur:()=>S.stats.dailyAll||0,reward:{stars:80}},
   ];
 }
 setupNormalMissions();
@@ -2922,6 +2978,17 @@ function renderNormalMissions(){
   const list=$("msNormalList");list.innerHTML="";
   const done=NORMAL_MISSIONS.filter(x=>S.normalClaimed[x.id]).length;
   $("msNormalCount").textContent=`達成 ${done} / ${NORMAL_MISSIONS.length}`;
+  const ready=NORMAL_MISSIONS.filter(normalReady);
+  const allBtn=$("msNormalAll");allBtn.hidden=ready.length<2;
+  allBtn.textContent=`まとめて受け取る（${ready.length}件）`;
+  allBtn.onclick=()=>{
+    const now=NORMAL_MISSIONS.filter(normalReady);if(!now.length)return;
+    const sum={coins:0,stars:0};let card=false;
+    now.forEach(x=>{S.normalClaimed[x.id]=true;sum.coins+=x.reward.coins||0;sum.stars+=x.reward.stars||0;
+      if(x.reward.card){const c=REWARD_CARDS.find(r=>r.id===x.reward.card);S.owned[c.id]=(S.owned[c.id]||0)+1;card=true}});
+    giveReward(sum);sfx(card?"ur":"rare");
+    toast(`ミッション ${now.length}件 達成！ ${rewardText(sum)}${card?"・限定カード":""}`);
+  };
   // ready to claim first, then in progress, then finished
   const order=x=>normalReady(x)?0:S.normalClaimed[x.id]?2:1;
   NORMAL_MISSIONS.slice().sort((a,b)=>order(a)-order(b)).forEach(x=>{
@@ -3511,6 +3578,7 @@ function btEnd(r){
   btSeasonCheck();
   const bp0=S.battle.bp||0,rk0=btRankOf(bp0);
   S.battle.bp=Math.max(0,bp0+BT_BP[r]);
+  S.stats.bestRank=Math.max(S.stats.bestRank||1,btRankOf(S.battle.bp));
   const bpGot=S.battle.bp-bp0,rk1=btRankOf(S.battle.bp);
   if(r==="win")S.battle.w++;else if(r==="lose")S.battle.l++;else S.battle.d++;
   save();render();
