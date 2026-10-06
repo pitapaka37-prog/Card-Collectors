@@ -697,6 +697,12 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
 .mission.flash{animation:ms-flash 1.2s ease-out}
 @keyframes ms-flash{0%,40%{box-shadow:0 0 0 6px var(--yellow),4px 4px 0 var(--ink)}100%{box-shadow:4px 4px 0 var(--ink)}}
 
+
+/* mission window */
+.ms-modal .mission{position:relative;width:min(520px,100%);max-height:100%;overflow:auto;padding:18px;border-width:4px;box-shadow:10px 10px 0 var(--ink);background:var(--paper);animation:pop-in .28s cubic-bezier(.3,1.6,.5,1)}
+.ms-modal .ms-head{padding-right:44px}
+.ms-modal .ms-head b{font-size:30px}
+
 @media (max-width:640px){
   .maker{grid-template-columns:1fr}
   .maker .preview{width:180px;justify-self:center}
@@ -752,11 +758,6 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
           <div class="hh-row">
             <button type="button" class="ghost idle" id="hsIdle">放置ボーナスを受け取る <b id="hsIdleAmt">0</b></button>
             <span class="hh-streak" id="hsStreak"></span>
-          </div>
-          <div class="mission" id="mission">
-            <div class="ms-head"><b>DAILY MISSION</b><span id="msReset"></span></div>
-            <ul class="ms-list" id="msList"></ul>
-            <div class="ms-all" id="msAll"></div>
           </div>
         </div>
       </div>
@@ -893,6 +894,14 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
       <div id="mine"></div>
     </div>
   </section>
+  <div class="detail ms-modal" id="msModal" hidden role="dialog" aria-modal="true" aria-label="デイリーミッション">
+    <div class="mission" id="mission">
+      <button type="button" class="close" id="msClose" aria-label="閉じる">×</button>
+      <div class="ms-head"><b>DAILY MISSION</b><span id="msReset"></span></div>
+      <ul class="ms-list" id="msList"></ul>
+      <div class="ms-all" id="msAll"></div>
+    </div>
+  </div>
   <div class="detail lineup" id="lineup" hidden role="dialog" aria-modal="true" aria-label="ガチャのラインナップ"></div>
   <div class="detail bonus" id="bonus" hidden role="dialog" aria-modal="true" aria-label="ログインボーナス"></div>
   <div class="title-screen" id="titleScreen" role="dialog" aria-label="タイトル画面">
@@ -2029,6 +2038,7 @@ function render(){
   $("gems").textContent=S.gems.toLocaleString();$("pts").textContent=S.points.toLocaleString();
   renderCover();updateDexCount();
   if(typeof updateMissionBadge==="function")updateMissionBadge();
+  if(!$("msModal").hidden&&typeof renderMissions==="function")renderMissions();
   if(!$("view-home").hidden)renderHome();
   if(!$("view-shop").hidden){renderShop();shopStale=false}else shopStale=true;if(typeof updateIdle==="function"&&$("idleAmt"))updateIdle();
   if(!$("view-dex").hidden){renderDex();dexStale=false}else dexStale=true;
@@ -2529,14 +2539,17 @@ function missionClaimable(){
   return n;
 }
 function updateMissionBadge(){const n=missionClaimable(),b=$("msBadge");b.hidden=!n;b.textContent=n}
-$("msGo").onclick=()=>{
-  tab("home");
-  setTimeout(()=>{const box=$("mission");box.scrollIntoView({behavior:"smooth",block:"center"});box.classList.remove("flash");void box.offsetWidth;box.classList.add("flash")},60);
-};
+function openMissions(){
+  renderMissions();$("msModal").hidden=false;document.body.style.overflow="hidden";
+}
+function closeMissions(){$("msModal").hidden=true;document.body.style.overflow="";updateMissionBadge()}
+$("msGo").onclick=openMissions;
+$("msClose").onclick=closeMissions;
+$("msModal").addEventListener("click",e=>{if(e.target===$("msModal"))closeMissions()});
 
 /* ---- home screen ---- */
 function renderHome(){
-  renderMissions();updateMissionBadge();
+  updateMissionBadge();
   const all=CARDS.concat(SHOP_CARDS,REWARD_CARDS);
   const have=all.filter(c=>S.owned[c.id]).length;
   $("hsCoins").textContent=S.gems.toLocaleString();
