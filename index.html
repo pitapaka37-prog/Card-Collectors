@@ -477,7 +477,8 @@ const CARDS=[
 ].map((c,i)=>({id:i,r:c[0],m:c[1],name:c[2],kana:c[3],flavor:c[4],h:c[5],shape:c[6]}));
 // standard cards that use a picture instead of the drawn portrait
 const PHOTOS={"Rubber Duck":"rubber-duck.jpg","Atlas Prime":"atlas-prime.jpg","Nova Mae":"nova-mae.jpg","Skyline Sentinel":"skyline-sentinel.jpg","Queen Quasar":"queen-quasar.jpg","Thunder Hound":"thunder-hound.jpg","Atomic Bee":"atomic-bee.jpg","Radio Ranger":"radio-ranger.jpg","Mirror Max":"mirror-max.jpg"};
-CARDS.forEach(c=>{if(PHOTOS[c.name])c.photo=PHOTOS[c.name]});
+const PHOTO_V="2";
+CARDS.forEach(c=>{if(PHOTOS[c.name])c.photo=PHOTOS[c.name]+"?v="+PHOTO_V});
 const PITY=80;
 const SFX={SR:"WHAM!",SSR:"KA-POW!!",UR:"KRAKA-BOOM!!!"};
 const PACK_COLORS=["#e2231a","#1d9e5a","#ff7a00","#7a3cff","#e0218a","#0f8f8f","#3d3d3d"];
