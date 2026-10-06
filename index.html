@@ -143,18 +143,41 @@ nav button span{font-family:var(--body);font-size:13px;font-weight:700}
 .dex .count{position:absolute;bottom:-6px;left:-4px;z-index:4;font-size:11px;font-weight:700;background:var(--ink);color:#fff;padding:0 6px;font-variant-numeric:tabular-nums}
 .dex .slot .card{cursor:pointer}
 .locked{aspect-ratio:5/7;border:3px dashed #8a8170;border-radius:10px;display:grid;place-items:center;color:#8a8170;font-family:var(--display);font-size:34px;background:var(--paper)}
-button.locked{width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:8px 6px;cursor:pointer;font-family:var(--display);transition:background .1s,color .1s}
-button.locked:hover{background:var(--paper2);color:var(--ink);border-color:var(--ink)}
-button.locked .q{font-size:34px;line-height:1}
-button.locked .nm{font-size:clamp(12px,2.6vw,15px);line-height:1.1;letter-spacing:.03em;color:var(--ink);text-align:center;overflow-wrap:anywhere}
-button.locked .kn{font-family:var(--jp);font-size:9px;color:var(--mute);text-align:center;line-height:1.3}
+.locked.named{width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:8px 6px;font-family:var(--display)}
+  .locked.named .q{font-size:34px;line-height:1}
+.locked.named .nm{font-size:clamp(12px,2.6vw,15px);line-height:1.1;letter-spacing:.03em;color:var(--ink);text-align:center;overflow-wrap:anywhere}
+.locked.named .kn{font-family:var(--jp);font-size:9px;color:var(--mute);text-align:center;line-height:1.3}
+.dex .slot .card{transition:transform .12s}
+.dex .slot .card:hover{transform:translateY(-3px) rotate(-1deg)}
+/* card detail viewer */
+.detail{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:calc(16px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px));background:rgba(20,20,20,.72);border:0;
+  background-image:repeating-conic-gradient(from 0deg at 50% 45%,rgba(255,210,31,.12) 0 6deg,transparent 6deg 14deg)}
+.detail-box{position:relative;width:min(760px,100%);max-height:100%;overflow:auto;background:var(--paper);border:4px solid var(--ink);box-shadow:10px 10px 0 var(--ink);padding:22px;display:grid;grid-template-columns:minmax(0,300px) 1fr;gap:24px;align-items:center;animation:pop-in .28s cubic-bezier(.3,1.6,.5,1)}
+@keyframes pop-in{from{transform:scale(.85) rotate(-2deg);opacity:0}}
+.detail-card{perspective:900px}
+.detail-card .card{transition:transform .15s ease-out;will-change:transform}
+.detail .close{position:absolute;top:8px;right:8px;z-index:2;font-family:var(--display);font-size:20px;width:40px;height:40px;background:var(--yellow);border:3px solid var(--ink);box-shadow:3px 3px 0 var(--ink);line-height:1}
+.detail .close:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.detail h4{font-size:clamp(30px,6vw,44px)}
+.detail .jp{font-size:14px}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}
+.stats div{background:#fff;border:2px solid var(--ink);padding:4px 8px;display:flex;flex-direction:column}
+.stats small{font-size:11px;font-weight:700;color:var(--mute)}
+.stats b{font-family:var(--display);font-weight:400;font-size:22px;letter-spacing:.03em;font-variant-numeric:tabular-nums;line-height:1.1}
+.detail .nav{display:flex;justify-content:space-between;gap:10px;margin-top:14px}
+.detail .tilt-hint{font-size:12px;color:var(--mute);text-align:center;margin-top:8px}
+@media (max-width:640px){
+  .detail{align-items:flex-start;overflow:auto}
+  .detail-box{grid-template-columns:1fr;padding:18px;gap:16px}
+  .detail-card{width:min(230px,70vw);justify-self:center}
+}
 .detail .stamp-wrap{position:relative}
 .detail .stamp{position:absolute;z-index:5;left:50%;top:42%;transform:translate(-50%,-50%) rotate(-14deg);font-family:var(--display);font-size:22px;letter-spacing:.06em;color:var(--red);background:rgba(255,255,255,.88);border:3px solid var(--red);padding:0 10px;white-space:nowrap;pointer-events:none}
 .detail .how{font-size:13px;margin-top:8px}
-.detail{background:var(--paper2);border:3px solid var(--ink);padding:16px;display:grid;grid-template-columns:130px 1fr;gap:18px;align-items:center}
+
 .detail h4{font-family:var(--display);font-weight:400;font-size:30px;margin:0;letter-spacing:.03em;line-height:1}
 .detail .jp{font-family:var(--jp);font-size:13px;margin:2px 0 8px}
-.detail p{margin:0;background:#fff;border:2px solid var(--ink);padding:6px 10px;border-radius:12px;position:relative}
+.detail p{margin:0;background:#fff;border:2px solid var(--ink);padding:8px 12px;border-radius:14px;position:relative;font-size:15px}
 
 /* dex binders */
 .binders{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:22px}
@@ -755,7 +778,7 @@ function armed(btn,label,armedLabel,action){
 }
 armed($("resetBtn"),"記録をリセット","もう一度押すとリセットします",()=>{
   const keep={custom:S.custom,packs:S.packs,banner:S.banner};
-  S=Object.assign(JSON.parse(JSON.stringify(DEFAULT)),keep);save();$("detail").hidden=true;render();
+  S=Object.assign(JSON.parse(JSON.stringify(DEFAULT)),keep);save();closeDetail();render();
   $("backupMsg").textContent="所持カードとコインをリセットしました。自作カードとガチャは残っています。";
 });
 
@@ -800,7 +823,7 @@ $("importGo").onclick=()=>{
   }
   S=load();
   if(!save()){S=before;save();$("backupMsg").textContent="保存容量が足りず、読み込めませんでした。";return}
-  pendingImport=null;$("importGo").hidden=true;dexSel=null;$("detail").hidden=true;
+  pendingImport=null;$("importGo").hidden=true;dexSel=null;closeDetail();
   fillPackSelect();render();
   $("backupMsg").textContent="データを読み込みました。";
 };
@@ -861,16 +884,65 @@ function setBanner(id){
 }
 
 /* ---- dex ---- */
-function showDetail(c){
-  const d=$("detail");d.hidden=false;d.innerHTML="";
-  const have=S.owned[c.id]||0;
-  const w=document.createElement("div");w.className="stamp-wrap";w.appendChild(cardEl(c,{flipped:true}));
-  if(!have)w.insertAdjacentHTML("beforeend",`<span class="stamp">未所持</span>`);
-  const where=c.pack?pname(packOf(c.pack)):"STANDARD";
-  const t=document.createElement("div");t.style.minWidth="0";
-  t.innerHTML=`<div class="rates" style="margin:0 0 8px"><span><b>${c.r}</b>${have?`所持 ${have} 枚`:"まだ持っていません"}</span></div><h4>${esc(c.name)}</h4><div class="jp">${esc(c.kana||"")}</div>${c.flavor?`<p>${esc(c.flavor)}</p>`:""}${have?"":`<div class="how">「${esc(where)}」ガチャで手に入ります。</div>`}`;
-  d.append(w,t);
+let detailList=[],detailIdx=0,detailReturn=null;
+function showDetail(c,fromEl){
+  if(fromEl)detailReturn=fromEl;
+  // owned cards of the open dex, in dex order, for prev / next
+  const pool=poolOf(dexSel||"std");
+  detailList=ORDER.flatMap(r=>pool[r]).filter(x=>S.owned[x.id]);
+  detailIdx=Math.max(0,detailList.findIndex(x=>x.id===c.id));
+  drawDetail();
 }
+function drawDetail(){
+  const c=detailList[detailIdx];if(!c)return closeDetail();
+  const d=$("detail");d.hidden=false;d.innerHTML="";
+  d.setAttribute("role","dialog");d.setAttribute("aria-modal","true");d.setAttribute("aria-label",`${c.name} の詳細`);
+  const box=document.createElement("div");box.className="detail-box";
+  const cw=document.createElement("div");cw.className="detail-card";
+  const card=cardEl(c,{flipped:true});cw.appendChild(card);
+  cw.insertAdjacentHTML("beforeend",`<div class="tilt-hint">カードをなぞると傾きます</div>`);
+  const where=c.pack?pname(packOf(c.pack)):"STANDARD";
+  const no=typeof c.id==="number"?"#"+String(c.id+1).padStart(2,"0"):"ORIGINAL";
+  const t=document.createElement("div");t.style.minWidth="0";
+  t.innerHTML=`<div class="rates" style="margin:0 0 8px"><span><b>${c.r}</b>${esc(where)}</span></div>
+    <h4>${esc(c.name)}</h4><div class="jp">${esc(c.kana||"")}</div>
+    <div class="stats"><div><small>レアリティ</small><b>${c.r}</b></div><div><small>所持数</small><b>×${S.owned[c.id]}</b></div><div><small>No.</small><b>${no}</b></div></div>
+    ${c.flavor?`<p>${esc(c.flavor)}</p>`:""}
+    <div class="nav"><button type="button" class="ghost" id="dPrev">← 前のカード</button><span style="align-self:center;font-weight:700;font-variant-numeric:tabular-nums">${detailIdx+1} / ${detailList.length}</span><button type="button" class="ghost" id="dNext">次のカード →</button></div>`;
+  const close=document.createElement("button");close.type="button";close.className="close";close.textContent="×";close.setAttribute("aria-label","閉じる");close.onclick=closeDetail;
+  box.append(close,cw,t);d.appendChild(box);
+  const prev=t.querySelector("#dPrev"),next=t.querySelector("#dNext");
+  prev.disabled=detailList.length<2;next.disabled=detailList.length<2;
+  prev.onclick=()=>{detailIdx=(detailIdx-1+detailList.length)%detailList.length;drawDetail()};
+  next.onclick=()=>{detailIdx=(detailIdx+1)%detailList.length;drawDetail()};
+  // tilt the card with the pointer
+  const reduce=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if(!reduce){
+    const move=e=>{const r=card.getBoundingClientRect();const x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;card.style.transform=`rotateY(${x*24}deg) rotateX(${-y*24}deg) scale(1.03)`};
+    card.addEventListener("pointermove",move);
+    card.addEventListener("pointerleave",()=>{card.style.transform=""});
+  }
+  close.focus({preventScroll:true});
+  document.body.style.overflow="hidden";
+}
+function closeDetail(){
+  const d=$("detail");if(d.hidden)return;
+  d.hidden=true;d.innerHTML="";document.body.style.overflow="";
+  if(detailReturn&&document.contains(detailReturn))detailReturn.focus({preventScroll:true});
+}
+$("detail").addEventListener("click",e=>{if(e.target===$("detail"))closeDetail()});
+document.addEventListener("keydown",e=>{
+  if($("detail").hidden)return;
+  if(e.key==="Escape")closeDetail();
+  if(e.key==="ArrowLeft")$("dPrev")&&$("dPrev").click();
+  if(e.key==="ArrowRight")$("dNext")&&$("dNext").click();
+});
+// swipe left / right on phones
+(()=>{let sx=null;const d=$("detail");
+  d.addEventListener("touchstart",e=>{sx=e.touches[0].clientX},{passive:true});
+  d.addEventListener("touchend",e=>{if(sx===null)return;const dx=e.changedTouches[0].clientX-sx;sx=null;
+    if(Math.abs(dx)>60)(dx<0?$("dNext"):$("dPrev"))?.click()},{passive:true});
+})();
 let dexSel=null; // null = selection screen, otherwise "std" or a pack id
 function dexStats(pool){
   const list=ORDER.flatMap(r=>pool[r]);
@@ -896,7 +968,7 @@ function renderDex(){
     const fan=b.querySelector(".b-fan");
     if(!show.length)fan.innerHTML=`<span class="locked">?</span>`;
     show.forEach(c=>{const w=document.createElement("span");w.className="fan-card";w.appendChild(S.owned[c.id]?cardEl(c,{flipped:true}):Object.assign(document.createElement("span"),{className:"locked",textContent:"?"}));fan.appendChild(w)});
-    b.onclick=()=>{if(!s.total){openMakeFor(id);return}dexSel=id;$("detail").hidden=true;renderDex();window.scrollTo({top:0,behavior:"smooth"})};
+    b.onclick=()=>{if(!s.total){openMakeFor(id);return}dexSel=id;closeDetail();renderDex();window.scrollTo({top:0,behavior:"smooth"})};
     box.appendChild(b);
   });
   if(!dexSel)return;
@@ -920,13 +992,12 @@ function dexGroup(body,pool){
       const s=document.createElement("div");s.className="slot";
       if(S.owned[c.id]){
         const el=cardEl(c,{flipped:true});el.tabIndex=0;el.setAttribute("role","button");el.setAttribute("aria-label",c.name);
-        el.onclick=()=>{showDetail(c);$("detail").scrollIntoView({behavior:"smooth",block:"nearest"})};el.onkeydown=e=>{if(e.key==="Enter")el.onclick()};
+        el.onclick=()=>showDetail(c,el);el.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();el.onclick()}};
         s.appendChild(el);s.insertAdjacentHTML("beforeend",`<span class="count">×${S.owned[c.id]}</span>`);
       }else{
-        const b=document.createElement("button");b.type="button";b.className="locked";
-        b.setAttribute("aria-label",`${c.name}（未所持）の詳細を見る`);
+        const b=document.createElement("div");b.className="locked named";
+        b.setAttribute("aria-label",`${c.name}（未所持）`);
         b.innerHTML=`<span class="q">?</span><span class="nm">${esc(c.name)}</span><span class="kn">${esc(c.kana||"")}</span>`;
-        b.onclick=()=>{showDetail(c);$("detail").scrollIntoView({behavior:"smooth",block:"nearest"})};
         s.appendChild(b);
       }
       g.appendChild(s);
@@ -964,7 +1035,7 @@ function renderMine(){
     PACK_COLORS.forEach(c=>{const b=document.createElement("button");b.type="button";b.style.background=c;b.setAttribute("aria-pressed",p.color===c);b.setAttribute("aria-label","色を変える");b.onclick=()=>{p.color=c;save();render()};cols.appendChild(b)});
     blk.querySelector('[data-a="pull"]').onclick=()=>{setBanner(p.id);tab("gacha");window.scrollTo({top:0,behavior:"smooth"})};
     const dexBtn=blk.querySelector('[data-a="dex"]');dexBtn.disabled=!list.length;
-    dexBtn.onclick=()=>{dexSel=p.id;$("detail").hidden=true;renderDex();tab("dex");window.scrollTo({top:0,behavior:"smooth"})};
+    dexBtn.onclick=()=>{dexSel=p.id;closeDetail();renderDex();tab("dex");window.scrollTo({top:0,behavior:"smooth"})};
     blk.querySelector('[data-a="add"]').onclick=()=>openMakeFor(p.id);
     armed(blk.querySelector('[data-a="del"]'),"ガチャを削除",list.length?`カード ${list.length} 枚ごと削除します。もう一度押して確定`:"もう一度押すと削除",()=>{
       S.custom.filter(c=>c.pack===p.id).forEach(c=>delete S.owned[c.id]);
@@ -1019,7 +1090,7 @@ function tab(which){
   if(which==="dex"&&dexStale){renderDex();dexStale=false}
   if(which==="make"&&mineStale){renderMine();mineStale=false}
 }
-$("tab-gacha").onclick=()=>tab("gacha");$("tab-dex").onclick=()=>{dexSel=null;$("detail").hidden=true;dexStale=true;tab("dex")};$("tab-make").onclick=()=>tab("make");
+$("tab-gacha").onclick=()=>tab("gacha");$("tab-dex").onclick=()=>{dexSel=null;closeDetail();dexStale=true;tab("dex")};$("tab-make").onclick=()=>tab("make");
 
 /* ---- card maker ---- */
 let mkImg=null;
