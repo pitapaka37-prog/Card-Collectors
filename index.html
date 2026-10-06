@@ -1048,7 +1048,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
           <li><span class="bt-type t1">速</span>スピード は <span class="bt-type t0">力</span>パワー に強い</li>
         </ul>
         <p>有利な相手にはダメージ1.5倍、不利だと0.75倍。SPD が高いほうが先に動ける。SR以上のカードには、いつも効いている「とくせい」もあるよ。カードの能力は図鑑でカードをタップすると見られます。</p>
-        <p>ごほうび：勝ち 30コイン ・ 引き分け 10コイン ・ 負け 5コイン</p>
+        <p>勝つと <b>100コイン</b>もらえる！ 負けると <b>10コイン失う</b>ので注意（引き分けは 10コイン）。降参も負けになります。</p>
         <div class="dk-panel">
           <div class="dk-head"><b>MY DECK</b><span class="dk-tabs" id="dkTabs" role="tablist"></span></div>
           <div class="dk-row" id="dkRow"></div>
@@ -2923,7 +2923,7 @@ $("msModal").addEventListener("click",e=>{if(e.target===$("msModal"))closeMissio
 /* ---- card battle: 5 random owned cards vs 5 enemy cards, turn-based with HP and abilities ---- */
 const BT_TYPES=["力","速","技"]; // 力 beats 技, 技 beats 速, 速 beats 力
 const BT_TNAME=["パワー","スピード","テクニック"];
-const BT_REWARD={win:30,draw:10,lose:5};
+const BT_REWARD={win:100,draw:10,lose:-10};
 const BT_HP={N:70,R:85,SR:100,SSR:120,UR:140},BT_ATK={N:20,R:24,SR:29,SSR:34,UR:39},BT_RANK={N:0,R:1,SR:2,SSR:3,UR:4};
 const BT_MAX_TURNS=40;
 const btH=(m,n,o)=>Object.assign({k:"hit",m,n:n||1},o||{});
@@ -3409,14 +3409,14 @@ function btStart(mode){
 }
 function btEnd(r){
   BT.over=true;BT.busy=true;
-  const coins=BT_REWARD[r];
+  const coins=Math.max(BT_REWARD[r],-S.gems); // coins never go below zero
   S.gems+=coins;
   if(r==="win")S.battle.w++;else if(r==="lose")S.battle.l++;else S.battle.d++;
   save();render();
   const left=side=>btAlive(side).length;
   const box=$("btResBox");box.className="mission bt-res "+r;
   box.innerHTML=`<div class="bt-big">${r==="win"?"YOU WIN!":r==="lose"?"YOU LOSE…":"DRAW!"}</div>
-    <p>残り ${left("p")} 体 vs ${left("e")} 体 ・ ${BT.turn} ターン ・ ごほうび ${coins} コイン</p>
+    <p>残り ${left("p")} 体 vs ${left("e")} 体 ・ ${BT.turn} ターン ・ ${coins>=0?`ごほうび ${coins} コイン`:`${-coins} コイン失った…`}</p>
     <p>通算 ${S.battle.w}勝 ${S.battle.l}敗 ${S.battle.d}分</p>
     <div class="bt-btns"><button type="button" class="btn-main" id="btAgain">もう一度！</button><button type="button" class="ghost" id="btHome">ホームへ</button></div>`;
   sfx(r==="win"?"ur":r==="lose"?"shake":"rare");
