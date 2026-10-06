@@ -494,7 +494,7 @@ const CARDS=[
  ["SR","RR","Radio Ranger","レディオ・レンジャー","あらゆる電波を感知し操るハイテクヒーロー。通信を乗っ取る犯罪者や都市の脅威を追跡する。",0,"shield"],
  ["SR","MX","Mirror Max","ミラー・マックス","鏡の世界を自在に行き来し、分身や反射を操って敵を翻弄する神出鬼没のヒーロー。",175,"shield"],
  ["SR","VC","Velvet Comet","ベルベット・コメット","彗星のエネルギーを身にまとい、宇宙を超高速で駆け抜けながら銀河の脅威と戦う生還ヒーロー。",350,"shield"],
- ["SR","DF","Doctor Fuse","ドクター・フューズ","停電の街を救う発明家。導火線のような口ひげ。",30,"shield"],
+ ["SR","DF","Doctor Fuse","ドクター・フューズ","長年の研究で未知のエネルギーを操る力を手に入れたベテランヒーロー。老練な頭脳と圧倒的な科学力で世界の危機に立ち向かう。",30,"shield"],
  ["SSR","SS","Skyline Sentinel","スカイライン・センチネル","超高層都市を空から監視し、最新鋭のアーマーで街を脅威から守る孤高の守護者。",220,"burst"],
  ["SSR","QQ","Queen Quasar","クイーン・クエーサー","ノヴァ・エネルギーを自在に操り、銀河の平和を守る気高き宇宙の女王戦士。",270,"burst"],
  ["SSR","TH","Thunder Hound","サンダー・ハウンド","雷を浴びて超人的な力を得た猟犬戦士。稲妻の速さと鋭い嗅覚を武器に街の悪を追い詰める。",58,"burst"],
@@ -502,7 +502,7 @@ const CARDS=[
  ["UR","NM","Nova Mae","ノヴァ・メイ","宇宙の光「ノヴァ・エネルギー」を操り、闇に希望を灯す若きヒーロー。",320,"burst"],
 ].map((c,i)=>({id:i,r:c[0],m:c[1],name:c[2],kana:c[3],flavor:c[4],h:c[5],shape:c[6]}));
 // standard cards that use a picture instead of the drawn portrait
-const PHOTOS={"Rubber Duck":"rubber-duck.jpg","Atlas Prime":"atlas-prime.jpg","Nova Mae":"nova-mae.jpg","Skyline Sentinel":"skyline-sentinel.jpg","Queen Quasar":"queen-quasar.jpg","Thunder Hound":"thunder-hound.jpg","Atomic Bee":"atomic-bee.jpg","Radio Ranger":"radio-ranger.jpg","Mirror Max":"mirror-max.jpg","Velvet Comet":"velvet-comet.jpg"};
+const PHOTOS={"Rubber Duck":"rubber-duck.jpg","Atlas Prime":"atlas-prime.jpg","Nova Mae":"nova-mae.jpg","Skyline Sentinel":"skyline-sentinel.jpg","Queen Quasar":"queen-quasar.jpg","Thunder Hound":"thunder-hound.jpg","Atomic Bee":"atomic-bee.jpg","Radio Ranger":"radio-ranger.jpg","Mirror Max":"mirror-max.jpg","Velvet Comet":"velvet-comet.jpg","Doctor Fuse":"doctor-fuse.jpg"};
 const PHOTO_V="2";
 CARDS.forEach(c=>{if(PHOTOS[c.name])c.photo=PHOTOS[c.name]+"?v="+PHOTO_V});
 /* ---- star shop: cards that never come from a gacha ---- */
