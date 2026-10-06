@@ -30,10 +30,10 @@ self.addEventListener("fetch", e => {
   // Google Fonts and our own files: serve from cache, fill the cache on first use.
   if (url.origin === location.origin || url.hostname.endsWith("fonts.googleapis.com") || url.hostname.endsWith("fonts.gstatic.com")) {
     e.respondWith(
-      caches.match(req).then(hit => hit || fetch(req).then(res => {
+      caches.match(req, { ignoreSearch: url.origin === location.origin && /\.(jpg|png)$/.test(url.pathname) }).then(hit => (hit && !url.search) ? hit : fetch(req).then(res => {
         if (res.ok || res.type === "opaque") { const copy = res.clone(); caches.open(VERSION).then(c => c.put(req, copy)); }
         return res;
-      }))
+      }).catch(() => hit))
     );
   }
 });
