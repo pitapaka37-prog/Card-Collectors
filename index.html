@@ -2043,7 +2043,7 @@ function showLoginBonus(){
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"){updateIdle();if($("bonus").hidden&&!$("titleScreen"))showLoginBonus()}});
 
 /* ---- coins: selling duplicates ---- */
-const SELL_STARS={N:2,R:5,SR:15,SSR:40,UR:100};
+const SELL_STARS={N:1,R:2,SR:6,SSR:15,UR:40};
 const isCustom=c=>!!c.img;
 const PULL_COST={std:{1:100,10:1000},own:{1:1,10:10}};
 const pullCost=(bid,n)=>PULL_COST[bid==="std"?"std":"own"][n];
