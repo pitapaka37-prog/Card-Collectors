@@ -698,7 +698,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
         <button type="button" class="game-tile" id="playVcm">
           <span class="gt-art" aria-hidden="true"><span class="gt-meteor m1"></span><span class="gt-meteor m2"></span><span class="gt-meteor m3"></span><span class="gt-ship"></span></span>
           <span class="gt-title"><b>VELVET COMET</b><i>MISSION</i></span>
-          <span class="gt-desc">宇宙船で隕石の群れを撃ち落とすシューティング。スコアでコインがもらえる！</span>
+          <span class="gt-desc">宇宙船で隕石の群れを撃ち落とすシューティング。ウェーブをクリアするごとにコイン10枚！</span>
           <span class="gt-best">HIGH SCORE <b id="vcmBest">0</b></span>
           <span class="gt-play">PLAY ▶</span>
         </button>
@@ -1994,7 +1994,7 @@ render();
 updateIdle();
 /* ---- mini game: VELVET COMET MISSION (invader-style meteor shooter) ---- */
 const VCM=(()=>{
-  const MAX_REWARD=500,MAX_WAVE=50,SHIELD_TIME=300; // 300 ticks = 5 s
+  const COINS_PER_WAVE=10,MAX_WAVE=50,MAX_REWARD=COINS_PER_WAVE*MAX_WAVE,SHIELD_TIME=300; // 300 ticks = 5 s
   let cv,ctx,W=0,H=0,dpr=1,bg=null,raf=0,last=0,state="title",paused=false;
   let player,bullets,rocks,meteors,stray,powerups,particles,words,form,score,lives,wave,fireT,strayT,rockT,power,shake,flashT,starsTaken,cleared;
   const keys={};let targetX=null;
@@ -2075,7 +2075,7 @@ const VCM=(()=>{
     bullets.forEach(b=>{b.x+=b.vx*dt;b.y+=b.vy*dt});bullets=bullets.filter(b=>b.y>-20&&b.x>-20&&b.x<W+20);
     // formation sweep
     const alive=meteors.filter(m=>m.alive);
-    if(!alive.length){if(wave>=MAX_WAVE){cleared=true;end();return}wave++;sfx("rankup");newWave();hud();return}
+    if(!alive.length){if(wave>=MAX_WAVE){cleared=true;end();return}words.push({t:`+${COINS_PER_WAVE} COINS`,x:W/2,y:H*.52,life:80,max:80,size:30,col:"#fff"});wave++;sfx("rankup");newWave();hud();return}
     const minX=Math.min(...alive.map(m=>m.cx)),maxX=Math.max(...alive.map(m=>m.cx)),r=alive[0].r;
     const speed=form.speed*(1+(1-alive.length/meteors.length)*1.6);
     form.x+=form.dir*speed*dt;
@@ -2193,7 +2193,7 @@ const VCM=(()=>{
       <p class="vcm-desc">ベルベット・コメットの宇宙船で、迫りくる隕石の群れを撃ち落とせ！<br>指でなぞって左右に移動、弾は自動で発射。全 50 ウェーブ。<br>★1個目は3連射、2個目からは5秒間の無敵シールド！</p>
       <div class="vcm-best">HIGH SCORE <b>${(S.hiScore||0).toLocaleString()}</b></div>
       <button type="button" class="btn-main" id="vcmGo">LAUNCH!</button>
-      <p class="vcm-note">スコアに応じてコインがもらえます（1回最大 ${MAX_REWARD} 枚）</p>`);
+      <p class="vcm-note">ウェーブを1つクリアするごとにコイン ${COINS_PER_WAVE} 枚（全クリアで ${MAX_REWARD} 枚）</p>`);
     $g("vcmGo").onclick=e=>{e.stopPropagation();start()};
   }
   function start(){reset();state="play";paused=false;screen("");$g("vcmPause").hidden=false;sfx("up");if(bgmReady)BGM.play("arcade")}
@@ -2201,14 +2201,15 @@ const VCM=(()=>{
     if(state!=="play")return;
     state="over";$g("vcmPause").hidden=true;
     if(cleared)score+=5000; // clear bonus
-    const coins=Math.min(MAX_REWARD,Math.floor(score/8));
+    const waves=cleared?MAX_WAVE:wave-1; // waves fully cleared this run
+    const coins=Math.min(MAX_REWARD,waves*COINS_PER_WAVE);
     const best=score>(S.hiScore||0);if(best)S.hiScore=score;
     S.gems+=coins;save();render();
     sfx(best||cleared?"ur":"boom");
     setTimeout(()=>{if(state!=="over")return;
       screen(`<div class="vcm-over">${cleared?"MISSION<br>COMPLETE!":"GAME OVER"}</div>
         ${best?'<div class="vcm-new">NEW RECORD!</div>':""}
-        <div class="vcm-result"><div><small>SCORE</small><b>${score.toLocaleString()}</b></div><div><small>WAVE</small><b>${wave}</b></div><div><small>COINS</small><b>＋${coins}</b></div></div>
+        <div class="vcm-result"><div><small>SCORE</small><b>${score.toLocaleString()}</b></div><div><small>CLEAR</small><b>${waves}</b></div><div><small>COINS</small><b>＋${coins}</b></div></div>
         <div class="vcm-btns"><button type="button" class="btn-main" id="vcmRetry">RETRY</button><button type="button" class="ghost" id="vcmExit2">もどる</button></div>`);
       $g("vcmRetry").onclick=e=>{e.stopPropagation();start()};
       $g("vcmExit2").onclick=e=>{e.stopPropagation();close()};
