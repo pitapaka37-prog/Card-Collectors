@@ -983,7 +983,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
     <div class="panel">
       <div class="panel-head"><h3>CARD BATTLE<small>カードバトル</small></h3><span class="chip" id="btRecord"></span></div>
       <div class="bt-intro" id="btIntro">
-        <p>持っているカードからランダムに選ばれた<b>5枚</b>のチームで、敵チーム5枚と対戦！ 相手を全員たおしたら勝ち。</p>
+        <p>持っている STAR LIGHT のカードからランダムに選ばれた<b>5枚</b>のチームで、敵チーム5枚と対戦！ 相手を全員たおしたら勝ち。同じカードが2枚出ることはありません（自分で作ったカードはバトルには出せません）。</p>
         <ul class="bt-rules">
           <li><b>こうげき</b>：ふつうの攻撃</li>
           <li><b>わざ</b>：毎ターンたまるチャージが満タンで使える、カードごとの必殺技</li>
@@ -2919,7 +2919,8 @@ function btAbilityHTML(c){
 
 let BT=null,BT_FAST=false;
 const btWait=ms=>BT_FAST?Promise.resolve():new Promise(r=>setTimeout(r,ms));
-function btPool(){return CARDS.concat(SHOP_CARDS,REWARD_CARDS,S.custom).filter(c=>S.owned[c.id])}
+// battles use STAR LIGHT cards only (gacha, shop and mission cards) - original cards are left out
+function btPool(){return CARDS.concat(SHOP_CARDS,REWARD_CARDS).filter(c=>S.owned[c.id])}
 function btMake(c,side){
   const p=btProfile(c);
   return{c,side,type:p.type,maxHp:p.hp,hp:p.hp,atk:p.atk,spd:p.spd,skill:p.skill,passive:p.passive,
@@ -3189,16 +3190,17 @@ function renderBattle(){
   const n=btPool().length;
   $("btStart").disabled=n<5;
   $("btNeed").hidden=n>=5;
-  $("btNeed").textContent=`バトルには5種類以上のカードが必要です（いま ${n} 種類）。ガチャでカードを集めよう！`;
+  $("btNeed").textContent=`バトルには STAR LIGHT のカードが5種類以上必要です（いま ${n} 種類）。ガチャでカードを集めよう！`;
 }
 function btStart(){
   const pool=btPool();if(pool.length<5)return;
   const mine=shuffled(pool).slice(0,5);
   const foes=CARDS.concat(SHOP_CARDS,REWARD_CARDS);
-  const used=new Set();
+  // no card appears twice in the same battle, on either side
+  const used=new Set(mine.map(c=>c.id));
   const enemy=mine.map(m=>{
-    let opts=foes.filter(c=>c.r===m.r&&!used.has(c.id));
-    if(!opts.length)opts=foes.filter(c=>!used.has(c.id));
+    let opts=[];
+    for(let d=0;d<ORDER.length&&!opts.length;d++)opts=foes.filter(c=>Math.abs(BT_RANK[c.r]-BT_RANK[m.r])===d&&!used.has(c.id));
     const c=opts[Math.floor(Math.random()*opts.length)];used.add(c.id);return c;
   });
   BT={p:{list:mine.map(c=>btMake(c,"p")),cur:null},e:{list:shuffled(enemy).map(c=>btMake(c,"e")),cur:0},turn:0,busy:false,mustPick:true,switching:false,over:false,log:[]};
