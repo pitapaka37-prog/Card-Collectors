@@ -369,10 +369,10 @@ nav button span{font-family:var(--body);font-size:13px;font-weight:700}
   <section id="view-gacha" style="display:flex;flex-direction:column;gap:24px">
     <div class="bswitch" id="bswitch" role="tablist" aria-label="ガチャの種類"></div>
     <div class="cover" id="cover">
-      <span class="issue" id="cvIssue">ISSUE #1 ・ 25¢</span>
+      <span class="issue" id="cvIssue">STARLIGHT COMICS #1 ・ 25¢</span>
       <div class="cover-text">
-        <span class="eyebrow" id="cvEye">ピックアップ：ATLAS PRIME</span>
-        <h2 id="cvTitle">街の危機に集まれ、CARD COLLECTORS のヒーローたち！</h2>
+        <span class="eyebrow" id="cvEye">スターライト・コミックス ・ ピックアップ：ATLAS PRIME</span>
+        <h2 id="cvTitle">スターライト・コミックスのヒーローたち、ここに集結！</h2>
         <p id="cvText">十連なら最後の1枚は SR 以上が確定。80 回 SSR が出なければ、次の1枚は SSR 以上になります。</p>
         <div class="rates" id="rates"></div>
         <div class="pulls">
@@ -991,7 +991,7 @@ function renderSwitch(){
     if(color)b.style.borderBottom=`6px solid ${color}`;
     b.onclick=()=>setBanner(id);box.appendChild(b);
   };
-  mk("std","STANDARD","通常ガチャ");
+  mk("std","STARLIGHT COMICS","スターライト・コミックス");
   S.packs.forEach(p=>mk(p.id,pname(p),`自作 ${cardsIn(p.id).length} 枚`,p.color));
   const add=document.createElement("button");add.className="add";add.innerHTML=`<span>+ NEW</span><small>ガチャを作る</small>`;
   add.onclick=()=>{tab("make");$("newPackName").focus();$("packsPanel").scrollIntoView({behavior:"smooth"})};
@@ -1007,9 +1007,9 @@ function renderCover(){
   const feat=$("feature");feat.innerHTML="";
   if(std){
     cover.style.removeProperty("--pc");
-    $("cvIssue").textContent="ISSUE #1 ・ 25¢";
-    $("cvEye").textContent="ピックアップ：ATLAS PRIME";
-    $("cvTitle").textContent="街の危機に集まれ、CARD COLLECTORS のヒーローたち！";
+    $("cvIssue").textContent="STARLIGHT COMICS #1 ・ 25¢";
+    $("cvEye").textContent="スターライト・コミックス ・ ピックアップ：ATLAS PRIME";
+    $("cvTitle").textContent="スターライト・コミックスのヒーローたち、ここに集結！";
     $("cvText").textContent=STD_TEXT;
     feat.appendChild(cardEl(CARDS.find(c=>c.name==="Atlas Prime"),{flipped:true}));
   }else{
@@ -1055,7 +1055,7 @@ function drawDetail(){
   const cw=document.createElement("div");cw.className="detail-card";
   const card=cardEl(c,{flipped:true});cw.appendChild(card);
   cw.insertAdjacentHTML("beforeend",`<div class="tilt-hint">カードをなぞると傾きます</div>`);
-  const where=c.shop?"STAR SHOP":c.pack?pname(packOf(c.pack)):"STANDARD";
+  const where=c.shop?"STAR SHOP":c.pack?pname(packOf(c.pack)):"STARLIGHT COMICS";
   const no=c.shop?"LIMITED":typeof c.id==="number"?"#"+String(c.id+1).padStart(2,"0"):"ORIGINAL";
   const t=document.createElement("div");t.style.minWidth="0";
   t.innerHTML=`<div class="rates" style="margin:0 0 8px"><span><b>${c.r}</b>${esc(where)}</span></div>
@@ -1107,7 +1107,7 @@ function dexStats(pool){
   return{list,total:list.length,have:list.filter(c=>S.owned[c.id]).length};
 }
 function renderDex(){
-  const books=[{id:"std",title:"STANDARD",sub:"通常ガチャとショップ限定のヒーロー",color:null}].concat(S.packs.map(p=>({id:p.id,title:pname(p),sub:"あなたが作ったガチャ",color:p.color})));
+  const books=[{id:"std",title:"STARLIGHT COMICS",sub:"スターライト・コミックスのヒーロー（ショップ限定も収録）",color:null}].concat(S.packs.map(p=>({id:p.id,title:pname(p),sub:"あなたが作ったガチャ",color:p.color})));
   books.forEach(b=>b.s=dexStats(dexPoolOf(b.id)));
   const allHave=books.reduce((a,b)=>a+b.s.have,0),allTotal=books.reduce((a,b)=>a+b.s.total,0);
   $("dexCount").textContent=`${allHave}/${allTotal}`;
@@ -1132,7 +1132,7 @@ function renderDex(){
   });
   if(!dexSel)return;
   const book=books.find(b=>b.id===dexSel),s=book.s;
-  $("dexTitle").innerHTML=`${esc(book.title)}<small>${dexSel==="std"?"通常ガチャ・ショップ限定の図鑑":"自作ガチャの図鑑"}</small>`;
+  $("dexTitle").innerHTML=`${esc(book.title)}<small>${dexSel==="std"?"スターライト・コミックスのヒーロー図鑑":"自作ガチャの図鑑"}</small>`;
   $("dexView").classList.toggle("my",dexSel!=="std");
   $("dexPct").textContent=`${s.have} / ${s.total} 人 ・ ${Math.round(s.have/s.total*100)}%`;
   $("dexBar").style.width=s.have/s.total*100+"%";
