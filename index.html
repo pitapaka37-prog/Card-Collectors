@@ -521,7 +521,7 @@ body{overflow-x:clip}
 .panel{border-width:5px;box-shadow:9px 9px 0 var(--ink);margin-top:10px}
 .panel:has(>.panel-head:first-child){padding-top:30px}
 .panel::before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(rgba(29,95,214,.22) 1.6px,transparent 1.9px) 0 0/9px 9px;-webkit-mask:linear-gradient(135deg,transparent 55%,#000);mask:linear-gradient(135deg,transparent 55%,#000)}
-.panel>*{position:relative}
+.panel>*:not(.detail){position:relative}
 .panel>.panel-head:first-child h3{position:relative;top:-46px;margin-bottom:-46px;background:var(--yellow);border:3px solid var(--ink);box-shadow:4px 4px 0 var(--ink);padding:6px 14px 4px;transform:rotate(-1.5deg);font-size:28px}
 .panel>.panel-head:first-child h3 small{display:block;margin:2px 0 0;font-size:12px}
 section>.panel:nth-of-type(even)>.panel-head:first-child h3{transform:rotate(1.2deg)}
