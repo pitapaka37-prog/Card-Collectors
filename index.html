@@ -671,6 +671,25 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
 }
 @media (max-width:760px){.actionbar{gap:6px;padding-left:8px;padding-right:8px}.actionbar button{font-size:12px}.actionbar button svg{width:22px;height:22px}}
 
+
+/* daily missions */
+.mission{background:#fff;color:var(--ink);border:3px solid var(--ink);box-shadow:4px 4px 0 var(--ink);padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.ms-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.ms-head b{font-family:var(--display);font-weight:400;font-size:24px;letter-spacing:.04em;background:var(--red);color:var(--yellow);-webkit-text-stroke:.8px var(--ink);padding:0 8px;border:2px solid var(--ink);transform:rotate(-1.5deg)}
+.ms-head span{font-size:11px;font-weight:700;color:var(--mute);font-variant-numeric:tabular-nums}
+.ms-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.ms-list li{display:grid;grid-template-columns:1fr 70px auto;grid-template-areas:"name name btn" "bar num btn";gap:2px 8px;align-items:center;padding:4px 0;border-bottom:1px dashed #d8cfb8}
+.ms-name{grid-area:name;font-size:13px;font-weight:700;min-width:0}
+.ms-bar{grid-area:bar;height:8px;border:2px solid var(--ink);background:var(--paper);overflow:hidden}
+.ms-bar span{display:block;height:100%;background:var(--yellow)}
+.ms-num{grid-area:num;font-size:11px;font-weight:700;font-variant-numeric:tabular-nums}
+.ms-btn{grid-area:btn;font-size:12px;padding:3px 8px;white-space:nowrap}
+.ms-list li.done .ms-btn{background:var(--yellow);animation:wobble .5s ease-in-out infinite}
+.ms-list li.got{opacity:.55}
+.ms-list li.got .ms-bar span{background:#1d9e5a}
+.ms-allbtn{font-size:17px;padding:4px 12px;width:100%}
+.ms-allbtn:disabled{background:#cfc6b2;color:#6a6355;cursor:default}
+
 @media (max-width:640px){
   .maker{grid-template-columns:1fr}
   .maker .preview{width:180px;justify-self:center}
@@ -725,6 +744,11 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
           <div class="hh-row">
             <button type="button" class="ghost idle" id="hsIdle">放置ボーナスを受け取る <b id="hsIdleAmt">0</b></button>
             <span class="hh-streak" id="hsStreak"></span>
+          </div>
+          <div class="mission" id="mission">
+            <div class="ms-head"><b>DAILY MISSION</b><span id="msReset"></span></div>
+            <ul class="ms-list" id="msList"></ul>
+            <div class="ms-all" id="msAll"></div>
           </div>
         </div>
       </div>
@@ -961,7 +985,7 @@ const SFX={SR:"WHAM!",SSR:"KA-POW!!",UR:"KRAKA-BOOM!!!"};
 const PACK_COLORS=["#e2231a","#1d9e5a","#ff7a00","#7a3cff","#e0218a","#0f8f8f","#3d3d3d"];
 const STD_TEXT="十連なら最後の1枚は SR 以上が確定。80 回 SSR が出なければ、次の1枚は SSR 以上になります。";
 
-const DEFAULT={gems:3000,pity:0,owned:{},custom:[],packs:[],pityBy:{},banner:"std",loginLast:"",streak:0,idleAt:0,points:0,sound:true,bgm:true,hiScore:0};
+const DEFAULT={gems:3000,pity:0,owned:{},custom:[],packs:[],pityBy:{},banner:"std",loginLast:"",streak:0,idleAt:0,points:0,sound:true,bgm:true,hiScore:0,mission:null};
 const KEY="cch-gacha";
 const newId=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
 let S=load();
@@ -992,6 +1016,8 @@ function load(){
   delete s.packName;delete s.pityMy;delete s.refillAt;
   // numbers and dates must have the right type (data may come from an imported file)
   const num=(x,def,min,max)=>{x=Number(x);return Number.isFinite(x)?Math.min(max,Math.max(min,Math.floor(x))):def};
+  if(!s.mission||typeof s.mission!=="object"||typeof s.mission.day!=="string")s.mission=null;
+  else{const p=s.mission.prog||{},c=s.mission.claimed||{};s.mission={day:s.mission.day,prog:Object.fromEntries(Object.entries(p).map(([k,v])=>[k,num(v,0,0,1e6)])),claimed:Object.fromEntries(Object.entries(c).map(([k,v])=>[k,!!v]))}}
   s.hiScore=Math.max(0,Math.floor(Number(s.hiScore)||0));s.sound=s.sound!==false;s.bgm=s.bgm!==false;s.gems=num(s.gems,3000,0,1e9);s.points=num(s.points,0,0,1e9);s.pity=num(s.pity,0,0,PITY);s.streak=num(s.streak,0,0,1e6);
   s.idleAt=num(s.idleAt,0,0,Date.now());
   if(typeof s.loginLast!=="string"||!/^\d{4}-\d{2}-\d{2}$/.test(s.loginLast))s.loginLast="";
@@ -1258,6 +1284,7 @@ async function pull(n){
   // record the results before the show, so closing the app mid-show loses nothing
   const fresh=got.map(c=>!S.owned[c.id]);
   got.forEach(c=>{S.owned[c.id]=(S.owned[c.id]||0)+1});
+  missionAdd("pull",got.length);
   save();
   pulling=true;
   let shown=false;
@@ -1654,7 +1681,7 @@ function sellCards(list){ // list of [card, count]
   let stars=0,coins=0,n=0;
   list.forEach(([c,k])=>{k=Math.min(k,(S.owned[c.id]||0)-1);if(k>0){S.owned[c.id]-=k;const v=sellValue(c);stars+=k*v.stars;coins+=k*v.coins;n+=k}});
   if(!n)return;
-  S.points+=stars;S.gems+=coins;save();render();
+  S.points+=stars;S.gems+=coins;missionAdd("sell",n);save();render();
   toast(`${n} 枚売って ${[stars?`★${stars.toLocaleString()} スター`:"",coins?`${coins.toLocaleString()} コイン`:""].filter(Boolean).join("・")}！`);
 }
 function dupesIn(pool){return ORDER.flatMap(r=>pool[r]).filter(c=>(S.owned[c.id]||0)>1).map(c=>[c,S.owned[c.id]-1])}
@@ -2006,6 +2033,7 @@ function tab(which){
     if(on&&t==="make")$("view-make").style.display="flex";
     if(on&&t==="gacha")$("view-gacha").style.display="flex";
   });
+  if(which==="dex"){missionAdd("dex",1);save()}
   if(which==="dex"&&dexStale){renderDex();dexStale=false}
   if(which==="make"&&mineStale){renderMine();mineStale=false}
   if(which==="shop"&&shopStale){renderShop();shopStale=false}
@@ -2344,7 +2372,7 @@ const VCM=(()=>{
       <p class="vcm-note">ウェーブを1つクリアするごとにコイン ${COINS_PER_WAVE} 枚（全クリアで ${MAX_REWARD} 枚）</p>`);
     $g("vcmGo").onclick=e=>{e.stopPropagation();start()};
   }
-  function start(){reset();state="play";paused=false;screen("");$g("vcmPause").hidden=false;sfx("up");if(bgmReady)BGM.play("arcade")}
+  function start(){reset();missionAdd("game",1);save();state="play";paused=false;screen("");$g("vcmPause").hidden=false;sfx("up");if(bgmReady)BGM.play("arcade")}
   function end(){
     if(state!=="play")return;
     state="over";$g("vcmPause").hidden=true;
@@ -2441,8 +2469,50 @@ function showLineup(){
 $("lineupBtn").onclick=showLineup;
 
 
+
+/* ---- daily missions (reset every day) ---- */
+var MISSIONS=[
+  {id:"pull",label:"ガチャでカードを10枚引く",goal:10,reward:{coins:100}},
+  {id:"game",label:"ミニゲームを1回遊ぶ",goal:1,reward:{coins:50}},
+  {id:"dex",label:"図鑑を見る",goal:1,reward:{coins:30}},
+  {id:"sell",label:"ダブったカードを1枚売る",goal:1,reward:{stars:5}},
+];
+var MISSION_ALL={coins:200};
+function missionState(){
+  const today=dayKey(new Date());
+  if(!S.mission||S.mission.day!==today)S.mission={day:today,prog:{},claimed:{}};
+  return S.mission;
+}
+function missionAdd(id,n){const m=missionState();m.prog[id]=Math.min(999,(m.prog[id]||0)+n)}
+function rewardText(r){return [r.coins?`${r.coins} コイン`:"",r.stars?`★${r.stars}`:""].filter(Boolean).join("・")}
+function giveReward(r){S.gems+=r.coins||0;S.points+=r.stars||0;save();render()}
+function renderMissions(){
+  if(!MISSIONS)return; // first render runs before this block is set up
+  const m=missionState(),list=$("msList");list.innerHTML="";
+  MISSIONS.forEach(x=>{
+    const p=Math.min(x.goal,m.prog[x.id]||0),done=p>=x.goal,got=!!m.claimed[x.id];
+    const li=document.createElement("li");li.className=got?"got":done?"done":"";
+    li.innerHTML=`<span class="ms-name">${x.label}</span><span class="ms-bar"><span style="width:${p/x.goal*100}%"></span></span><span class="ms-num">${p}/${x.goal}</span>`;
+    const b=document.createElement("button");b.type="button";b.className="ghost ms-btn";
+    b.textContent=got?"受取済":done?`受け取る（${rewardText(x.reward)}）`:rewardText(x.reward);
+    b.disabled=got||!done;
+    b.onclick=()=>{if(m.claimed[x.id]||(m.prog[x.id]||0)<x.goal)return;m.claimed[x.id]=true;giveReward(x.reward);sfx("rare");toast(`ミッション達成！ ${rewardText(x.reward)}`)};
+    li.appendChild(b);list.appendChild(li);
+  });
+  const allGot=MISSIONS.every(x=>m.claimed[x.id]),allClaimed=!!m.claimed.all;
+  const box=$("msAll");box.innerHTML="";
+  const b=document.createElement("button");b.type="button";b.className="btn-main ms-allbtn";
+  b.textContent=allClaimed?"全達成ボーナス 受取済":`全部達成でボーナス ${rewardText(MISSION_ALL)}`;
+  b.disabled=allClaimed||!allGot;
+  b.onclick=()=>{if(m.claimed.all||!MISSIONS.every(x=>m.claimed[x.id]))return;m.claimed.all=true;giveReward(MISSION_ALL);sfx("ur");toast(`デイリーミッション全達成！ ${rewardText(MISSION_ALL)}`)};
+  box.appendChild(b);
+  const now=new Date(),mid=new Date(now);mid.setHours(24,0,0,0);const h=Math.floor((mid-now)/3600000),mi=Math.floor((mid-now)%3600000/60000);
+  $("msReset").textContent=`リセットまで ${h}時間${mi}分`;
+}
+
 /* ---- home screen ---- */
 function renderHome(){
+  renderMissions();
   const all=CARDS.concat(SHOP_CARDS,REWARD_CARDS);
   const have=all.filter(c=>S.owned[c.id]).length;
   $("hsCoins").textContent=S.gems.toLocaleString();
@@ -2463,6 +2533,7 @@ function renderHome(){
 }
 document.querySelectorAll(".hp").forEach(b=>b.onclick=()=>{const go=b.dataset.go;if(go==="dex"){dexSel=null;closeDetail();dexStale=true}tab(go);window.scrollTo({top:0,behavior:"smooth"})});
 $("hsIdle").onclick=()=>{$("idleBtn").click();renderHome()};
+renderHome();
 
 /* ---- title screen ---- */
 (function titleScreen(){
