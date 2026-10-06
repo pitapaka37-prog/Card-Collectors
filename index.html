@@ -220,6 +220,9 @@ nav button span{font-family:var(--body);font-size:13px;font-weight:700}
 .shop-rates{font-size:12px;color:var(--mute)}
 .custom-tag.ltd{background:#7a3cff;color:#fff}
 
+/* per-pack dex reset */
+.resetbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;border:3px dashed var(--ink);padding:8px 12px;font-size:13px}
+
 /* coins: idle, login, selling */
 .ghost.idle{display:flex;align-items:center;gap:6px;background:var(--yellow)}
 .ghost.idle b{font-variant-numeric:tabular-nums}
@@ -400,7 +403,6 @@ nav button span{font-family:var(--body);font-size:13px;font-weight:700}
           <button type="button" class="ghost" id="exportBtn">データを書き出す</button>
           <label class="ghost" for="importFile" id="importLbl">データを読み込む<input type="file" id="importFile" accept="application/json,.json"></label>
           <button type="button" class="ghost" id="importGo" hidden>読み込みを確定</button>
-          <button type="button" class="ghost" id="resetBtn">記録をリセット</button>
         </div>
         <div class="backup-msg" id="backupMsg" role="status"></div>
       </div>
@@ -409,6 +411,7 @@ nav button span{font-family:var(--body);font-size:13px;font-weight:700}
       <div><button class="ghost" id="dexBack">← 図鑑をえらぶ</button></div>
       <div class="panel-head"><h3 id="dexTitle"></h3><span id="dexPct" style="font-weight:700;font-variant-numeric:tabular-nums"></span></div>
       <div class="progress"><div id="dexBar" style="width:0"></div></div>
+      <div class="resetbar" id="resetbar" hidden><span>この自作ガチャの図鑑（集めた枚数と天井の回数）をリセットできます。カードそのものは消えません。</span><button type="button" class="ghost" id="dexReset">この図鑑をリセット</button></div>
       <div class="sellbar" id="sellbar"><span id="sellInfo"></span><button type="button" class="ghost" id="sellAll">ダブりをまとめて売る</button></div>
       <div class="detail" id="detail" hidden></div>
       <div id="dexBody"></div>
@@ -924,11 +927,14 @@ function armed(btn,label,armedLabel,action){
     action();
   };
 }
-armed($("resetBtn"),"記録をリセット","もう一度押すとリセットします",()=>{
-  const keep={custom:S.custom,packs:S.packs,banner:S.banner,loginLast:S.loginLast,streak:S.streak,idleAt:Date.now()};
-  S=Object.assign(JSON.parse(JSON.stringify(DEFAULT)),keep);save();closeDetail();render();
-  $("backupMsg").textContent="所持カードとコインをリセットしました。自作カードとガチャは残っています。";
-});
+// only dex books of your own gachas can be reset; STANDARD cannot
+function resetPackDex(id){
+  if(id==="std"||id==="shop"||!packOf(id))return;
+  cardsIn(id).forEach(c=>delete S.owned[c.id]);
+  delete S.pityBy[id];
+  save();closeDetail();render();
+  toast(`「${pname(packOf(id))}」の図鑑をリセットしました`);
+}
 
 /* ---- backup: export / import ---- */
 // ask the browser not to clear this site's storage on its own (granted mostly for installed apps)
@@ -1133,6 +1139,9 @@ function renderDex(){
   const dupes=dupesIn(dexPoolOf(dexSel));
   const dn=dupes.reduce((a,[,k])=>a+k,0),ds=dupes.reduce((a,[c,k])=>a+k*SELL_STARS[c.r],0);
   $("sellbar").hidden=!dn;
+  const own=dexSel!=="std"&&!!packOf(dexSel);
+  $("resetbar").hidden=!own;
+  if(own){const id=dexSel;armed($("dexReset"),"この図鑑をリセット","もう一度押すとリセットします",()=>resetPackDex(id));$("dexReset").textContent="この図鑑をリセット"}
   if(dn){
     $("sellInfo").textContent=`ダブっているカード ${dn} 枚（各1枚は残します）`;
     armed($("sellAll"),`ダブりをまとめて売る ★${ds.toLocaleString()}`,`もう一度押すと ${dn} 枚売ります`,()=>sellCards(dupesIn(dexPoolOf(dexSel))));
