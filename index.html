@@ -125,6 +125,10 @@ nav button span{font-family:var(--body);font-size:13px;font-weight:700}
 .new{position:absolute;bottom:-8px;right:-6px;z-index:4;font-family:var(--display);font-size:13px;letter-spacing:.04em;background:var(--yellow);border:2px solid var(--ink);padding:0 6px;opacity:0;transition:opacity .2s .5s;transform:rotate(-6deg)}
 .card.flipped .new{opacity:1}
 .feature .card .inner{transform:rotateY(180deg)}
+.feature .pu-badge{position:absolute;left:-14px;top:-14px;z-index:3;padding:4px 10px;border:3px solid var(--ink);background:var(--red);color:#fff;font:20px/1 var(--display);letter-spacing:1px;box-shadow:3px 3px 0 var(--ink);transform:rotate(-10deg);animation:pu-pulse 1.2s ease-in-out infinite}
+@keyframes pu-pulse{50%{transform:rotate(-10deg) scale(1.08)}}
+.pu-timer{display:inline-block;margin-top:6px;font-size:12px;font-weight:700}
+.lu-list li.pu{background:var(--yellow);outline:3px solid var(--red)}
 
 /* panels */
 .panel{background:#fff;border:4px solid var(--ink);box-shadow:8px 8px 0 var(--ink);padding:20px;display:flex;flex-direction:column;gap:16px}
@@ -1098,20 +1102,33 @@ function dexPoolOf(id){if(id==="std"){const o={};ORDER.forEach(r=>o[r]=byR[r].co
 function poolOf(id){if(id==="std")return byR;if(id==="shop")return shopByR;const list=cardsIn(id);const o={};ORDER.forEach(r=>o[r]=list.filter(c=>c.r===r));return o}
 function getPity(id){return id==="std"?S.pity:(S.pityBy[id]||0)}
 function setPity(id,v){if(id==="std")S.pity=v;else S.pityBy[id]=v}
-function ratesFor(pool){const e=Object.entries(RATES).filter(([r])=>pool[r].length);const t=e.reduce((a,[,w])=>a+w,0);return e.map(([r,w])=>[r,w/t*100])}
+/* ---- hourly pick-up: one STAR LIGHT card at double rate, changes on the hour ---- */
+const PU_ORDER=(()=>{const a=CARDS.map((_,i)=>i);let x=20261007;for(let i=a.length-1;i>0;i--){x=(x*1103515245+12345)%2147483648;const j=x%(i+1);[a[i],a[j]]=[a[j],a[i]]}return a})();
+const puHour=()=>Math.floor(Date.now()/3600000);
+function pickupCard(){return CARDS[PU_ORDER[puHour()%PU_ORDER.length]]}
+function puLeft(){const ms=(puHour()+1)*3600000-Date.now();return Math.max(1,Math.ceil(ms/60000))}
+// the pick-up card gets an extra share equal to its normal per-card rate, so it comes out about twice as often
+function puWeight(pool,pu){return pu&&pool[pu.r].length?RATES[pu.r]/pool[pu.r].length:0}
+function ratesFor(pool,pu){const xw=puWeight(pool,pu);const e=Object.entries(RATES).filter(([r])=>pool[r].length).map(([r,w])=>[r,w+(pu&&pu.r===r?xw:0)]);const t=e.reduce((a,[,w])=>a+w,0);return e.map(([r,w])=>[r,w/t*100])}
+function cardRate(pool,pu,c){const xw=puWeight(pool,pu);const t=Object.entries(RATES).filter(([r])=>pool[r].length).reduce((a,[,w])=>a+w,0)+xw;const base=RATES[c.r]/pool[c.r].length;return (base+(pu&&pu.id===c.id?xw:0))/t*100}
 function validBanner(){if(S.banner!=="std"&&!packOf(S.banner))S.banner="std";return S.banner}
 
 function pick(entries){const tot=entries.reduce((a,[,w])=>a+w,0);let x=Math.random()*tot;for(const [r,w] of entries){if((x-=w)<0)return r}return entries[entries.length-1][0]}
 function drawOne(minSR,pool,bid){
+  const pu=bid==="std"?pickupCard():null;
   let e=Object.entries(RATES).filter(([r])=>pool[r].length);
-  const top=e.filter(([r])=>r==="SSR"||r==="UR");
+  if(pu&&pool[pu.r].length)e.push(["PU",puWeight(pool,pu)]);
+  const rarOf=x=>x==="PU"?pu.r:x;
+  const top=e.filter(([x])=>rarOf(x)==="SSR"||rarOf(x)==="UR");
   let r;
   if(getPity(bid)>=PITY-1&&top.length)r=pick(top);
   else{
-    if(minSR){const f=e.filter(([x])=>x!=="N"&&x!=="R");if(f.length)e=f}
+    if(minSR){const f=e.filter(([x])=>rarOf(x)!=="N"&&rarOf(x)!=="R");if(f.length)e=f}
     r=pick(e);
   }
-  setPity(bid,(r==="SSR"||r==="UR")?0:getPity(bid)+1);
+  const rr=rarOf(r);
+  setPity(bid,(rr==="SSR"||rr==="UR")?0:getPity(bid)+1);
+  if(r==="PU")return pu;
   const list=pool[r];return list[Math.floor(Math.random()*list.length)];
 }
 function cardEl(c,{flipped=false,isNew=false,sfx=false}={}){
@@ -1834,10 +1851,12 @@ function renderCover(){
   if(std){
     cover.style.removeProperty("--pc");
     $("cvIssue").textContent="STAR LIGHT COMICS #1 ・ 25¢";
-    $("cvEye").textContent="スターライト・コミックス ・ ピックアップ：ATLAS PRIME";
+    const pu=pickupCard();
+    $("cvEye").textContent=`スターライト・コミックス ・ ピックアップ：${pu.name.toUpperCase()}（${pu.r}・排出率2倍）`;
     $("cvTitle").textContent="スターライト・コミックスのヒーローたち、ここに集結！";
-    $("cvText").textContent=STD_TEXT;
-    feat.appendChild(cardEl(CARDS.find(c=>c.name==="Atlas Prime"),{flipped:true}));
+    $("cvText").innerHTML=`${STD_TEXT}<br><span class="pu-timer">ピックアップは1時間ごとに入れ替わります ・ 次の入れ替えまで あと <b id="puLeft">${puLeft()}</b> 分</span>`;
+    feat.appendChild(cardEl(pu,{flipped:true}));
+    const tag=document.createElement("span");tag.className="pu-badge";tag.textContent="PICK UP! ×2";feat.appendChild(tag);
   }else{
     const p=packOf(bid);cover.style.setProperty("--pc",p.color);
     $("cvIssue").textContent="SPECIAL ISSUE ・ 25¢";
@@ -1855,7 +1874,7 @@ function renderCover(){
       feat.appendChild(cardEl(best[best.length-1],{flipped:true}));
     }
   }
-  $("rates").innerHTML=n?ratesFor(pool).map(([r,p])=>`<span><b>${r}</b>${+p.toFixed(1)}%</span>`).join(""):"";
+  $("rates").innerHTML=n?ratesFor(pool,std?pickupCard():null).map(([r,p])=>`<span><b>${r}</b>${+p.toFixed(1)}%</span>`).join(""):"";
   const c1=pullCost(bid,1),c10=pullCost(bid,10);
   $("pull1").querySelector("small").textContent=`単発 ・ コイン ${c1.toLocaleString()}`;
   $("pull10").querySelector("small").textContent=`十連 ・ コイン ${c10.toLocaleString()}${std?" ・ SR以上確定":""}`;
@@ -2507,7 +2526,7 @@ renderGames();
 
 /* ---- gacha lineup: names of the cards a gacha can give ---- */
 function showLineup(){
-  const bid=validBanner(),pool=poolOf(bid),rates=Object.fromEntries(ratesFor(pool));
+  const bid=validBanner(),pool=poolOf(bid),pu=bid==="std"?pickupCard():null,rates=Object.fromEntries(ratesFor(pool,pu));
   const title=bid==="std"?"STAR LIGHT COMICS":pname(packOf(bid));
   const total=ORDER.reduce((a,r)=>a+pool[r].length,0);
   const box=$("lineup");
@@ -2516,17 +2535,24 @@ function showLineup(){
   if(!total)html+=`<p class="lu-note">このガチャにはまだカードがありません。</p>`;
   ORDER.forEach(r=>{
     if(!pool[r].length)return;
-    const each=rates[r]/pool[r].length;
-    html+=`<div class="lu-group"><div class="lu-head r-${r}">${r}<span>${+rates[r].toFixed(2)}%（1種あたり ${+each.toFixed(3)}%）</span></div><ul class="lu-list">`+
-      pool[r].map(c=>`<li class="${S.owned[c.id]?"":"no"}"><b>${esc(c.name)}</b><small>${esc(c.kana||"")}</small>${S.owned[c.id]?"<i>所持</i>":""}</li>`).join("")+`</ul></div>`;
+    const normal=pool[r].find(c=>!pu||c.id!==pu.id);
+    const each=normal?cardRate(pool,pu,normal):0;
+    html+=`<div class="lu-group"><div class="lu-head r-${r}">${r}<span>${+rates[r].toFixed(2)}%${normal?`（1種あたり ${+each.toFixed(3)}%）`:""}</span></div><ul class="lu-list">`+
+      pool[r].map(c=>{const isPu=pu&&c.id===pu.id;return`<li class="${S.owned[c.id]?"":"no"}${isPu?" pu":""}"><b>${esc(c.name)}</b><small>${esc(c.kana||"")}${isPu?` ・ PICK UP ${+cardRate(pool,pu,c).toFixed(3)}%`:""}</small>${S.owned[c.id]?"<i>所持</i>":""}</li>`}).join("")+`</ul></div>`;
   });
-  html+=`<p class="lu-note">※ ショップ限定カードとミッション報酬カードはガチャからは出ません。${bid==="std"?"十連は最後の1枚が SR 以上確定、80 回で SSR 以上確定。":""}</p></div>`;
+  html+=`<p class="lu-note">※ ショップ限定カードとミッション報酬カードはガチャからは出ません。${bid==="std"?`十連は最後の1枚が SR 以上確定、80 回で SSR 以上確定。ピックアップ（${esc(pu.name)}）は通常の約2倍の確率で出ます。1時間ごとに入れ替わります。`:""}</p></div>`;
   box.innerHTML=html;box.hidden=false;document.body.style.overflow="hidden";
   const close=()=>{box.hidden=true;box.innerHTML="";document.body.style.overflow=""};
   $("luClose").onclick=close;
   box.onclick=e=>{if(e.target===box)close()};
 }
 $("lineupBtn").onclick=showLineup;
+let puLastHour=puHour();
+setInterval(()=>{
+  const h=puHour();
+  if(h!==puLastHour){puLastHour=h;if(!$("view-gacha").hidden)renderCover();if(!$("view-home").hidden)renderHome();return}
+  const el=document.getElementById("puLeft");if(el)el.textContent=puLeft();
+},20000);
 
 
 
@@ -2659,7 +2685,7 @@ function renderHome(){
   const n=idleEarned();$("hsIdleAmt").textContent="＋"+n.toLocaleString();$("hsIdle").disabled=n<1;
   const st=loginState();$("hsStreak").textContent=S.streak?`ログイン ${S.streak} 日連続`:"";
   const left=PITY-S.pity;
-  $("hpPull").textContent=`SSR 確定まであと ${left} 回`;
+  $("hpPull").textContent=`PICK UP：${pickupCard().name} ・ SSR 確定まであと ${left} 回`;
   $("hpFiles").textContent=`${have} / ${all.length} 種 ・ ${Math.round(have/all.length*100)}%`;
   const open=SHOP_CARDS.filter(c=>!S.owned[c.id]).length;
   $("hpShop").textContent=`★${S.points.toLocaleString()} ・ 交換できるカード ${open} 枚`;
