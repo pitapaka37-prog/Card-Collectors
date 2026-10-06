@@ -672,6 +672,15 @@ const CARDS=[
 const PHOTOS={"Rubber Duck":"rubber-duck.jpg","Atlas Prime":"atlas-prime.jpg","Nova Mae":"nova-mae.jpg","Skyline Sentinel":"skyline-sentinel.jpg","Queen Quasar":"queen-quasar.jpg","Thunder Hound":"thunder-hound.jpg","Atomic Bee":"atomic-bee.jpg","Radio Ranger":"radio-ranger.jpg","Mirror Max":"mirror-max.jpg","Velvet Comet":"velvet-comet.jpg","Doctor Fuse":"doctor-fuse.jpg","Neon Noodle":"neon-noodle.jpg","Jukebox Jane":"jukebox-jane.jpg","Skate Saint":"skate-saint.jpg","Diner Dynamo":"diner-dynamo.jpg"};
 const PHOTO_V="2";
 CARDS.forEach(c=>{if(PHOTOS[c.name])c.photo=PHOTOS[c.name]+"?v="+PHOTO_V});
+/* ---- cover cards: random owned cards, or the rarest ones when nothing is owned ---- */
+function shuffled(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function rarestFirst(list){const o=["UR","SSR","SR","R","N"];return shuffled(list).sort((a,b)=>o.indexOf(a.r)-o.indexOf(b.r)||(b.photo?1:0)-(a.photo?1:0))}
+function coverCards(list,k){
+  const owned=list.filter(c=>S.owned[c.id]);
+  if(owned.length)return shuffled(owned).slice(0,k);
+  return rarestFirst(list.filter(c=>!c.shop)).slice(0,k); // shop cards stay secret until exchanged
+}
+
 /* ---- star shop: cards that never come from a gacha ---- */
 const SHOP_CARDS=[
  {id:"s1",r:"SR",name:"Granite Grizzly",kana:"グラナイト・グリズリー",flavor:"岩の毛皮をまとう山の番人。ひと吠えで崖崩れを止める。",h:30,price:60,
@@ -1577,14 +1586,13 @@ function renderDex(){
     const b=document.createElement("button");b.type="button";b.className="binder"+(color?" my":"");
     if(color)b.style.setProperty("--pc",color);
     const pct=s.total?Math.round(s.have/s.total*100):0;
-    const owned=s.list.filter(c=>S.owned[c.id]);
-    const show=(owned.length?owned:s.list).slice(-3);
+    const show=coverCards(s.list,3);
     b.innerHTML=`<span class="b-title">${esc(title)}</span><span class="b-sub">${sub}</span><span class="b-fan"></span>`+
       (s.total?`<span class="b-count">${s.have} / ${s.total} 人 ・ ${pct}%</span><span class="progress"><span style="width:${pct}%"></span></span>`
               :`<span class="b-count">まだカードがありません。MAKE で作ろう！</span>`);
     const fan=b.querySelector(".b-fan");
     if(!show.length)fan.innerHTML=`<span class="locked">?</span>`;
-    show.forEach(c=>{const w=document.createElement("span");w.className="fan-card";w.appendChild(S.owned[c.id]?cardEl(c,{flipped:true}):Object.assign(document.createElement("span"),{className:"locked",textContent:"?"}));fan.appendChild(w)});
+    show.forEach(c=>{const w=document.createElement("span");w.className="fan-card";w.appendChild(cardEl(c,{flipped:true}));fan.appendChild(w)});
     b.onclick=()=>{if(!s.total){openMakeFor(id);return}dexSel=id;closeDetail();renderDex();window.scrollTo({top:0,behavior:"smooth"})};
     box.appendChild(b);
   });
@@ -1830,13 +1838,8 @@ updateIdle();
 /* ---- title screen ---- */
 (function titleScreen(){
   const ts=$("titleScreen");
-  // a fan of owned heroes (picture cards first), or the cover stars when nothing is owned yet
-  const pics=CARDS.filter(c=>c.photo);
-  const owned=pics.filter(c=>S.owned[c.id]);
-  const pick=(owned.length>=5?owned:pics.concat(CARDS)).filter((c,i,a)=>a.indexOf(c)===i);
-  const order=["UR","SSR","SR","R","N"];
-  pick.sort((a,b)=>order.indexOf(a.r)-order.indexOf(b.r));
-  const five=pick.slice(0,5);
+  // a fan of random owned heroes (any gacha), or the rarest heroes when nothing is owned yet
+  const five=coverCards(CARDS.concat(SHOP_CARDS,S.custom),5);
   [five[3],five[1],five[0],five[2],five[4]].filter(Boolean).forEach(c=>{const w=document.createElement("div");w.className="tsc";w.appendChild(cardEl(c,{flipped:true}));$("tsFan").appendChild(w)});
   const total=CARDS.length+SHOP_CARDS.length,have=CARDS.concat(SHOP_CARDS).filter(c=>S.owned[c.id]).length;
   $("tsInfo").textContent=have?`コイン ${S.gems.toLocaleString()} ・ ★${S.points.toLocaleString()} ・ 図鑑 ${have}/${total}`:"ようこそ！ 最初のコイン 3,000 枚をプレゼント";
