@@ -637,7 +637,15 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
 .home{display:flex;flex-direction:column;gap:22px}
 .home-hero{position:relative;display:grid;grid-template-columns:minmax(0,190px) 1fr;gap:22px;align-items:center;padding:22px;border:5px solid var(--ink);box-shadow:10px 10px 0 var(--ink);background:var(--blue);color:#fff;overflow:hidden;
   background-image:radial-gradient(rgba(0,0,0,.2) 1.6px,transparent 1.9px),repeating-conic-gradient(from 0deg at 20% 50%,rgba(255,255,255,.12) 0 6deg,transparent 6deg 14deg);background-size:9px 9px,auto}
-.hh-card{position:relative;transform:rotate(-5deg);animation:ts-float 3.4s ease-in-out infinite}
+.hh-card{position:relative;transform:rotate(-5deg);animation:ts-float 3.4s ease-in-out infinite;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.hh-card .hh-edit{position:absolute;right:-8px;bottom:-10px;z-index:3;padding:3px 9px;border:3px solid var(--ink);background:var(--yellow,#ffd21f);color:var(--ink);font:16px/1 Bangers,Impact,sans-serif;letter-spacing:1px;box-shadow:3px 3px 0 var(--ink);transform:rotate(5deg)}
+.hc-modal .mission{width:min(640px,100%)}
+.hc-note{margin:4px 0 12px;font-size:13px;font-weight:700}
+.hc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:12px}
+.hc-grid .card{cursor:pointer}
+.hc-grid .card.sel{outline:5px solid var(--red,#e2231a);outline-offset:3px}
+.hc-rand{display:flex;align-items:center;justify-content:center;aspect-ratio:5/7;border:4px dashed var(--ink);background:#fff;color:var(--ink);font:22px/1.1 Bangers,Impact,sans-serif;text-align:center;cursor:pointer;padding:6px}
+.hc-rand.sel{outline:5px solid var(--red,#e2231a);outline-offset:3px}
 .hh-text{position:relative;display:flex;flex-direction:column;gap:12px;min-width:0}
 .hh-cap{align-self:flex-start;font-family:var(--display);font-size:13px;letter-spacing:.05em;background:var(--yellow);color:var(--ink);border:2px solid var(--ink);padding:1px 8px;transform:rotate(-1.5deg)}
 .hh-text h2{margin:0;font-family:var(--display);font-weight:400;font-size:clamp(36px,8vw,62px);line-height:.92;letter-spacing:.03em;color:var(--yellow);-webkit-text-stroke:2px var(--ink);text-shadow:4px 4px 0 var(--red),7px 7px 0 var(--ink)}
@@ -903,6 +911,14 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
       <div id="mine"></div>
     </div>
   </section>
+  <div class="detail ms-modal hc-modal" id="hcModal" hidden role="dialog" aria-modal="true" aria-label="ホームのカードを選ぶ">
+    <div class="mission">
+      <button type="button" class="close" id="hcClose" aria-label="閉じる">×</button>
+      <div class="ms-head"><b>HOME CARD</b></div>
+      <p class="hc-note">ホーム画面に飾るカードを、持っているカードから選んでね。</p>
+      <div class="hc-grid" id="hcGrid"></div>
+    </div>
+  </div>
   <div class="detail ms-modal" id="msModal" hidden role="dialog" aria-modal="true" aria-label="ミッション">
     <div class="mission" id="mission">
       <button type="button" class="close" id="msClose" aria-label="閉じる">×</button>
@@ -1033,6 +1049,8 @@ function load(){
   if(!Array.isArray(s.custom))s.custom=[];
   if(!Array.isArray(s.packs))s.packs=[];
   if(!s.owned||typeof s.owned!=="object")s.owned={};
+  if(s.homeCard!=null&&typeof s.homeCard!=="string"&&typeof s.homeCard!=="number")s.homeCard=null;
+  if(typeof s.homeCard==="number")s.homeCard=String(s.homeCard);
   // keep only well-formed entries (data may come from an imported file)
   const isColor=c=>typeof c==="string"&&/^#[0-9a-f]{6}$/i.test(c);
   s.packs=s.packs.filter(p=>p&&typeof p.id==="string").map(p=>({id:p.id,name:String(p.name||"").slice(0,20),color:isColor(p.color)?p.color:PACK_COLORS[0]}));
@@ -2633,8 +2651,11 @@ function renderHome(){
   $("hsStars").textContent=S.points.toLocaleString();
   $("hsDex").textContent=`${have}/${all.length}`;
   const box=$("hhCard");box.innerHTML="";
-  const pick=coverCards(all.concat(S.custom),1)[0];
+  const pool=all.concat(S.custom);
+  const fav=S.homeCard!=null?pool.find(c=>String(c.id)===S.homeCard&&S.owned[c.id]):null;
+  const pick=fav||coverCards(pool,1)[0];
   if(pick){const card=cardEl(pick,{flipped:true});box.appendChild(card)}
+  if(pool.some(c=>S.owned[c.id])){const e=document.createElement("span");e.className="hh-edit";e.textContent="CHANGE";box.appendChild(e);box.title="タップでカードを変更"}
   const n=idleEarned();$("hsIdleAmt").textContent="＋"+n.toLocaleString();$("hsIdle").disabled=n<1;
   const st=loginState();$("hsStreak").textContent=S.streak?`ログイン ${S.streak} 日連続`:"";
   const left=PITY-S.pity;
@@ -2647,6 +2668,24 @@ function renderHome(){
 }
 document.querySelectorAll(".hp").forEach(b=>b.onclick=()=>{const go=b.dataset.go;if(go==="dex"){dexSel=null;closeDetail();dexStale=true}tab(go);window.scrollTo({top:0,behavior:"smooth"})});
 $("hsIdle").onclick=()=>{$("idleBtn").click();renderHome()};
+function openHomePicker(){
+  const pool=CARDS.concat(SHOP_CARDS,REWARD_CARDS,S.custom).filter(c=>S.owned[c.id]);
+  if(!pool.length)return;
+  const g=$("hcGrid");g.innerHTML="";
+  const rnd=document.createElement("button");rnd.type="button";rnd.className="hc-rand"+(S.homeCard==null?" sel":"");rnd.textContent="RANDOM!";
+  rnd.onclick=()=>setHomeCard(null);g.appendChild(rnd);
+  pool.sort((a,b)=>ORDER.indexOf(a.r)-ORDER.indexOf(b.r)).forEach(c=>{
+    const el=cardEl(c,{flipped:true});
+    if(String(c.id)===S.homeCard)el.classList.add("sel");
+    el.onclick=()=>setHomeCard(String(c.id));g.appendChild(el);
+  });
+  $("hcModal").hidden=false;document.body.style.overflow="hidden";
+}
+function setHomeCard(id){S.homeCard=id;save();closeHomePicker();renderHome()}
+function closeHomePicker(){$("hcModal").hidden=true;document.body.style.overflow=""}
+$("hhCard").onclick=openHomePicker;
+$("hcClose").onclick=closeHomePicker;
+$("hcModal").addEventListener("click",e=>{if(e.target===$("hcModal"))closeHomePicker()});
 renderHome();
 
 /* ---- title screen ---- */
