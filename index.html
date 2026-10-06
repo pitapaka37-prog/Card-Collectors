@@ -628,12 +628,19 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
 .dk-go small{font-size:11px;font-weight:700}
 .dk-go:active{transform:translate(3px,3px);box-shadow:2px 2px 0 var(--ink)}
 .dk-top{display:flex;flex-direction:column;gap:10px;padding:12px;margin-bottom:14px;background:var(--paper);border:4px solid var(--ink);box-shadow:6px 6px 0 var(--ink)}
-.dk-top .dk-row{max-width:560px}
+.dk-deckrow{margin-bottom:20px;padding-bottom:20px;border-bottom:4px dashed rgba(0,0,0,.25)}
+.dk-sec{display:flex;align-items:baseline;gap:8px;margin-bottom:10px;font-family:var(--display);font-size:24px;letter-spacing:.05em}
+.dk-sec small{font-family:var(--jp);font-size:12px;font-weight:700;opacity:.7}
+.dk-deckrow .dk-card.in .dk-pick{outline:none}
+.dk-emptycard{aspect-ratio:5/7;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:4px dashed rgba(20,20,20,.4);border-radius:10px;color:rgba(20,20,20,.5);text-align:center}
+.dk-emptycard span{font-family:var(--display);font-size:40px;line-height:1}
+.dk-emptycard small{font-size:11px;font-weight:700}
+.dk-out{position:absolute;right:-6px;top:-8px;z-index:4;font-size:12px;font-weight:700;background:#fff;border:2px solid var(--ink);padding:0 6px;box-shadow:2px 2px 0 var(--ink)}
 .dk-filter{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
 .dk-filter button{display:flex;align-items:baseline;gap:4px;font-family:var(--display);font-size:18px;letter-spacing:.04em;border:3px solid var(--ink);background:#fff;padding:2px 12px;box-shadow:3px 3px 0 var(--ink)}
 .dk-filter button small{font-size:12px;opacity:.7}
 .dk-filter button[aria-selected="true"]{background:var(--ink);color:var(--yellow)}
-.dk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:18px 14px}
+.dk-grid{display:grid;grid-template-columns:repeat(auto-fill,140px);justify-content:start;gap:18px 14px}
 .dk-card{position:relative;display:flex;flex-direction:column;gap:6px;min-width:0}
 .dk-pick{position:relative;display:block;padding:0;border:0;background:none;cursor:pointer;transition:transform .12s}
 .dk-pick:hover{transform:translateY(-4px)}
@@ -1134,10 +1141,12 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
       <div class="panel-head"><h3>DECK<small>デッキを作る</small></h3><button type="button" class="ghost" id="dkBack">← バトルにもどる</button></div>
       <div class="dk-top">
         <div class="dk-head"><span class="dk-tabs" id="dkEditTabs" role="tablist"></span><span class="dk-caps" id="dkEditCaps"></span></div>
-        <div class="dk-row edit" id="dkEditRow"></div>
         <p class="dk-note">下のカードをタップすると入れる・外すができます。デッキは5枚で、<b>コストの合計が15以内</b>になるように作ろう。コストは <b>UR 5・SSR 4・SR 3・R 2・N 1</b>。カードの左上の数字がコストです。<b>UR と SSR はそれぞれ1枚まで</b>。「詳しく」で能力が見られます。</p>
         <div class="dk-btns"><button type="button" class="ghost" id="dkAuto">おまかせ</button><button type="button" class="ghost" id="dkClear">ぜんぶ外す</button><button type="button" class="btn-main" id="dkDone">このデッキでバトル！</button></div>
       </div>
+      <div class="dk-sec">YOUR DECK<small>タップで外す</small></div>
+      <div class="dk-grid dk-deckrow" id="dkEditRow"></div>
+      <div class="dk-sec">CARDS<small>タップで入れる</small></div>
       <div class="dk-filter" id="dkFilter" role="tablist"></div>
       <div class="dk-grid" id="dkGrid"></div>
     </div>
@@ -3401,7 +3410,20 @@ function dkDrawEdit(){
   const list=dkCards(dkEditK);
   const tabs=$("dkEditTabs");tabs.innerHTML="";
   [0,1,2].forEach(k=>{const b=document.createElement("button");b.type="button";b.setAttribute("role","tab");b.setAttribute("aria-selected",dkEditK===k);b.textContent=`DECK ${k+1}`;b.onclick=()=>{S.deckSel=k;save();dkDrawEdit()};tabs.appendChild(b)});
-  dkSlots($("dkEditRow"),list,c=>{if(c)dkToggle(c)});
+  const row=$("dkEditRow");row.innerHTML="";
+  for(let i=0;i<DK_SIZE;i++){
+    const c=list[i];
+    const w=document.createElement("div");w.className="dk-card dk-slotbig"+(c?" in":"");
+    if(c){
+      const p=btProfile(c);
+      const b=document.createElement("button");b.type="button";b.className="dk-pick";b.setAttribute("aria-label",`${c.name} を外す`);
+      b.appendChild(cardEl(c,{flipped:true}));
+      b.insertAdjacentHTML("beforeend",`<span class="dk-cc big">${DK_COST[c.r]}</span><span class="dk-out">外す</span>`);
+      b.onclick=()=>dkToggle(c);w.appendChild(b);
+      w.insertAdjacentHTML("beforeend",`<div class="dk-st"><span class="bt-type t${p.type}">${BT_TYPES[p.type]}</span><span>HP <b>${p.hp}</b></span><span>ATK <b>${p.atk}</b></span><span>SPD <b>${p.spd}</b></span></div>`);
+    }else w.innerHTML=`<div class="dk-emptycard"><span>${i+1}</span><small>カードを<br>えらんでね</small></div>`;
+    row.appendChild(w);
+  }
   $("dkEditCaps").innerHTML=dkCapsHTML(list);
   $("dkDone").disabled=!dkValid(list);
   const pool=btPool();
