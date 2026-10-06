@@ -200,6 +200,58 @@ nav button span{font-family:var(--body);font-size:13px;font-weight:700}
 .binder .progress span{display:block;height:100%;background:var(--yellow)}
 #dexView.my .progress div{background:repeating-linear-gradient(45deg,var(--cyan) 0 8px,#5fd0f0 8px 16px)}
 
+/* pull show */
+.pull-fx{position:fixed;inset:0;z-index:80;display:grid;place-items:center;overflow:hidden;background:#141414;cursor:pointer;-webkit-user-select:none;user-select:none;--t1:#1d5fd6;--t2:#21b5e0}
+.pull-fx.tier-red{--t1:#e2231a;--t2:#ff7a5c}
+.pull-fx.tier-gold{--t1:#ffb000;--t2:#ffe36b}
+.pull-fx.tier-rainbow{--t1:#ff5bd1;--t2:#21e0a0}
+.fx-rays{position:absolute;inset:-50%;background:repeating-conic-gradient(from 0deg,var(--t1) 0 7deg,#141414 7deg 15deg);opacity:.55;animation:spin 14s linear infinite}
+.tier-rainbow .fx-rays{background:repeating-conic-gradient(from 0deg,#ff5bd1 0 6deg,#ffd21f 6deg 12deg,#21e0a0 12deg 18deg,#21b5e0 18deg 24deg,#b04dff 24deg 30deg);opacity:.75;animation-duration:6s}
+.fx-dots{position:absolute;inset:0;background:radial-gradient(rgba(0,0,0,.55) 2px,transparent 2.4px) 0 0/10px 10px}
+.fx-stage{position:relative;z-index:2;display:grid;place-items:center;width:100%;height:100%}
+.fx-skip{position:absolute;z-index:5;top:calc(14px + env(safe-area-inset-top,0px));right:14px;font-family:var(--display);font-size:18px;letter-spacing:.05em;background:#fff;border:3px solid var(--ink);box-shadow:3px 3px 0 var(--ink);padding:2px 12px}
+.fx-hint{position:absolute;z-index:4;bottom:calc(36px + env(safe-area-inset-bottom,0px));left:0;right:0;text-align:center;font-family:var(--jp);font-size:16px;color:#fff;text-shadow:2px 2px 0 var(--ink);animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:.35}}
+.fx-flash{position:absolute;inset:0;z-index:6;pointer-events:none;opacity:0}
+.fx-flash.on{animation:flash .5s ease-out}
+@keyframes flash{0%{opacity:1}100%{opacity:0}}
+.fx-pack{position:relative;width:min(240px,58vw);aspect-ratio:5/7;border:5px solid var(--ink);box-shadow:10px 10px 0 var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:14px 10px;color:#fff;
+  background:linear-gradient(160deg,var(--t2),var(--t1));animation:drop .7s cubic-bezier(.3,1.5,.5,1)}
+.fx-pack::before{content:"";position:absolute;inset:0;background:radial-gradient(rgba(0,0,0,.2) 1.6px,transparent 1.9px) 0 0/8px 8px,repeating-conic-gradient(from 0deg at 50% 55%,rgba(255,255,255,.22) 0 8deg,transparent 8deg 18deg)}
+.tier-rainbow .fx-pack{background:conic-gradient(from 0deg,#ff5bd1,#ffd21f,#21e0a0,#21b5e0,#b04dff,#ff5bd1)}
+.fx-pack>span{position:relative}
+.fx-pack-top{font-family:var(--display);font-size:22px;letter-spacing:.05em;background:var(--ink);padding:0 10px;transform:rotate(-4deg)}
+.fx-pack-title{font-family:var(--display);font-size:clamp(24px,7vw,34px);line-height:.95;text-align:center;color:var(--yellow);-webkit-text-stroke:1.5px var(--ink);text-shadow:3px 3px 0 var(--ink);overflow-wrap:anywhere}
+.fx-pack-star{font-size:64px;line-height:1;color:#fff;-webkit-text-stroke:2px var(--ink);text-shadow:4px 4px 0 var(--ink)}
+.fx-pack-price{font-family:var(--display);font-size:16px;letter-spacing:.06em;background:#fff;color:var(--ink);border:2px solid var(--ink);padding:0 8px}
+@keyframes drop{from{transform:translateY(-120vh) rotate(-25deg)}}
+.fx-pack.shake{animation:wobble .26s ease-in-out infinite}
+.fx-pack.shake-hard{animation:wobble-hard .16s ease-in-out infinite;box-shadow:10px 10px 0 var(--ink),0 0 50px var(--t2)}
+@keyframes wobble{25%{transform:rotate(-4deg)}75%{transform:rotate(4deg)}}
+@keyframes wobble-hard{25%{transform:rotate(-7deg) scale(1.03)}75%{transform:rotate(7deg) scale(1.03)}}
+.fx-pack.charge{animation:charge .65s ease-in forwards}
+@keyframes charge{to{transform:scale(1.15);filter:brightness(2.2)}}
+.fx-pack.open{animation:burst .55s ease-in forwards}
+@keyframes burst{30%{transform:scale(1.25) rotate(-6deg)}100%{transform:scale(2.4) rotate(14deg);opacity:0}}
+.fx-word{position:absolute;font-family:var(--display);font-size:clamp(54px,16vw,120px);letter-spacing:.03em;color:var(--yellow);-webkit-text-stroke:3px var(--ink);text-shadow:6px 6px 0 var(--red),10px 10px 0 var(--ink);transform:rotate(-10deg);animation:wordpop .5s cubic-bezier(.3,1.8,.5,1);white-space:nowrap;max-width:100vw}
+@keyframes wordpop{from{transform:rotate(-10deg) scale(0)}}
+.fx-q{color:#fff;text-shadow:6px 6px 0 #b04dff,10px 10px 0 var(--ink)}
+.fx-cutin{position:absolute;inset:0;display:grid;place-items:center}
+.fx-band{width:140%;transform:rotate(-8deg);background:repeating-linear-gradient(90deg,var(--ink) 0 26px,#222 26px 52px);border-block:6px solid var(--t2);padding:18px 0;text-align:center;animation:band 1.3s ease-in-out}
+.fx-band span{display:inline-block;font-family:var(--display);font-size:clamp(48px,13vw,110px);letter-spacing:.04em;color:var(--t2);-webkit-text-stroke:2px #fff;text-shadow:5px 5px 0 var(--t1);animation:slide 1.3s cubic-bezier(.2,.8,.2,1)}
+.tier-rainbow .fx-band span{background:linear-gradient(90deg,#ff5bd1,#ffd21f,#21e0a0,#21b5e0,#b04dff);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none}
+@keyframes band{0%{transform:rotate(-8deg) scaleY(0)}15%,85%{transform:rotate(-8deg) scaleY(1)}100%{transform:rotate(-8deg) scaleY(0)}}
+@keyframes slide{0%{transform:translateX(80vw)}20%,80%{transform:translateX(0)}100%{transform:translateX(-80vw)}}
+.fx-reveal{position:relative;display:flex;flex-direction:column;align-items:center;gap:16px}
+.fx-glow{position:absolute;top:50%;left:50%;width:150vmax;height:150vmax;transform:translate(-50%,-50%);background:radial-gradient(circle,var(--t2) 0,transparent 35%);opacity:.7;pointer-events:none}
+.fx-card{position:relative;width:min(260px,62vw);animation:rise .5s cubic-bezier(.3,1.5,.5,1)}
+@keyframes rise{from{transform:translateY(40vh) scale(.6)}}
+.fx-name{position:relative;text-align:center;color:#fff;text-shadow:3px 3px 0 var(--ink)}
+.fx-name b{display:block;font-family:var(--display);font-weight:400;font-size:clamp(30px,8vw,46px);letter-spacing:.03em;line-height:1}
+.fx-name small{font-family:var(--jp);font-size:13px}
+.fx-name em{display:inline-block;margin-left:8px;font-style:normal;font-family:var(--display);font-size:20px;background:var(--yellow);color:var(--ink);border:2px solid var(--ink);padding:0 6px;text-shadow:none;transform:rotate(-6deg)}
+#soundBtn{font-family:var(--display);letter-spacing:.04em;font-size:15px}
+
 /* star shop */
 .chip i.star{width:18px;height:18px;border:0;border-radius:0;background:var(--yellow);clip-path:polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);filter:drop-shadow(0 0 0 var(--ink))}
 .shop-note{margin:0;font-size:14px;max-width:62ch}
@@ -355,6 +407,7 @@ nav button span{font-family:var(--body);font-size:13px;font-weight:700}
       <span class="chip" aria-label="所持コイン"><i></i><span id="gems">3000</span></span>
       <span class="chip" aria-label="所持スター"><i class="star"></i><span id="pts">0</span></span>
       <span class="chip pity">天井まで <b id="pity">80</b> 回</span>
+      <button class="ghost" id="soundBtn" type="button" aria-pressed="true">SOUND ON</button>
       <button class="ghost idle" id="idleBtn" title="カードを集めるほど速く貯まります">放置ボーナス <b id="idleAmt">0</b></button>
     </div>
   </header>
@@ -473,6 +526,7 @@ nav button span{font-family:var(--body);font-size:13px;font-weight:700}
     </div>
   </section>
   <div class="detail bonus" id="bonus" hidden role="dialog" aria-modal="true" aria-label="ログインボーナス"></div>
+  <div class="pull-fx" id="pullFx" hidden aria-live="polite"></div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 </div>
 
@@ -534,7 +588,7 @@ const SFX={SR:"WHAM!",SSR:"KA-POW!!",UR:"KRAKA-BOOM!!!"};
 const PACK_COLORS=["#e2231a","#1d9e5a","#ff7a00","#7a3cff","#e0218a","#0f8f8f","#3d3d3d"];
 const STD_TEXT="十連なら最後の1枚は SR 以上が確定。80 回 SSR が出なければ、次の1枚は SSR 以上になります。";
 
-const DEFAULT={gems:3000,pity:0,owned:{},custom:[],packs:[],pityBy:{},banner:"std",loginLast:"",streak:0,idleAt:0,points:0};
+const DEFAULT={gems:3000,pity:0,owned:{},custom:[],packs:[],pityBy:{},banner:"std",loginLast:"",streak:0,idleAt:0,points:0,sound:true};
 const KEY="cch-gacha";
 const newId=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
 let S=load();
@@ -565,7 +619,7 @@ function load(){
   delete s.packName;delete s.pityMy;delete s.refillAt;
   // numbers and dates must have the right type (data may come from an imported file)
   const num=(x,def,min,max)=>{x=Number(x);return Number.isFinite(x)?Math.min(max,Math.max(min,Math.floor(x))):def};
-  s.gems=num(s.gems,3000,0,1e9);s.points=num(s.points,0,0,1e9);s.pity=num(s.pity,0,0,PITY);s.streak=num(s.streak,0,0,1e6);
+  s.sound=s.sound!==false;s.gems=num(s.gems,3000,0,1e9);s.points=num(s.points,0,0,1e9);s.pity=num(s.pity,0,0,PITY);s.streak=num(s.streak,0,0,1e6);
   s.idleAt=num(s.idleAt,0,0,Date.now());
   if(typeof s.loginLast!=="string"||!/^\d{4}-\d{2}-\d{2}$/.test(s.loginLast))s.loginLast="";
   if(typeof s.banner!=="string")s.banner="std";
@@ -814,7 +868,9 @@ function heroSVG(k,hue){
 }
 
 /* ---- pulling ---- */
-function pull(n){
+let pulling=false;
+async function pull(n){
+  if(pulling)return;
   const bid=validBanner(),pool=poolOf(bid);
   if(!ORDER.some(r=>pool[r].length))return;
   const cost=n===10?1000:100;
@@ -826,9 +882,16 @@ function pull(n){
     const guarantee=n===10&&i===9&&!got.some(c=>c.r!=="N"&&c.r!=="R");
     got.push(drawOne(guarantee,pool,bid));
   }
+  // record the results before the show, so closing the app mid-show loses nothing
+  const fresh=got.map(c=>!S.owned[c.id]);
+  got.forEach(c=>{S.owned[c.id]=(S.owned[c.id]||0)+1});
+  save();
+  pulling=true;
+  try{await playPullFx(got,n,bid==="std"?"STARLIGHT COMICS":pname(packOf(bid)),fresh)}catch(e){}
+  pulling=false;
   const grid=$("grid");grid.innerHTML="";grid.classList.toggle("single",n===1);
   got.forEach((c,i)=>{
-    const isNew=!S.owned[c.id];S.owned[c.id]=(S.owned[c.id]||0)+1;
+    const isNew=fresh[i];
     const el=cardEl(c,{isNew,sfx:true});
     if(c.r==="SR")el.classList.add("hint-sr");
     if(c.r==="SSR")el.classList.add("hint-ssr");
@@ -842,8 +905,114 @@ function pull(n){
   const where=bid==="std"?"":esc(pname(packOf(bid)))+" ・ ";
   $("resTitle").innerHTML=n===10?`10-PACK!<small>${where}十連の結果 ・ 最高 ${best}</small>`:`SINGLE<small>${where}単発の結果</small>`;
   $("flipAll").hidden=false;
-  save();render();
-  if(n===1)setTimeout(()=>grid.firstChild&&grid.firstChild.click(),400);
+  render();
+  grid.scrollIntoView({behavior:"smooth",block:"nearest"});
+  if(n===1)setTimeout(()=>grid.firstChild&&grid.firstChild.click(),300);
+}
+
+/* ---- pull show: pack drop, shake, burst, rare cut-in, big reveal ---- */
+const TIER_INFO={N:{c:"blue",w:"POW!"},R:{c:"blue",w:"ZAP!"},SR:{c:"red",w:"WHAM!"},SSR:{c:"gold",w:"KA-BOOM!!"},UR:{c:"rainbow",w:"KRAKA-THOOM!!!"}};
+let fxSkipping=false,fxWake=null;
+function fxWait(ms,tap){ // resolves after ms, on tap (if tap) or right away when skipping
+  return new Promise(res=>{
+    if(fxSkipping)return res();
+    const done=()=>{clearTimeout(t);fxWake=null;res()};
+    const t=setTimeout(done,ms);
+    fxWake={done,tap:!!tap};
+  });
+}
+function fxTap(){if(fxWake&&fxWake.tap)fxWake.done()}
+function fxSkip(){fxSkipping=true;if(fxWake)fxWake.done()}
+
+// tiny synth sounds (start only after a tap, as browsers require)
+let actx=null;
+function sfx(kind){
+  if(!S.sound)return;
+  try{
+    actx=actx||new (window.AudioContext||window.webkitAudioContext)();
+    const t=actx.currentTime;
+    const tone=(f1,f2,dur,type="square",vol=.08,at=0)=>{
+      const o=actx.createOscillator(),g=actx.createGain();o.type=type;
+      o.frequency.setValueAtTime(f1,t+at);o.frequency.exponentialRampToValueAtTime(f2,t+at+dur);
+      g.gain.setValueAtTime(vol,t+at);g.gain.exponentialRampToValueAtTime(.0001,t+at+dur);
+      o.connect(g).connect(actx.destination);o.start(t+at);o.stop(t+at+dur+.02);
+    };
+    const noise=(dur,vol=.15,at=0)=>{
+      const b=actx.createBuffer(1,actx.sampleRate*dur,actx.sampleRate),d=b.getChannelData(0);
+      for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*(1-i/d.length);
+      const s=actx.createBufferSource(),g=actx.createGain();s.buffer=b;g.gain.value=vol;s.connect(g).connect(actx.destination);s.start(t+at);
+    };
+    if(kind==="drop")tone(900,120,.35,"triangle",.1);
+    if(kind==="shake")tone(180,140,.08,"square",.05);
+    if(kind==="open"){noise(.45,.22);tone(300,60,.4,"sawtooth",.08)}
+    if(kind==="rare"){[523,659,784,1047].forEach((f,i)=>tone(f,f,.22,"square",.07,i*.09))}
+    if(kind==="ur"){[523,659,784,1047,1319,1568].forEach((f,i)=>tone(f,f*1.01,.3,"square",.07,i*.08));noise(.6,.1,.5)}
+    if(kind==="up")tone(400,1600,.5,"sawtooth",.07);
+    if(kind==="flip")tone(1200,600,.12,"triangle",.08);
+  }catch(e){}
+}
+
+async function playPullFx(got,n,label,fresh){
+  if(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+  const best=ORDER.find(r=>got.some(c=>c.r===r));
+  const fx=$("pullFx");fxSkipping=false;
+  // a UR pack first shows up gold, then "upgrades" to rainbow
+  const startTier=best==="UR"?"gold":TIER_INFO[best].c;
+  fx.innerHTML=`<div class="fx-rays"></div><div class="fx-dots"></div>
+    <button type="button" class="fx-skip" id="fxSkipBtn">SKIP ▶▶</button>
+    <div class="fx-stage" id="fxStage"></div>
+    <div class="fx-hint" id="fxHint"></div><div class="fx-flash" id="fxFlash"></div>`;
+  fx.className="pull-fx tier-"+startTier;fx.hidden=false;document.body.style.overflow="hidden";
+  $("fxSkipBtn").onclick=e=>{e.stopPropagation();fxSkip()};
+  fx.onclick=fxTap;
+  const stage=$("fxStage"),hint=$("fxHint"),flash=$("fxFlash");
+  const doFlash=(col="#fff")=>{flash.style.background=col;flash.classList.remove("on");void flash.offsetWidth;flash.classList.add("on")};
+  try{
+    // 1) the pack drops in
+    stage.innerHTML=`<div class="fx-pack" id="fxPack"><span class="fx-pack-top">${n===10?"10-PACK!":"SINGLE"}</span><span class="fx-pack-title">${esc(label)}</span><span class="fx-pack-star">★</span><span class="fx-pack-price">${n===10?"10 CARDS":"1 CARD"}</span></div>`;
+    const pack=$("fxPack");
+    sfx("drop");
+    await fxWait(700);
+    // 2) it shakes; rarer packs shake harder. Tap opens it.
+    pack.classList.add("shake",best==="SSR"||best==="UR"?"shake-hard":"x");
+    hint.textContent="タップして開ける！";
+    const shaker=setInterval(()=>sfx("shake"),260);
+    await fxWait(best==="SSR"||best==="UR"?2200:1600,true);
+    clearInterval(shaker);
+    // 2b) UR promotion
+    if(best==="UR"&&!fxSkipping){
+      hint.textContent="";pack.classList.add("charge");sfx("up");
+      await fxWait(650);
+      doFlash("#fff");fx.className="pull-fx tier-rainbow";
+      stage.insertAdjacentHTML("beforeend",`<div class="fx-word fx-q">!?</div>`);
+      await fxWait(900);
+      stage.querySelector(".fx-q")?.remove();
+    }
+    // 3) burst open
+    hint.textContent="";
+    pack.classList.add("open");sfx("open");doFlash(best==="UR"?"#fff6c2":"#fff");
+    stage.insertAdjacentHTML("beforeend",`<div class="fx-word">${TIER_INFO[best].w}</div>`);
+    await fxWait(1000);
+    // 4) SSR / UR: a cut-in and the big reveal
+    if((best==="SSR"||best==="UR")&&!fxSkipping){
+      const top=got.filter(c=>c.r===best);
+      stage.innerHTML=`<div class="fx-cutin"><div class="fx-band"><span>${best==="UR"?"ULTRA RARE!!!":"SUPER RARE!!"}</span></div></div>`;
+      sfx(best==="UR"?"ur":"rare");
+      await fxWait(1300);
+      for(const c of top){
+        if(fxSkipping)break;
+        const i=got.indexOf(c);
+        stage.innerHTML=`<div class="fx-reveal"><div class="fx-glow"></div><div class="fx-card" id="fxCard"></div><div class="fx-name"><b>${esc(c.name)}</b><small>${esc(c.kana||"")}</small>${fresh[i]?'<em>NEW!</em>':""}</div></div>`;
+        const card=cardEl(c,{});$("fxCard").appendChild(card);
+        await fxWait(350);
+        card.classList.add("flipped");sfx("flip");doFlash("rgba(255,255,255,.7)");
+        hint.textContent=top.length>1?"タップで次へ":"タップで結果へ";
+        await fxWait(3000,true);
+      }
+    }
+  }finally{
+    fx.hidden=true;fx.innerHTML="";fx.onclick=null;fxWake=null;document.body.style.overflow="";
+  }
 }
 function checkAll(){if(![...$("grid").querySelectorAll(".card")].some(c=>!c.classList.contains("flipped")))$("flipAll").hidden=true}
 $("flipAll").onclick=()=>{[...$("grid").querySelectorAll(".card:not(.flipped)")].forEach((c,i)=>setTimeout(()=>c.click(),i*90))};
@@ -1359,6 +1528,9 @@ $("mkForm").addEventListener("submit",e=>{
   $("mkFileName").textContent="JPG / PNG / GIF など。カードの形（縦長）に合わせて自動で切り抜きます";
   updatePreview();
 });
+function drawSound(){$("soundBtn").textContent=S.sound?"SOUND ON":"SOUND OFF";$("soundBtn").setAttribute("aria-pressed",S.sound)}
+$("soundBtn").onclick=()=>{S.sound=!S.sound;save();drawSound();if(S.sound)sfx("flip")};
+drawSound();
 fillPackSelect();
 render();
 updateIdle();
