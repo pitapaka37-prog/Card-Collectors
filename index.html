@@ -200,6 +200,21 @@ nav button span{font-family:var(--body);font-size:13px;font-weight:700}
 .binder .progress span{display:block;height:100%;background:var(--yellow)}
 #dexView.my .progress div{background:repeating-linear-gradient(45deg,var(--cyan) 0 8px,#5fd0f0 8px 16px)}
 
+/* star shop */
+.chip i.star{width:18px;height:18px;border:0;border-radius:0;background:var(--yellow);clip-path:polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);filter:drop-shadow(0 0 0 var(--ink))}
+.shop-note{margin:0;font-size:14px;max-width:62ch}
+.shop{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:22px 16px}
+.shop-item{display:flex;flex-direction:column;gap:8px;align-items:stretch}
+.shop-item .price{display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:13px;font-variant-numeric:tabular-nums}
+.shop-item .price b{display:flex;align-items:center;gap:4px;font-family:var(--display);font-weight:400;font-size:20px;letter-spacing:.03em}
+.shop-item .price b i{width:15px;height:15px;background:var(--yellow);clip-path:polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)}
+.shop-item .ghost{width:100%}
+.shop-item .ghost.buy:not(:disabled){background:var(--yellow)}
+.shop-item.owned .card{filter:none}
+.shop-item .got{text-align:center;font-weight:700;font-size:13px;color:var(--red)}
+.shop-rates{font-size:12px;color:var(--mute)}
+.custom-tag.ltd{background:#7a3cff;color:#fff}
+
 /* coins: idle, login, selling */
 .ghost.idle{display:flex;align-items:center;gap:6px;background:var(--yellow)}
 .ghost.idle b{font-variant-numeric:tabular-nums}
@@ -330,6 +345,7 @@ nav button span{font-family:var(--body);font-size:13px;font-weight:700}
     <h1><small>カード・コレクターズ</small>CARD COLLECTORS</h1>
     <div class="wallet">
       <span class="chip" aria-label="所持コイン"><i></i><span id="gems">3000</span></span>
+      <span class="chip" aria-label="所持スター"><i class="star"></i><span id="pts">0</span></span>
       <span class="chip pity">天井まで <b id="pity">80</b> 回</span>
       <button class="ghost idle" id="idleBtn" title="カードを集めるほど速く貯まります">放置ボーナス <b id="idleAmt">0</b></button>
     </div>
@@ -339,6 +355,7 @@ nav button span{font-family:var(--body);font-size:13px;font-weight:700}
     <button role="tab" id="tab-gacha" aria-selected="true">PULL!</button>
     <button role="tab" id="tab-dex" aria-selected="false">FILES <span id="dexCount"></span></button>
     <button role="tab" id="tab-make" aria-selected="false">MAKE</button>
+    <button role="tab" id="tab-shop" aria-selected="false">SHOP</button>
   </nav>
 
   <section id="view-gacha" style="display:flex;flex-direction:column;gap:24px">
@@ -390,6 +407,15 @@ nav button span{font-family:var(--body);font-size:13px;font-weight:700}
       <div class="sellbar" id="sellbar"><span id="sellInfo"></span><button type="button" class="ghost" id="sellAll">ダブりをまとめて売る</button></div>
       <div class="detail" id="detail" hidden></div>
       <div id="dexBody"></div>
+    </div>
+  </section>
+
+  <section id="view-shop" hidden>
+    <div class="panel">
+      <div class="panel-head"><h3>STAR SHOP<small>スター交換所</small></h3><span class="chip"><i class="star"></i><b id="shopPts">0</b>&nbsp;スター</span></div>
+      <p class="shop-note">ダブったカードを売るとスターがたまります。スターは、ガチャでは手に入らない<b>限定カード</b>と交換できます。どのカードも交換できるのは1回だけです。</p>
+      <div class="shop" id="shopGrid"></div>
+      <div class="shop-rates" id="shopRates"></div>
     </div>
   </section>
 
@@ -479,12 +505,28 @@ const CARDS=[
 const PHOTOS={"Rubber Duck":"rubber-duck.jpg","Atlas Prime":"atlas-prime.jpg","Nova Mae":"nova-mae.jpg","Skyline Sentinel":"skyline-sentinel.jpg","Queen Quasar":"queen-quasar.jpg","Thunder Hound":"thunder-hound.jpg","Atomic Bee":"atomic-bee.jpg","Radio Ranger":"radio-ranger.jpg","Mirror Max":"mirror-max.jpg","Velvet Comet":"velvet-comet.jpg"};
 const PHOTO_V="2";
 CARDS.forEach(c=>{if(PHOTOS[c.name])c.photo=PHOTOS[c.name]+"?v="+PHOTO_V});
+/* ---- star shop: cards that never come from a gacha ---- */
+const SHOP_CARDS=[
+ {id:"s1",r:"SR",name:"Granite Grizzly",kana:"グラナイト・グリズリー",flavor:"岩の毛皮をまとう山の番人。ひと吠えで崖崩れを止める。",h:30,price:60,
+  look:{head:"dog",fur:"#7a5230",suit:"#6b6f78",suit2:"#c9a34a",fx:["shards"],emb:"G"}},
+ {id:"s2",r:"SR",name:"Crimson Kite",kana:"クリムゾン・カイト",flavor:"風を読む空の配達人。赤いマントで上昇気流に乗り、どこへでも飛んでいく。",h:5,price:60,
+  look:{skin:"#e9b48e",hair:["spiky","#1a1a1a"],mask:["goggles","#ff6b6b"],cape:"#b0122a",suit:"#e2231a",suit2:"#fff",mouth:"grin",fx:["speed"],emb:"K"}},
+ {id:"s3",r:"SSR",name:"Professor Prism",kana:"プロフェッサー・プリズム",flavor:"光を七色に分けて操る天才科学者。白衣の下はいつも戦闘スーツ。",h:265,price:180,
+  look:{skin:"#f1c7a5",hair:["short","#f2f2f2"],eyes:"glasses",beard:"#f2f2f2",suit:"#7a3cff",suit2:"#21e0ff",mouth:"smile",fx:["shards","sparkle"],emb:"P"}},
+ {id:"s4",r:"SSR",name:"Echo Valkyrie",kana:"エコー・ヴァルキリー",flavor:"音の翼で空を翔ける戦乙女。歌声は衝撃波となって悪を打ち砕く。",h:215,price:180,
+  look:{skin:"#f3cfb3",hair:["long","#ffe14d"],mask:["domino","#2a6ad8"],hat:["crown","#c9d6e8"],cape:"#2a6ad8",suit:"#e8eef6",suit2:"#2a6ad8",mouth:"smile",fx:["waves"],emb:"V"}},
+ {id:"s5",r:"UR",name:"Solar Sovereign",kana:"ソーラー・ソブリン",flavor:"太陽の炎を王冠に宿す光の君主。夜明けとともに力が満ちていく。",h:40,price:450,
+  look:{skin:"#c48a62",hair:["pomp","#ff7a00"],cape:"#ff7a00",suit:"#ffd21f",suit2:"#e2231a",mouth:"grin",halo:true,fx:["rays","sparks"],emb:"S"}},
+ {id:"s6",r:"UR",name:"Omega Paragon",kana:"オメガ・パラゴン",flavor:"宇宙の果てから来た最後の守護者。その拳は星の誕生と同じ力を持つ。",h:270,price:450,
+  look:{skin:"#8d5a3b",mask:["helmet","#2b1b5a","#c9b8ff"],cape:"#5a3db0",suit:"#1b1b2f",suit2:"#c9b8ff",mouth:"flat",fx:["galaxy","nova"],emb:"Ω"}},
+].map(c=>Object.assign(c,{shop:true,shape:"burst",m:c.look.emb}));
+const shopByR={};ORDER.forEach(r=>shopByR[r]=SHOP_CARDS.filter(c=>c.r===r));
 const PITY=80;
 const SFX={SR:"WHAM!",SSR:"KA-POW!!",UR:"KRAKA-BOOM!!!"};
 const PACK_COLORS=["#e2231a","#1d9e5a","#ff7a00","#7a3cff","#e0218a","#0f8f8f","#3d3d3d"];
 const STD_TEXT="十連なら最後の1枚は SR 以上が確定。80 回 SSR が出なければ、次の1枚は SSR 以上になります。";
 
-const DEFAULT={gems:3000,pity:0,owned:{},custom:[],packs:[],pityBy:{},banner:"std",loginLast:"",streak:0,idleAt:0};
+const DEFAULT={gems:3000,pity:0,owned:{},custom:[],packs:[],pityBy:{},banner:"std",loginLast:"",streak:0,idleAt:0,points:0};
 const KEY="cch-gacha";
 const newId=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
 let S=load();
@@ -515,7 +557,7 @@ function load(){
   delete s.packName;delete s.pityMy;delete s.refillAt;
   // numbers and dates must have the right type (data may come from an imported file)
   const num=(x,def,min,max)=>{x=Number(x);return Number.isFinite(x)?Math.min(max,Math.max(min,Math.floor(x))):def};
-  s.gems=num(s.gems,3000,0,1e9);s.pity=num(s.pity,0,0,PITY);s.streak=num(s.streak,0,0,1e6);
+  s.gems=num(s.gems,3000,0,1e9);s.points=num(s.points,0,0,1e9);s.pity=num(s.pity,0,0,PITY);s.streak=num(s.streak,0,0,1e6);
   s.idleAt=num(s.idleAt,0,0,Date.now());
   if(typeof s.loginLast!=="string"||!/^\d{4}-\d{2}-\d{2}$/.test(s.loginLast))s.loginLast="";
   if(typeof s.banner!=="string")s.banner="std";
@@ -532,7 +574,7 @@ const byR={};ORDER.forEach(r=>byR[r]=CARDS.filter(c=>c.r===r));
 const packOf=id=>S.packs.find(p=>p.id===id);
 const pname=p=>(p&&p.name.trim())||"NO NAME";
 const cardsIn=id=>S.custom.filter(c=>c.pack===id);
-function poolOf(id){if(id==="std")return byR;const list=cardsIn(id);const o={};ORDER.forEach(r=>o[r]=list.filter(c=>c.r===r));return o}
+function poolOf(id){if(id==="std")return byR;if(id==="shop")return shopByR;const list=cardsIn(id);const o={};ORDER.forEach(r=>o[r]=list.filter(c=>c.r===r));return o}
 function getPity(id){return id==="std"?S.pity:(S.pityBy[id]||0)}
 function setPity(id,v){if(id==="std")S.pity=v;else S.pityBy[id]=v}
 function ratesFor(pool){const e=Object.entries(RATES).filter(([r])=>pool[r].length);const t=e.reduce((a,[,w])=>a+w,0);return e.map(([r,w])=>[r,w/t*100])}
@@ -554,8 +596,8 @@ function drawOne(minSR,pool,bid){
 function cardEl(c,{flipped=false,isNew=false,sfx=false}={}){
   const d=document.createElement("div");
   d.className="card"+(flipped?" flipped":"");d.dataset.r=c.r;d.dataset.shape=c.shape;d.style.setProperty("--h",c.h);
-  const tag=c.img?`<span class="custom-tag">ORIGINAL</span>`:`<span class="no">#${String(c.id+1).padStart(2,"0")}</span>`;
-  const art=(c.img||c.photo)?`<div class="art${c.photo?" photo":""}"></div>`:(typeof c.id==="number"&&LOOKS[c.id]?`<div class="art hero">${heroSVG(LOOKS[c.id],c.h)}</div>`:`<div class="emblem"><span>${c.m}</span></div>`);
+  const tag=c.shop?`<span class="custom-tag ltd">LIMITED</span>`:c.img?`<span class="custom-tag">ORIGINAL</span>`:`<span class="no">#${String(c.id+1).padStart(2,"0")}</span>`;
+  const art=(c.img||c.photo)?`<div class="art${c.photo?" photo":""}"></div>`:((c.look||(typeof c.id==="number"&&LOOKS[c.id]))?`<div class="art hero">${heroSVG(c.look||LOOKS[c.id],c.h)}</div>`:`<div class="emblem"><span>${c.m}</span></div>`);
   d.innerHTML=`<div class="inner"><div class="face back"></div><div class="face front"><div class="top"><span class="rar">${c.r}</span>${tag}</div>${art}<div class="name"><b>${esc(c.name||"???")}</b><small>${esc(c.kana||"")}</small></div></div></div>${sfx&&SFX[c.r]?`<span class="sfx">${SFX[c.r]}</span>`:""}${isNew?'<span class="new">NEW!</span>':""}`;
   if(c.img||c.photo)d.querySelector(".art").style.backgroundImage=`url("${c.img||c.photo}")`;
   return d;
@@ -857,12 +899,13 @@ document.addEventListener("visibilitychange",()=>{if(document.visibilityState===
 
 /* ---- coins: selling duplicates ---- */
 const SELL_PRICE={N:50,R:120,SR:400,SSR:1200,UR:3000};
+const SELL_STARS={N:2,R:5,SR:15,SSR:40,UR:100};
 function sellCards(list){ // list of [card, count]
-  let total=0,n=0;
-  list.forEach(([c,k])=>{k=Math.min(k,(S.owned[c.id]||0)-1);if(k>0){S.owned[c.id]-=k;total+=k*SELL_PRICE[c.r];n+=k}});
+  let total=0,stars=0,n=0;
+  list.forEach(([c,k])=>{k=Math.min(k,(S.owned[c.id]||0)-1);if(k>0){S.owned[c.id]-=k;total+=k*SELL_PRICE[c.r];stars+=k*SELL_STARS[c.r];n+=k}});
   if(!n)return;
-  addGems(total);render();
-  toast(`${n} 枚売って ＋${total.toLocaleString()} コイン！`);
+  S.points+=stars;addGems(total);render();
+  toast(`${n} 枚売って ＋${total.toLocaleString()} コイン・★${stars.toLocaleString()}！`);
 }
 function dupesIn(pool){return ORDER.flatMap(r=>pool[r]).filter(c=>(S.owned[c.id]||0)>1).map(c=>[c,S.owned[c.id]-1])}
 
@@ -1000,13 +1043,13 @@ function drawDetail(){
   const cw=document.createElement("div");cw.className="detail-card";
   const card=cardEl(c,{flipped:true});cw.appendChild(card);
   cw.insertAdjacentHTML("beforeend",`<div class="tilt-hint">カードをなぞると傾きます</div>`);
-  const where=c.pack?pname(packOf(c.pack)):"STANDARD";
-  const no=typeof c.id==="number"?"#"+String(c.id+1).padStart(2,"0"):"ORIGINAL";
+  const where=c.shop?"STAR SHOP":c.pack?pname(packOf(c.pack)):"STANDARD";
+  const no=c.shop?"LIMITED":typeof c.id==="number"?"#"+String(c.id+1).padStart(2,"0"):"ORIGINAL";
   const t=document.createElement("div");t.style.minWidth="0";
   t.innerHTML=`<div class="rates" style="margin:0 0 8px"><span><b>${c.r}</b>${esc(where)}</span></div>
     <h4>${esc(c.name)}</h4><div class="jp">${esc(c.kana||"")}</div>
     <div class="stats"><div><small>レアリティ</small><b>${c.r}</b></div><div><small>所持数</small><b>×${S.owned[c.id]}</b></div><div><small>No.</small><b>${no}</b></div></div>
-    ${S.owned[c.id]>1?`<div class="sell"><button type="button" class="ghost" id="sell1">1枚売る <b>＋${SELL_PRICE[c.r]}</b></button>${S.owned[c.id]>2?`<button type="button" class="ghost" id="sellN">ダブり ${S.owned[c.id]-1} 枚を全部売る <b>＋${((S.owned[c.id]-1)*SELL_PRICE[c.r]).toLocaleString()}</b></button>`:""}</div>`:""}
+    ${S.owned[c.id]>1?`<div class="sell"><button type="button" class="ghost" id="sell1">1枚売る <b>＋${SELL_PRICE[c.r]}・★${SELL_STARS[c.r]}</b></button>${S.owned[c.id]>2?`<button type="button" class="ghost" id="sellN">ダブり ${S.owned[c.id]-1} 枚を全部売る <b>＋${((S.owned[c.id]-1)*SELL_PRICE[c.r]).toLocaleString()}・★${(S.owned[c.id]-1)*SELL_STARS[c.r]}</b></button>`:""}</div>`:""}
     ${c.flavor?`<p>${esc(c.flavor)}</p>`:""}
     <div class="nav"><button type="button" class="ghost" id="dPrev">← 前のカード</button><span style="align-self:center;font-weight:700;font-variant-numeric:tabular-nums">${detailIdx+1} / ${detailList.length}</span><button type="button" class="ghost" id="dNext">次のカード →</button></div>`;
   const close=document.createElement("button");close.type="button";close.className="close";close.textContent="×";close.setAttribute("aria-label","閉じる");close.onclick=closeDetail;
@@ -1052,11 +1095,11 @@ function dexStats(pool){
   return{list,total:list.length,have:list.filter(c=>S.owned[c.id]).length};
 }
 function renderDex(){
-  const books=[{id:"std",title:"STANDARD",sub:"通常ガチャのヒーロー",color:null}].concat(S.packs.map(p=>({id:p.id,title:pname(p),sub:"あなたが作ったガチャ",color:p.color})));
+  const books=[{id:"std",title:"STANDARD",sub:"通常ガチャのヒーロー",color:null},{id:"shop",title:"LIMITED",sub:"スターショップ限定のヒーロー",color:"#7a3cff"}].concat(S.packs.map(p=>({id:p.id,title:pname(p),sub:"あなたが作ったガチャ",color:p.color})));
   books.forEach(b=>b.s=dexStats(poolOf(b.id)));
   const allHave=books.reduce((a,b)=>a+b.s.have,0),allTotal=books.reduce((a,b)=>a+b.s.total,0);
   $("dexCount").textContent=`${allHave}/${allTotal}`;
-  if(dexSel&&dexSel!=="std"&&(!packOf(dexSel)||!cardsIn(dexSel).length))dexSel=null;
+  if(dexSel&&dexSel!=="std"&&dexSel!=="shop"&&(!packOf(dexSel)||!cardsIn(dexSel).length))dexSel=null;
   $("dexPick").hidden=!!dexSel;$("dexView").hidden=!dexSel;
   const box=$("binders");box.innerHTML="";
   books.forEach(({id,title,sub,color,s})=>{
@@ -1076,17 +1119,17 @@ function renderDex(){
   });
   if(!dexSel)return;
   const book=books.find(b=>b.id===dexSel),s=book.s;
-  $("dexTitle").innerHTML=`${esc(book.title)}<small>${dexSel==="std"?"通常ガチャの図鑑":"自作ガチャの図鑑"}</small>`;
+  $("dexTitle").innerHTML=`${esc(book.title)}<small>${dexSel==="std"?"通常ガチャの図鑑":dexSel==="shop"?"ショップ限定カードの図鑑":"自作ガチャの図鑑"}</small>`;
   $("dexView").classList.toggle("my",dexSel!=="std");
   $("dexPct").textContent=`${s.have} / ${s.total} 人 ・ ${Math.round(s.have/s.total*100)}%`;
   $("dexBar").style.width=s.have/s.total*100+"%";
   const dupes=dupesIn(poolOf(dexSel));
-  const dn=dupes.reduce((a,[,k])=>a+k,0),dt=dupes.reduce((a,[c,k])=>a+k*SELL_PRICE[c.r],0);
+  const dn=dupes.reduce((a,[,k])=>a+k,0),dt=dupes.reduce((a,[c,k])=>a+k*SELL_PRICE[c.r],0),ds=dupes.reduce((a,[c,k])=>a+k*SELL_STARS[c.r],0);
   $("sellbar").hidden=!dn;
   if(dn){
     $("sellInfo").textContent=`ダブっているカード ${dn} 枚（各1枚は残します）`;
-    armed($("sellAll"),`ダブりをまとめて売る ＋${dt.toLocaleString()}`,`もう一度押すと ${dn} 枚売ります`,()=>sellCards(dupesIn(poolOf(dexSel))));
-    $("sellAll").textContent=`ダブりをまとめて売る ＋${dt.toLocaleString()}`;
+    armed($("sellAll"),`ダブりをまとめて売る ＋${dt.toLocaleString()}・★${ds.toLocaleString()}`,`もう一度押すと ${dn} 枚売ります`,()=>sellCards(dupesIn(poolOf(dexSel))));
+    $("sellAll").textContent=`ダブりをまとめて売る ＋${dt.toLocaleString()}・★${ds.toLocaleString()}`;
   }
   const body=$("dexBody");body.innerHTML="";
   dexGroup(body,poolOf(dexSel));
@@ -1182,26 +1225,53 @@ function openMakeFor(id){
 }
 
 // Only the visible screen is redrawn; the others are marked stale and drawn when opened.
-let dexStale=true,mineStale=true;
+let dexStale=true,mineStale=true,shopStale=true;
 function updateDexCount(){
-  const ids=CARDS.map(c=>c.id).concat(S.custom.map(c=>c.id));
+  const ids=CARDS.map(c=>c.id).concat(SHOP_CARDS.map(c=>c.id),S.custom.map(c=>c.id));
   $("dexCount").textContent=`${ids.filter(id=>S.owned[id]).length}/${ids.length}`;
 }
 function render(){
-  $("gems").textContent=S.gems.toLocaleString();
-  renderCover();updateDexCount();if(typeof updateIdle==="function"&&$("idleAmt"))updateIdle();
+  $("gems").textContent=S.gems.toLocaleString();$("pts").textContent=S.points.toLocaleString();
+  renderCover();updateDexCount();
+  if(!$("view-shop").hidden){renderShop();shopStale=false}else shopStale=true;if(typeof updateIdle==="function"&&$("idleAmt"))updateIdle();
   if(!$("view-dex").hidden){renderDex();dexStale=false}else dexStale=true;
   if(!$("view-make").hidden){renderMine();mineStale=false}else mineStale=true;
 }
 function tab(which){
-  ["gacha","dex","make"].forEach(t=>{
+  ["gacha","dex","make","shop"].forEach(t=>{
     const on=t===which;$("tab-"+t).setAttribute("aria-selected",on);$("view-"+t).hidden=!on;
     if(on&&t==="make")$("view-make").style.display="flex";
   });
   if(which==="dex"&&dexStale){renderDex();dexStale=false}
   if(which==="make"&&mineStale){renderMine();mineStale=false}
+  if(which==="shop"&&shopStale){renderShop();shopStale=false}
 }
-$("tab-gacha").onclick=()=>tab("gacha");$("tab-dex").onclick=()=>{dexSel=null;closeDetail();dexStale=true;tab("dex")};$("tab-make").onclick=()=>tab("make");
+function renderShop(){
+  $("shopPts").textContent=S.points.toLocaleString();
+  const g=$("shopGrid");g.innerHTML="";
+  SHOP_CARDS.forEach(c=>{
+    const have=(S.owned[c.id]||0)>0;
+    const it=document.createElement("div");it.className="shop-item"+(have?" owned":"");
+    it.appendChild(cardEl(c,{flipped:true}));
+    it.insertAdjacentHTML("beforeend",`<div class="price"><span>${c.r}</span><b><i></i>${c.price.toLocaleString()}</b></div>`);
+    if(have){it.insertAdjacentHTML("beforeend",`<div class="got">交換済み・図鑑で見られます</div>`)}
+    else{
+      const b=document.createElement("button");b.type="button";b.className="ghost buy";
+      const short=c.price-S.points;
+      if(short>0){b.disabled=true;b.textContent=`あと ★${short.toLocaleString()}`}
+      else armed(b,"交換する","もう一度押すと交換",()=>{
+        if(S.points<c.price||(S.owned[c.id]||0)>0)return;
+        S.points-=c.price;S.owned[c.id]=1;save();render();
+        toast(`「${c.name}」と交換しました！`);
+      });
+      if(short<=0)b.textContent="交換する";
+      it.appendChild(b);
+    }
+    g.appendChild(it);
+  });
+  $("shopRates").textContent=`カードを1枚売ると N ★${SELL_STARS.N}・R ★${SELL_STARS.R}・SR ★${SELL_STARS.SR}・SSR ★${SELL_STARS.SSR}・UR ★${SELL_STARS.UR} もらえます。`;
+}
+$("tab-gacha").onclick=()=>tab("gacha");$("tab-dex").onclick=()=>{dexSel=null;closeDetail();dexStale=true;tab("dex")};$("tab-make").onclick=()=>tab("make");$("tab-shop").onclick=()=>tab("shop");
 
 /* ---- card maker ---- */
 let mkImg=null;
