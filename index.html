@@ -498,7 +498,7 @@ body{overflow-x:clip}
 .masthead .chip:nth-child(2n){transform:rotate(1deg)}
 .masthead .ghost{border-radius:2px}
 /* action bar: big comic buttons with icons */
-.actionbar{position:relative;z-index:20;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.actionbar{position:relative;z-index:20;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
 .actionbar button{position:relative;display:flex;align-items:center;justify-content:center;gap:8px;padding:8px 6px;border:4px solid var(--ink);border-radius:0;background:#fff;box-shadow:5px 5px 0 var(--ink);font-size:24px;transition:transform .1s,box-shadow .1s}
 .actionbar button:nth-child(odd){transform:rotate(-1.2deg)}
 .actionbar button:nth-child(even){transform:rotate(1.2deg)}
@@ -631,6 +631,46 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
 .lu-list li.no b{color:#8a8170}
 .lu-note{margin:0;font-size:12px;color:var(--mute)}
 
+
+/* home screen */
+#view-home::after{content:"WHAM!";right:-6%;top:55%}
+.home{display:flex;flex-direction:column;gap:22px}
+.home-hero{position:relative;display:grid;grid-template-columns:minmax(0,190px) 1fr;gap:22px;align-items:center;padding:22px;border:5px solid var(--ink);box-shadow:10px 10px 0 var(--ink);background:var(--blue);color:#fff;overflow:hidden;
+  background-image:radial-gradient(rgba(0,0,0,.2) 1.6px,transparent 1.9px),repeating-conic-gradient(from 0deg at 20% 50%,rgba(255,255,255,.12) 0 6deg,transparent 6deg 14deg);background-size:9px 9px,auto}
+.hh-card{position:relative;transform:rotate(-5deg);animation:ts-float 3.4s ease-in-out infinite}
+.hh-text{position:relative;display:flex;flex-direction:column;gap:12px;min-width:0}
+.hh-cap{align-self:flex-start;font-family:var(--display);font-size:13px;letter-spacing:.05em;background:var(--yellow);color:var(--ink);border:2px solid var(--ink);padding:1px 8px;transform:rotate(-1.5deg)}
+.hh-text h2{margin:0;font-family:var(--display);font-weight:400;font-size:clamp(36px,8vw,62px);line-height:.92;letter-spacing:.03em;color:var(--yellow);-webkit-text-stroke:2px var(--ink);text-shadow:4px 4px 0 var(--red),7px 7px 0 var(--ink)}
+.hh-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.hh-stats div{background:#fff;color:var(--ink);border:3px solid var(--ink);box-shadow:3px 3px 0 var(--ink);padding:4px 8px;display:flex;flex-direction:column;min-width:0}
+.hh-stats small{font-size:11px;font-weight:700}
+.hh-stats b{font-family:var(--display);font-weight:400;font-size:24px;letter-spacing:.03em;font-variant-numeric:tabular-nums;overflow:hidden;text-overflow:ellipsis}
+.hh-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.hh-streak{font-weight:700;font-size:13px;text-shadow:1px 1px 0 var(--ink)}
+.home-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.hp{position:relative;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-end;gap:2px;min-height:150px;padding:14px 16px;text-align:left;border:5px solid var(--ink);box-shadow:7px 7px 0 var(--ink);color:#fff;overflow:hidden;transition:transform .1s,box-shadow .1s;
+  background-image:radial-gradient(rgba(0,0,0,.22) 1.6px,transparent 1.9px),repeating-conic-gradient(from 0deg at 80% 20%,rgba(255,255,255,.14) 0 6deg,transparent 6deg 14deg);background-size:9px 9px,auto}
+.hp:nth-child(odd){transform:rotate(-1deg)}.hp:nth-child(even){transform:rotate(1deg)}
+.hp:hover{transform:rotate(0) translate(-2px,-3px);box-shadow:9px 10px 0 var(--ink)}
+.hp:active{transform:translate(3px,3px);box-shadow:2px 2px 0 var(--ink)}
+.hp-pull{background-color:var(--red);grid-column:span 2;min-height:190px}
+.hp-files{background-color:var(--blue)}
+.hp-shop{background-color:#7a3cff}
+.hp-games{background-color:#0b1240}
+.hp-make{background-color:#1d9e5a}
+.hp b{position:relative;font-family:var(--display);font-weight:400;font-size:clamp(34px,7vw,56px);line-height:.9;letter-spacing:.04em;color:var(--yellow);-webkit-text-stroke:1.5px var(--ink);text-shadow:4px 4px 0 var(--ink)}
+.hp-pull b{font-size:clamp(48px,11vw,84px)}
+.hp i{position:relative;font-style:normal;font-family:var(--jp);font-size:13px;text-shadow:1px 1px 0 var(--ink)}
+.hp small{position:relative;margin-top:6px;font-size:12px;font-weight:700;background:#fff;color:var(--ink);border:2px solid var(--ink);padding:0 6px;font-variant-numeric:tabular-nums}
+.hp-sfx{position:absolute;top:8px;right:-6px;font-family:var(--display);font-size:clamp(26px,5vw,40px);letter-spacing:.03em;color:#fff;-webkit-text-stroke:1.5px var(--ink);text-shadow:3px 3px 0 var(--ink);transform:rotate(10deg);opacity:.9}
+@media (max-width:640px){
+  .home-hero{grid-template-columns:110px 1fr;gap:14px;padding:16px}
+  .home-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+  .hp{min-height:130px;padding:12px}
+  .hh-stats b{font-size:19px}
+}
+@media (max-width:760px){.actionbar{gap:6px;padding-left:8px;padding-right:8px}.actionbar button{font-size:12px}.actionbar button svg{width:22px;height:22px}}
+
 @media (max-width:640px){
   .maker{grid-template-columns:1fr}
   .maker .preview{width:180px;justify-self:center}
@@ -662,14 +702,43 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
   </header>
 
   <nav role="tablist" class="actionbar">
-    <button role="tab" id="tab-gacha" aria-selected="true"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M7 4h18l-2 24H9z" fill="currentColor" stroke="#141414" stroke-width="2.5" stroke-linejoin="round"/><path d="M16 10l2 4.5 4.8.4-3.7 3.1 1.2 4.7L16 20.2 11.7 22.7l1.2-4.7-3.7-3.1 4.8-.4z" fill="#fff" stroke="#141414" stroke-width="1.6" stroke-linejoin="round"/></svg><span class="lbl">PULL!</span></button>
+    <button role="tab" id="tab-home" aria-selected="true"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M4 15L16 4l12 11v13H19v-8h-6v8H4z" fill="currentColor" stroke="#141414" stroke-width="2.5" stroke-linejoin="round"/></svg><span class="lbl">HOME</span></button>
+    <button role="tab" id="tab-gacha" aria-selected="false"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M7 4h18l-2 24H9z" fill="currentColor" stroke="#141414" stroke-width="2.5" stroke-linejoin="round"/><path d="M16 10l2 4.5 4.8.4-3.7 3.1 1.2 4.7L16 20.2 11.7 22.7l1.2-4.7-3.7-3.1 4.8-.4z" fill="#fff" stroke="#141414" stroke-width="1.6" stroke-linejoin="round"/></svg><span class="lbl">PULL!</span></button>
     <button role="tab" id="tab-dex" aria-selected="false"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M4 7c4-2 8-2 12 1 4-3 8-3 12-1v19c-4-2-8-2-12 1-4-3-8-3-12-1z" fill="currentColor" stroke="#141414" stroke-width="2.5" stroke-linejoin="round"/><path d="M16 8v19" stroke="#141414" stroke-width="2.5"/></svg><span class="lbl">FILES</span><span class="badge" id="dexCount"></span></button>
     <button role="tab" id="tab-make" aria-selected="false"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M6 26l2-7L21 6l5 5-13 13z" fill="currentColor" stroke="#141414" stroke-width="2.5" stroke-linejoin="round"/><path d="M18 9l5 5M6 26l7-2" stroke="#141414" stroke-width="2.5"/></svg><span class="lbl">MAKE</span></button>
     <button role="tab" id="tab-shop" aria-selected="false"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3l3.6 8 8.7.8-6.6 5.7 2 8.5L16 21.5 8.3 26l2-8.5-6.6-5.7 8.7-.8z" fill="currentColor" stroke="#141414" stroke-width="2.5" stroke-linejoin="round"/></svg><span class="lbl">SHOP</span></button>
     <button role="tab" id="tab-games" aria-selected="false"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="4" y="18" width="24" height="10" rx="2" fill="currentColor" stroke="#141414" stroke-width="2.5"/><path d="M16 18V9" stroke="#141414" stroke-width="3"/><circle cx="16" cy="8" r="5" fill="#e2231a" stroke="#141414" stroke-width="2.5"/><circle cx="23" cy="23" r="2" fill="#141414"/></svg><span class="lbl">GAMES</span></button>
   </nav>
 
-  <section id="view-gacha" style="display:flex;flex-direction:column;gap:24px">
+  <section id="view-home">
+    <div class="home">
+      <div class="home-hero">
+        <div class="hh-card" id="hhCard"></div>
+        <div class="hh-text">
+          <span class="hh-cap">MEANWHILE, IN STAR LIGHT CITY...</span>
+          <h2>WELCOME BACK,<br>HERO!</h2>
+          <div class="hh-stats">
+            <div><small>COINS</small><b id="hsCoins">0</b></div>
+            <div><small>STARS</small><b id="hsStars">0</b></div>
+            <div><small>FILES</small><b id="hsDex">0/0</b></div>
+          </div>
+          <div class="hh-row">
+            <button type="button" class="ghost idle" id="hsIdle">放置ボーナスを受け取る <b id="hsIdleAmt">0</b></button>
+            <span class="hh-streak" id="hsStreak"></span>
+          </div>
+        </div>
+      </div>
+      <div class="home-grid">
+        <button type="button" class="hp hp-pull" data-go="gacha"><span class="hp-sfx">KA-POW!</span><b>PULL!</b><i>ガチャを引く</i><small id="hpPull"></small></button>
+        <button type="button" class="hp hp-files" data-go="dex"><span class="hp-sfx">FWOOSH!</span><b>FILES</b><i>ヒーロー図鑑</i><small id="hpFiles"></small></button>
+        <button type="button" class="hp hp-shop" data-go="shop"><span class="hp-sfx">KA-CHING!</span><b>SHOP</b><i>スター交換所</i><small id="hpShop"></small></button>
+        <button type="button" class="hp hp-games" data-go="games"><span class="hp-sfx">ZOOOM!</span><b>GAMES</b><i>ミニゲーム</i><small id="hpGames"></small></button>
+        <button type="button" class="hp hp-make" data-go="make"><span class="hp-sfx">SKETCH!</span><b>MAKE</b><i>カードを作る</i><small id="hpMake"></small></button>
+      </div>
+    </div>
+  </section>
+
+  <section id="view-gacha" hidden style="flex-direction:column;gap:24px">
     <div class="bswitch" id="bswitch" role="tablist" aria-label="ガチャの種類"></div>
     <div class="cover" id="cover">
       <span class="issue" id="cvIssue">STAR LIGHT COMICS #1 ・ 25¢</span>
@@ -1249,6 +1318,8 @@ const TRACKS={
     bass:"R.R.5.R.R.R.5.R.",lead:"1.3.5.3.4.3.2.3.1.3.5.4.5...3...",wave:"square"},
   make:{bpm:80,vol:.9,swing:.3,chords:[[45,"m7"],[50,"7"],[43,"M7"],[48,"M7"]],kick:"x......x..x.....",snare:"....x.......x...",hat:"x.x.x.x.x.x.x.x.",
     bass:"R.......5.......",lead:"4...3.......2...3...2.1.........",wave:"triangle"},
+  home:{bpm:104,vol:.9,chords:[[48,"M"],[41,"M"],[45,"m"],[43,"M"]],kick:"x.......x.x.....",snare:"....x.......x...",hat:"x.x.x.x.x.x.x.x.",
+    bass:"R...R.5.R...8.5.",lead:"3.2.1...5...4.3.2.......1.2.3...",wave:"triangle"},
   games:{bpm:118,vol:.9,chords:[[45,"m"],[41,"M"],[43,"M"],[40,"M"]],kick:"x...x...x...x...",snare:"....x.......x...",hat:"x.x.x.x.x.x.x.x.",
     bass:"R.R.8.R.R.R.8.5.",lead:"1.3.5.4.3...1...2.3.4.3.2.......",wave:"square"},
   arcade:{bpm:150,vol:.85,chords:[[40,"m"],[48,"M"],[50,"M"],[47,"7"]],kick:"x..xx...x..xx...",snare:"....x.......x...",hat:"xxxxxxxxxxxxxxxx",
@@ -1306,7 +1377,7 @@ const BGM=(()=>{
     current:()=>name,
   };
 })();
-let currentScreen="gacha",bgmReady=false;
+let currentScreen="home",bgmReady=false;
 function screenMusic(){if(bgmReady)BGM.play(currentScreen)}
 document.addEventListener("visibilitychange",()=>{if(!actx)return;if(document.visibilityState==="hidden")actx.suspend();else actx.resume()});
 function sfx(kind){
@@ -1922,15 +1993,18 @@ function updateDexCount(){
 function render(){
   $("gems").textContent=S.gems.toLocaleString();$("pts").textContent=S.points.toLocaleString();
   renderCover();updateDexCount();
+  if(!$("view-home").hidden)renderHome();
   if(!$("view-shop").hidden){renderShop();shopStale=false}else shopStale=true;if(typeof updateIdle==="function"&&$("idleAmt"))updateIdle();
   if(!$("view-dex").hidden){renderDex();dexStale=false}else dexStale=true;
   if(!$("view-make").hidden){renderMine();mineStale=false}else mineStale=true;
 }
 function tab(which){
   currentScreen=which;screenMusic();
-  ["gacha","dex","make","shop","games"].forEach(t=>{
+  if(which==="home")setTimeout(renderHome,0);
+  ["home","gacha","dex","make","shop","games"].forEach(t=>{
     const on=t===which;$("tab-"+t).setAttribute("aria-selected",on);$("view-"+t).hidden=!on;
     if(on&&t==="make")$("view-make").style.display="flex";
+    if(on&&t==="gacha")$("view-gacha").style.display="flex";
   });
   if(which==="dex"&&dexStale){renderDex();dexStale=false}
   if(which==="make"&&mineStale){renderMine();mineStale=false}
@@ -1969,7 +2043,7 @@ function renderShop(){
   });
   $("shopRates").textContent=`カードを1枚売ると N ★${SELL_STARS.N}・R ★${SELL_STARS.R}・SR ★${SELL_STARS.SR}・SSR ★${SELL_STARS.SSR}・UR ★${SELL_STARS.UR} もらえます。`;
 }
-$("tab-gacha").onclick=()=>tab("gacha");$("tab-dex").onclick=()=>{dexSel=null;closeDetail();dexStale=true;tab("dex")};$("tab-make").onclick=()=>tab("make");$("tab-shop").onclick=()=>tab("shop");$("tab-games").onclick=()=>tab("games");
+$("tab-home").onclick=()=>tab("home");$("tab-gacha").onclick=()=>tab("gacha");$("tab-dex").onclick=()=>{dexSel=null;closeDetail();dexStale=true;tab("dex")};$("tab-make").onclick=()=>tab("make");$("tab-shop").onclick=()=>tab("shop");$("tab-games").onclick=()=>tab("games");
 
 /* ---- card maker ---- */
 let mkImg=null;
@@ -2365,6 +2439,30 @@ function showLineup(){
   box.onclick=e=>{if(e.target===box)close()};
 }
 $("lineupBtn").onclick=showLineup;
+
+
+/* ---- home screen ---- */
+function renderHome(){
+  const all=CARDS.concat(SHOP_CARDS,REWARD_CARDS);
+  const have=all.filter(c=>S.owned[c.id]).length;
+  $("hsCoins").textContent=S.gems.toLocaleString();
+  $("hsStars").textContent=S.points.toLocaleString();
+  $("hsDex").textContent=`${have}/${all.length}`;
+  const box=$("hhCard");box.innerHTML="";
+  const pick=coverCards(all.concat(S.custom),1)[0];
+  if(pick){const card=cardEl(pick,{flipped:true});box.appendChild(card)}
+  const n=idleEarned();$("hsIdleAmt").textContent="＋"+n.toLocaleString();$("hsIdle").disabled=n<1;
+  const st=loginState();$("hsStreak").textContent=S.streak?`ログイン ${S.streak} 日連続`:"";
+  const left=PITY-S.pity;
+  $("hpPull").textContent=`SSR 確定まであと ${left} 回`;
+  $("hpFiles").textContent=`${have} / ${all.length} 種 ・ ${Math.round(have/all.length*100)}%`;
+  const open=SHOP_CARDS.filter(c=>!S.owned[c.id]).length;
+  $("hpShop").textContent=`★${S.points.toLocaleString()} ・ 交換できるカード ${open} 枚`;
+  $("hpGames").textContent=`HIGH SCORE ${(S.hiScore||0).toLocaleString()}`;
+  $("hpMake").textContent=`自作 ${S.custom.length} 枚 ・ ガチャ ${S.packs.length} 個`;
+}
+document.querySelectorAll(".hp").forEach(b=>b.onclick=()=>{const go=b.dataset.go;if(go==="dex"){dexSel=null;closeDetail();dexStale=true}tab(go);window.scrollTo({top:0,behavior:"smooth"})});
+$("hsIdle").onclick=()=>{$("idleBtn").click();renderHome()};
 
 /* ---- title screen ---- */
 (function titleScreen(){
