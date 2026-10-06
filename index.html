@@ -900,14 +900,13 @@ function showLoginBonus(){
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"){updateIdle();if($("bonus").hidden)showLoginBonus()}});
 
 /* ---- coins: selling duplicates ---- */
-const SELL_PRICE={N:50,R:120,SR:400,SSR:1200,UR:3000};
 const SELL_STARS={N:2,R:5,SR:15,SSR:40,UR:100};
 function sellCards(list){ // list of [card, count]
-  let total=0,stars=0,n=0;
-  list.forEach(([c,k])=>{k=Math.min(k,(S.owned[c.id]||0)-1);if(k>0){S.owned[c.id]-=k;total+=k*SELL_PRICE[c.r];stars+=k*SELL_STARS[c.r];n+=k}});
+  let stars=0,n=0;
+  list.forEach(([c,k])=>{k=Math.min(k,(S.owned[c.id]||0)-1);if(k>0){S.owned[c.id]-=k;stars+=k*SELL_STARS[c.r];n+=k}});
   if(!n)return;
-  S.points+=stars;addGems(total);render();
-  toast(`${n} 枚売って ＋${total.toLocaleString()} コイン・★${stars.toLocaleString()}！`);
+  S.points+=stars;save();render();
+  toast(`${n} 枚売って ★${stars.toLocaleString()} スター！`);
 }
 function dupesIn(pool){return ORDER.flatMap(r=>pool[r]).filter(c=>(S.owned[c.id]||0)>1).map(c=>[c,S.owned[c.id]-1])}
 
@@ -1051,7 +1050,7 @@ function drawDetail(){
   t.innerHTML=`<div class="rates" style="margin:0 0 8px"><span><b>${c.r}</b>${esc(where)}</span></div>
     <h4>${esc(c.name)}</h4><div class="jp">${esc(c.kana||"")}</div>
     <div class="stats"><div><small>レアリティ</small><b>${c.r}</b></div><div><small>所持数</small><b>×${S.owned[c.id]}</b></div><div><small>No.</small><b>${no}</b></div></div>
-    ${S.owned[c.id]>1?`<div class="sell"><button type="button" class="ghost" id="sell1">1枚売る <b>＋${SELL_PRICE[c.r]}・★${SELL_STARS[c.r]}</b></button>${S.owned[c.id]>2?`<button type="button" class="ghost" id="sellN">ダブり ${S.owned[c.id]-1} 枚を全部売る <b>＋${((S.owned[c.id]-1)*SELL_PRICE[c.r]).toLocaleString()}・★${(S.owned[c.id]-1)*SELL_STARS[c.r]}</b></button>`:""}</div>`:""}
+    ${S.owned[c.id]>1?`<div class="sell"><button type="button" class="ghost" id="sell1">1枚売る <b>★${SELL_STARS[c.r]}</b></button>${S.owned[c.id]>2?`<button type="button" class="ghost" id="sellN">ダブり ${S.owned[c.id]-1} 枚を全部売る <b>★${(S.owned[c.id]-1)*SELL_STARS[c.r]}</b></button>`:""}</div>`:""}
     ${c.flavor?`<p>${esc(c.flavor)}</p>`:""}
     <div class="nav"><button type="button" class="ghost" id="dPrev">← 前のカード</button><span style="align-self:center;font-weight:700;font-variant-numeric:tabular-nums">${detailIdx+1} / ${detailList.length}</span><button type="button" class="ghost" id="dNext">次のカード →</button></div>`;
   const close=document.createElement("button");close.type="button";close.className="close";close.textContent="×";close.setAttribute("aria-label","閉じる");close.onclick=closeDetail;
@@ -1127,12 +1126,12 @@ function renderDex(){
   $("dexPct").textContent=`${s.have} / ${s.total} 人 ・ ${Math.round(s.have/s.total*100)}%`;
   $("dexBar").style.width=s.have/s.total*100+"%";
   const dupes=dupesIn(dexPoolOf(dexSel));
-  const dn=dupes.reduce((a,[,k])=>a+k,0),dt=dupes.reduce((a,[c,k])=>a+k*SELL_PRICE[c.r],0),ds=dupes.reduce((a,[c,k])=>a+k*SELL_STARS[c.r],0);
+  const dn=dupes.reduce((a,[,k])=>a+k,0),ds=dupes.reduce((a,[c,k])=>a+k*SELL_STARS[c.r],0);
   $("sellbar").hidden=!dn;
   if(dn){
     $("sellInfo").textContent=`ダブっているカード ${dn} 枚（各1枚は残します）`;
-    armed($("sellAll"),`ダブりをまとめて売る ＋${dt.toLocaleString()}・★${ds.toLocaleString()}`,`もう一度押すと ${dn} 枚売ります`,()=>sellCards(dupesIn(dexPoolOf(dexSel))));
-    $("sellAll").textContent=`ダブりをまとめて売る ＋${dt.toLocaleString()}・★${ds.toLocaleString()}`;
+    armed($("sellAll"),`ダブりをまとめて売る ★${ds.toLocaleString()}`,`もう一度押すと ${dn} 枚売ります`,()=>sellCards(dupesIn(dexPoolOf(dexSel))));
+    $("sellAll").textContent=`ダブりをまとめて売る ★${ds.toLocaleString()}`;
   }
   const body=$("dexBody");body.innerHTML="";
   dexGroup(body,dexPoolOf(dexSel));
