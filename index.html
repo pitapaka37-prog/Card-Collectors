@@ -654,7 +654,7 @@ const CARDS=[
  ["R","JJ","Jukebox Jane","ジュークボックス・ジェーン","特殊なラジオ装置であらゆる電波を操るファンキーなヒーロー。強烈な音波と放送ジャックを武器に街を守る。",340,"diamond"],
  ["R","SK","Skate Saint","スケート・セイント","ローラースケートで街を駆け回り、持ち前の身軽さだけを頼りに事件へ飛び込む、ちょっと頼りないティーンヒーロー。",180,"diamond"],
  ["R","DD","Diner Dynamo","ダイナー・ダイナモ","街のハンバーガー屋を切り盛りするタフなおっさん。口は悪いが面倒見がよく、素手の喧嘩ならそこらのチンピラには負けない。",28,"diamond"],
- ["R","TT","Tornado Tess","トルネード・テス","回るほど強くなる。止まったあと少し目が回る。",190,"diamond"],
+ ["R","TT","Tornado Tess","トルネード・テス","発明とイタズラが大好きな、ぐるぐるメガネの天才小学生。自作のガラクタ装置で小さな竜巻を起こしては街中を騒がせる。",190,"diamond"],
  ["R","CC","Captain Cactus","キャプテン・カクタス","砂漠の町から来た保安官。トゲで守り、水は分けてくれる。",110,"diamond"],
  ["R","GG","Glitter Gator","グリッター・ゲイター","下水道に住むきらきらのワニ。意外と面倒見がいい。",140,"diamond"],
  ["SR","AB","Atomic Bee","アトミック・ビー","原子エネルギーを操るハチ型ヒーロー。超高速飛行と強烈なエネルギー攻撃、無数のメカ蜂を武器に戦う。",48,"shield"],
@@ -669,7 +669,7 @@ const CARDS=[
  ["UR","NM","Nova Mae","ノヴァ・メイ","宇宙の光「ノヴァ・エネルギー」を操り、闇に希望を灯す若きヒーロー。",320,"burst"],
 ].map((c,i)=>({id:i,r:c[0],m:c[1],name:c[2],kana:c[3],flavor:c[4],h:c[5],shape:c[6]}));
 // standard cards that use a picture instead of the drawn portrait
-const PHOTOS={"Rubber Duck":"rubber-duck.jpg","Atlas Prime":"atlas-prime.jpg","Nova Mae":"nova-mae.jpg","Skyline Sentinel":"skyline-sentinel.jpg","Queen Quasar":"queen-quasar.jpg","Thunder Hound":"thunder-hound.jpg","Atomic Bee":"atomic-bee.jpg","Radio Ranger":"radio-ranger.jpg","Mirror Max":"mirror-max.jpg","Velvet Comet":"velvet-comet.jpg","Doctor Fuse":"doctor-fuse.jpg","Neon Noodle":"neon-noodle.jpg","Jukebox Jane":"jukebox-jane.jpg","Skate Saint":"skate-saint.jpg","Diner Dynamo":"diner-dynamo.jpg"};
+const PHOTOS={"Rubber Duck":"rubber-duck.jpg","Atlas Prime":"atlas-prime.jpg","Nova Mae":"nova-mae.jpg","Skyline Sentinel":"skyline-sentinel.jpg","Queen Quasar":"queen-quasar.jpg","Thunder Hound":"thunder-hound.jpg","Atomic Bee":"atomic-bee.jpg","Radio Ranger":"radio-ranger.jpg","Mirror Max":"mirror-max.jpg","Velvet Comet":"velvet-comet.jpg","Doctor Fuse":"doctor-fuse.jpg","Neon Noodle":"neon-noodle.jpg","Jukebox Jane":"jukebox-jane.jpg","Skate Saint":"skate-saint.jpg","Diner Dynamo":"diner-dynamo.jpg","Tornado Tess":"tornado-tess.jpg"};
 const PHOTO_V="2";
 CARDS.forEach(c=>{if(PHOTOS[c.name])c.photo=PHOTOS[c.name]+"?v="+PHOTO_V});
 /* ---- cover cards: random owned cards, or the rarest ones when nothing is owned ---- */
