@@ -711,7 +711,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
           <span class="gt-title"><b>VELVET COMET</b><i>MISSION</i></span>
           <span class="gt-desc">宇宙船で隕石の群れを撃ち落とすシューティング。ウェーブをクリアするごとにコイン10枚！</span>
           <span class="gt-best">HIGH SCORE <b id="vcmBest">0</b></span>
-          <span class="gt-prize">全クリア報酬：SSR「スター・ヴェルベット」</span>
+          <span class="gt-prize">全クリア報酬：SSR「スター・ヴェルベット号」</span>
           <span class="gt-play">PLAY ▶</span>
         </button>
       </div>
@@ -861,7 +861,7 @@ const SHOP_CARDS=[
 const shopByR={};ORDER.forEach(r=>shopByR[r]=SHOP_CARDS.filter(c=>c.r===r));
 /* ---- mission rewards: cards earned only by clearing a mini game ---- */
 const REWARD_CARDS=[
- {id:"r1",r:"SSR",name:"Star Velvet",kana:"スター・ヴェルベット",h:350,photo:"star-velvet.jpg?v=1",reward:true,shape:"burst",m:"SV",
+ {id:"r1",r:"SSR",name:"Star Velvet",kana:"スター・ヴェルベット号",h:350,photo:"star-velvet.jpg?v=1",reward:true,shape:"burst",m:"SV",
   how:"VELVET COMET MISSION を全 50 ウェーブクリア",
   flavor:"ベルベット・コメットが銀河を旅するために乗り回す高速宇宙船。長距離航行から宇宙戦までこなす、彼の大切な相棒。"},
 ];
@@ -2235,7 +2235,7 @@ const VCM=(()=>{
       <p class="vcm-desc">ベルベット・コメットの宇宙船で、迫りくる隕石の群れを撃ち落とせ！<br>指でなぞって左右に移動、弾は自動で発射。全 50 ウェーブ。<br>ウェーブをクリアするとハートが1つ回復。各ウェーブの★1個目はそのウェーブ中ずっと3連射、2個目からは5秒間の無敵シールド（3連射はそのまま）！</p>
       <div class="vcm-best">HIGH SCORE <b>${(S.hiScore||0).toLocaleString()}</b></div>
       <button type="button" class="btn-main" id="vcmGo">LAUNCH!</button>
-      <p class="vcm-prize-note">★ 全 50 ウェーブクリアで SSR「スター・ヴェルベット」をゲット！</p>
+      <p class="vcm-prize-note">★ 全 50 ウェーブクリアで SSR「スター・ヴェルベット号」をゲット！</p>
       <p class="vcm-note">ウェーブを1つクリアするごとにコイン ${COINS_PER_WAVE} 枚（全クリアで ${MAX_REWARD} 枚）</p>`);
     $g("vcmGo").onclick=e=>{e.stopPropagation();start()};
   }
