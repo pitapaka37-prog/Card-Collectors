@@ -804,7 +804,7 @@ function addGems(n){S.gems+=n;save();$("gems").textContent=S.gems.toLocaleString
 
 /* ---- coins: idle earnings ---- */
 // more different cards owned = faster; stored up to IDLE_CAP_H hours
-const IDLE_BASE=30,IDLE_PER_CARD=4,IDLE_CAP_H=12;
+const IDLE_BASE=100,IDLE_PER_CARD=15,IDLE_CAP_H=12;
 function uniqueOwned(){return Object.keys(S.owned).filter(k=>S.owned[k]>0).length}
 function idleRate(){return IDLE_BASE+IDLE_PER_CARD*uniqueOwned()} // coins per hour
 function idleEarned(){
@@ -826,7 +826,7 @@ $("idleBtn").onclick=()=>{
 setInterval(updateIdle,5000);
 
 /* ---- coins: daily login bonus ---- */
-const LOGIN_REWARDS=[300,300,400,400,500,500,1500];
+const LOGIN_REWARDS=[500,500,700,700,1000,1000,3000];
 const dayKey=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 function loginState(){
   const now=new Date(),today=dayKey(now);
@@ -855,7 +855,7 @@ function showLoginBonus(){
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"){updateIdle();if($("bonus").hidden)showLoginBonus()}});
 
 /* ---- coins: selling duplicates ---- */
-const SELL_PRICE={N:20,R:50,SR:150,SSR:500,UR:1500};
+const SELL_PRICE={N:50,R:120,SR:400,SSR:1200,UR:3000};
 function sellCards(list){ // list of [card, count]
   let total=0,n=0;
   list.forEach(([c,k])=>{k=Math.min(k,(S.owned[c.id]||0)-1);if(k>0){S.owned[c.id]-=k;total+=k*SELL_PRICE[c.r];n+=k}});
