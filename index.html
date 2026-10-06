@@ -703,6 +703,15 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
 .ms-modal .ms-head{padding-right:44px}
 .ms-modal .ms-head b{font-size:30px}
 
+
+/* mission tabs */
+.ms-tabs{display:flex;gap:8px;padding-right:44px}
+.ms-tabs button{position:relative;flex:1;font-family:var(--display);font-size:20px;letter-spacing:.05em;background:#fff;border:3px solid var(--ink);box-shadow:3px 3px 0 var(--ink);padding:2px 8px}
+.ms-tabs button[aria-selected="true"]{background:var(--red);color:var(--yellow)}
+.ms-tb{position:absolute;top:-9px;right:-8px;min-width:18px;height:18px;padding:0 4px;border-radius:9px;background:var(--yellow);color:var(--ink);border:2px solid var(--ink);font-family:var(--body);font-size:11px;font-weight:700;line-height:14px}
+.ms-list li.special{background:linear-gradient(90deg,rgba(255,210,31,.25),transparent)}
+.ms-name em{font-style:normal;font-family:var(--display);font-size:12px;letter-spacing:.05em;background:var(--red);color:var(--yellow);padding:0 5px;margin-right:6px}
+
 @media (max-width:640px){
   .maker{grid-template-columns:1fr}
   .maker .preview{width:180px;justify-self:center}
@@ -833,7 +842,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
           <span class="gt-title"><b>VELVET COMET</b><i>MISSION</i></span>
           <span class="gt-desc">スター・ヴェルベット号で隕石の群れを撃ち落とすシューティング。ウェーブをクリアするごとにコイン10枚！</span>
           <span class="gt-best">HIGH SCORE <b id="vcmBest">0</b></span>
-          <span class="gt-prize">全クリア報酬：SSR「スター・ヴェルベット号」</span>
+          <span class="gt-prize">全クリアのミッション報酬：SSR「スター・ヴェルベット号」</span>
           <span class="gt-play">PLAY ▶</span>
         </button>
       </div>
@@ -894,12 +903,22 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
       <div id="mine"></div>
     </div>
   </section>
-  <div class="detail ms-modal" id="msModal" hidden role="dialog" aria-modal="true" aria-label="デイリーミッション">
+  <div class="detail ms-modal" id="msModal" hidden role="dialog" aria-modal="true" aria-label="ミッション">
     <div class="mission" id="mission">
       <button type="button" class="close" id="msClose" aria-label="閉じる">×</button>
-      <div class="ms-head"><b>DAILY MISSION</b><span id="msReset"></span></div>
-      <ul class="ms-list" id="msList"></ul>
-      <div class="ms-all" id="msAll"></div>
+      <div class="ms-tabs" role="tablist">
+        <button type="button" role="tab" id="msTabDaily" aria-selected="true">DAILY<span class="ms-tb" id="msTbDaily" hidden></span></button>
+        <button type="button" role="tab" id="msTabNormal" aria-selected="false">NORMAL<span class="ms-tb" id="msTbNormal" hidden></span></button>
+      </div>
+      <div id="msDaily">
+        <div class="ms-head"><b>DAILY MISSION</b><span id="msReset"></span></div>
+        <ul class="ms-list" id="msList"></ul>
+        <div class="ms-all" id="msAll"></div>
+      </div>
+      <div id="msNormal" hidden>
+        <div class="ms-head"><b>NORMAL MISSION</b><span id="msNormalCount"></span></div>
+        <ul class="ms-list" id="msNormalList"></ul>
+      </div>
     </div>
   </div>
   <div class="detail lineup" id="lineup" hidden role="dialog" aria-modal="true" aria-label="ガチャのラインナップ"></div>
@@ -993,7 +1012,7 @@ const shopByR={};ORDER.forEach(r=>shopByR[r]=SHOP_CARDS.filter(c=>c.r===r));
 /* ---- mission rewards: cards earned only by clearing a mini game ---- */
 const REWARD_CARDS=[
  {id:"r1",r:"SSR",name:"Star Velvet",kana:"スター・ヴェルベット号",h:350,photo:"star-velvet.jpg?v=1",reward:true,shape:"burst",m:"SV",
-  how:"VELVET COMET MISSION を全 50 ウェーブクリア",
+  how:"ノーマルミッション「VELVET COMET MISSION を全50ウェーブクリア」の報酬",
   flavor:"ベルベット・コメットが銀河を旅するために乗り回す高速宇宙船。長距離航行から宇宙戦までこなす、彼の大切な相棒。"},
 ];
 const rewardByR={};ORDER.forEach(r=>rewardByR[r]=REWARD_CARDS.filter(c=>c.r===r));
@@ -1002,7 +1021,7 @@ const SFX={SR:"WHAM!",SSR:"KA-POW!!",UR:"KRAKA-BOOM!!!"};
 const PACK_COLORS=["#e2231a","#1d9e5a","#ff7a00","#7a3cff","#e0218a","#0f8f8f","#3d3d3d"];
 const STD_TEXT="十連なら最後の1枚は SR 以上が確定。80 回 SSR が出なければ、次の1枚は SSR 以上になります。";
 
-const DEFAULT={gems:3000,pity:0,owned:{},custom:[],packs:[],pityBy:{},banner:"std",loginLast:"",streak:0,idleAt:0,points:0,sound:true,bgm:true,hiScore:0,mission:null};
+const DEFAULT={gems:3000,pity:0,owned:{},custom:[],packs:[],pityBy:{},banner:"std",loginLast:"",streak:0,idleAt:0,points:0,sound:true,bgm:true,hiScore:0,mission:null,stats:{pulls:0,bestWave:0},normalClaimed:{}};
 const KEY="cch-gacha";
 const newId=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
 let S=load();
@@ -1035,6 +1054,10 @@ function load(){
   const num=(x,def,min,max)=>{x=Number(x);return Number.isFinite(x)?Math.min(max,Math.max(min,Math.floor(x))):def};
   if(!s.mission||typeof s.mission!=="object"||typeof s.mission.day!=="string")s.mission=null;
   else{const p=s.mission.prog||{},c=s.mission.claimed||{};s.mission={day:s.mission.day,prog:Object.fromEntries(Object.entries(p).map(([k,v])=>[k,num(v,0,0,1e6)])),claimed:Object.fromEntries(Object.entries(c).map(([k,v])=>[k,!!v]))}}
+  const st=s.stats&&typeof s.stats==="object"?s.stats:{};s.stats={pulls:num(st.pulls,0,0,1e9),bestWave:num(st.bestWave,0,0,50)};
+  const nc=s.normalClaimed&&typeof s.normalClaimed==="object"?s.normalClaimed:{};s.normalClaimed=Object.fromEntries(Object.entries(nc).map(([k,v])=>[k,!!v]));
+  // players who already earned Star Velvet before missions existed
+  if(s.owned.r1>0){s.normalClaimed.vcm50=true;s.stats.bestWave=50}
   s.hiScore=Math.max(0,Math.floor(Number(s.hiScore)||0));s.sound=s.sound!==false;s.bgm=s.bgm!==false;s.gems=num(s.gems,3000,0,1e9);s.points=num(s.points,0,0,1e9);s.pity=num(s.pity,0,0,PITY);s.streak=num(s.streak,0,0,1e6);
   s.idleAt=num(s.idleAt,0,0,Date.now());
   if(typeof s.loginLast!=="string"||!/^\d{4}-\d{2}-\d{2}$/.test(s.loginLast))s.loginLast="";
@@ -1301,7 +1324,7 @@ async function pull(n){
   // record the results before the show, so closing the app mid-show loses nothing
   const fresh=got.map(c=>!S.owned[c.id]);
   got.forEach(c=>{S.owned[c.id]=(S.owned[c.id]||0)+1});
-  missionAdd("pull",got.length);
+  missionAdd("pull",got.length);S.stats.pulls+=got.length;
   save();
   pulling=true;
   let shown=false;
@@ -2038,7 +2061,7 @@ function render(){
   $("gems").textContent=S.gems.toLocaleString();$("pts").textContent=S.points.toLocaleString();
   renderCover();updateDexCount();
   if(typeof updateMissionBadge==="function")updateMissionBadge();
-  if(!$("msModal").hidden&&typeof renderMissions==="function")renderMissions();
+  if(!$("msModal").hidden&&typeof renderMissions==="function"){renderMissions();renderNormalMissions()}
   if(!$("view-home").hidden)renderHome();
   if(!$("view-shop").hidden){renderShop();shopStale=false}else shopStale=true;if(typeof updateIdle==="function"&&$("idleAmt"))updateIdle();
   if(!$("view-dex").hidden){renderDex();dexStale=false}else dexStale=true;
@@ -2387,7 +2410,7 @@ const VCM=(()=>{
       <p class="vcm-desc">ベルベット・コメットの愛機「スター・ヴェルベット号」で、迫りくる隕石の群れを撃ち落とせ！<br>指でなぞって左右に移動、弾は自動で発射。全 50 ウェーブ。<br>ウェーブをクリアするとハートが1つ回復。各ウェーブの★1個目はそのウェーブ中ずっと3連射、2個目からは5秒間の無敵シールド（3連射はそのまま）！</p>
       <div class="vcm-best">HIGH SCORE <b>${(S.hiScore||0).toLocaleString()}</b></div>
       <button type="button" class="btn-main" id="vcmGo">LAUNCH!</button>
-      <p class="vcm-prize-note">★ 全 50 ウェーブクリアで SSR「スター・ヴェルベット号」をゲット！</p>
+      <p class="vcm-prize-note">★ 全 50 ウェーブクリアのミッション報酬は SSR「スター・ヴェルベット号」！</p>
       <p class="vcm-note">ウェーブを1つクリアするごとにコイン ${COINS_PER_WAVE} 枚（全クリアで ${MAX_REWARD} 枚）</p>`);
     $g("vcmGo").onclick=e=>{e.stopPropagation();start()};
   }
@@ -2398,18 +2421,18 @@ const VCM=(()=>{
     if(cleared)score+=5000; // clear bonus
     const waves=cleared?MAX_WAVE:wave-1; // waves fully cleared this run
     const coins=Math.min(MAX_REWARD,waves*COINS_PER_WAVE);
-    const prize=cleared?REWARD_CARDS.find(c=>c.id==="r1"):null,firstPrize=prize&&!S.owned[prize.id];
-    if(prize)S.owned[prize.id]=(S.owned[prize.id]||0)+1;
+    S.stats.bestWave=Math.max(S.stats.bestWave||0,waves);
+    const prize=cleared&&!S.normalClaimed.vcm50?REWARD_CARDS.find(c=>c.id==="r1"):null;
     const best=score>(S.hiScore||0);if(best)S.hiScore=score;
     S.gems+=coins;save();render();
     sfx(best||cleared?"ur":"boom");
     setTimeout(()=>{if(state!=="over")return;
       screen(`<div class="vcm-over">${cleared?"MISSION<br>COMPLETE!":"GAME OVER"}</div>
         ${best?'<div class="vcm-new">NEW RECORD!</div>':""}
-        ${prize?`<div class="vcm-prize"><div class="vcm-prize-card" id="vcmPrize"></div><div class="vcm-prize-text"><b>REWARD GET!</b><span>SSR「${esc(prize.kana)}」${firstPrize?"を手に入れた！":"をもう1枚手に入れた！"}</span></div></div>`:""}
+        ${prize?`<div class="vcm-prize"><div class="vcm-prize-card" id="vcmPrize"></div><div class="vcm-prize-text"><b>MISSION CLEAR!</b><span>MISSION の「NORMAL」から SSR「${esc(prize.kana)}」を受け取ろう！</span></div></div>`:""}
         <div class="vcm-result"><div><small>SCORE</small><b>${score.toLocaleString()}</b></div><div><small>CLEAR</small><b>${waves}</b></div><div><small>COINS</small><b>＋${coins}</b></div></div>
         <div class="vcm-btns"><button type="button" class="btn-main" id="vcmRetry">RETRY</button><button type="button" class="ghost" id="vcmExit2">もどる</button></div>`);
-      if(prize){const pc=$g("vcmPrize");const card=cardEl(prize,{});pc.appendChild(card);setTimeout(()=>{card.classList.add("flipped");sfx("boom")},400)}
+      if(prize){const pc=$g("vcmPrize");const card=cardEl(prize,{});card.classList.add("hint-ssr");pc.appendChild(card);sfx("boom")}
       $g("vcmRetry").onclick=e=>{e.stopPropagation();start()};
       $g("vcmExit2").onclick=e=>{e.stopPropagation();close()};
     },700);
@@ -2503,7 +2526,7 @@ function missionState(){
   return S.mission;
 }
 function missionAdd(id,n){const m=missionState();m.prog[id]=Math.min(999,(m.prog[id]||0)+n)}
-function rewardText(r){return [r.coins?`${r.coins} コイン`:"",r.stars?`★${r.stars}`:""].filter(Boolean).join("・")}
+function rewardText(r){const c=r.card&&typeof REWARD_CARDS!=="undefined"?REWARD_CARDS.find(x=>x.id===r.card):null;return [r.coins?`${r.coins} コイン`:"",r.stars?`★${r.stars}`:"",c?`${c.r}「${c.kana}」`:""].filter(Boolean).join("・")}
 function giveReward(r){S.gems+=r.coins||0;S.points+=r.stars||0;save();render()}
 function renderMissions(){
   if(!MISSIONS)return; // first render runs before this block is set up
@@ -2530,7 +2553,58 @@ function renderMissions(){
 }
 
 
-// header button: jump to the mission panel on the home screen from anywhere
+
+/* ---- normal missions (one-time goals) ---- */
+var NORMAL_MISSIONS=null;
+function setupNormalMissions(){
+  const own=list=>list.filter(c=>S.owned[c.id]).length;
+  NORMAL_MISSIONS=[
+    {id:"dex10",label:"STAR LIGHT COMICS のカードを10種集める",goal:10,cur:()=>own(CARDS),reward:{coins:300}},
+    {id:"dex20",label:"STAR LIGHT COMICS のカードを20種集める",goal:20,cur:()=>own(CARDS),reward:{stars:50}},
+    {id:"dexAll",label:`ガチャのカードを全 ${CARDS.length} 種集める`,goal:CARDS.length,cur:()=>own(CARDS),reward:{coins:1000}},
+    {id:"pull100",label:"ガチャでカードを累計100枚引く",goal:100,cur:()=>S.stats.pulls,reward:{coins:500}},
+    {id:"ssr",label:"SSR のカードを手に入れる",goal:1,cur:()=>own(CARDS.filter(c=>c.r==="SSR")),reward:{stars:20}},
+    {id:"ur",label:"UR のカードを手に入れる",goal:1,cur:()=>own(CARDS.filter(c=>c.r==="UR")),reward:{stars:50}},
+    {id:"shop1",label:"スターショップでカードを交換する",goal:1,cur:()=>own(SHOP_CARDS),reward:{coins:200}},
+    {id:"make1",label:"自分のカードを作る",goal:1,cur:()=>S.custom.length,reward:{coins:100}},
+    {id:"wave10",label:"VELVET COMET MISSION でウェーブ10までクリア",goal:10,cur:()=>S.stats.bestWave,reward:{coins:200}},
+    {id:"vcm50",label:"VELVET COMET MISSION を全50ウェーブクリア",goal:50,cur:()=>S.stats.bestWave,reward:{card:"r1"},special:true},
+  ];
+}
+setupNormalMissions();
+function normalReady(x){return !S.normalClaimed[x.id]&&x.cur()>=x.goal}
+function renderNormalMissions(){
+  if(!NORMAL_MISSIONS)return;
+  const list=$("msNormalList");list.innerHTML="";
+  const done=NORMAL_MISSIONS.filter(x=>S.normalClaimed[x.id]).length;
+  $("msNormalCount").textContent=`達成 ${done} / ${NORMAL_MISSIONS.length}`;
+  // ready to claim first, then in progress, then finished
+  const order=x=>normalReady(x)?0:S.normalClaimed[x.id]?2:1;
+  NORMAL_MISSIONS.slice().sort((a,b)=>order(a)-order(b)).forEach(x=>{
+    const p=Math.min(x.goal,x.cur()),got=!!S.normalClaimed[x.id],ready=normalReady(x);
+    const li=document.createElement("li");li.className=(got?"got":ready?"done":"")+(x.special?" special":"");
+    li.innerHTML=`<span class="ms-name">${x.special?'<em>SPECIAL</em>':""}${x.label}</span><span class="ms-bar"><span style="width:${p/x.goal*100}%"></span></span><span class="ms-num">${p}/${x.goal}</span>`;
+    const b=document.createElement("button");b.type="button";b.className="ghost ms-btn";
+    b.textContent=got?"受取済":ready?`受け取る（${rewardText(x.reward)}）`:rewardText(x.reward);
+    b.disabled=got||!ready;
+    b.onclick=()=>{
+      if(!normalReady(x))return;
+      S.normalClaimed[x.id]=true;
+      if(x.reward.card){const c=REWARD_CARDS.find(r=>r.id===x.reward.card);S.owned[c.id]=(S.owned[c.id]||0)+1}
+      giveReward(x.reward);sfx(x.reward.card?"ur":"rare");toast(`ミッション達成！ ${rewardText(x.reward)}`);
+    };
+    li.appendChild(b);list.appendChild(li);
+  });
+}
+function msTab(t){
+  const daily=t==="daily";
+  $("msTabDaily").setAttribute("aria-selected",daily);$("msTabNormal").setAttribute("aria-selected",!daily);
+  $("msDaily").hidden=!daily;$("msNormal").hidden=daily;
+}
+$("msTabDaily").onclick=()=>msTab("daily");
+$("msTabNormal").onclick=()=>msTab("normal");
+
+// header button: open the mission window from anywhere
 function missionClaimable(){
   if(!MISSIONS)return 0;
   const m=missionState();
@@ -2538,9 +2612,12 @@ function missionClaimable(){
   if(!m.claimed.all&&MISSIONS.every(x=>m.claimed[x.id]))n++;
   return n;
 }
-function updateMissionBadge(){const n=missionClaimable(),b=$("msBadge");b.hidden=!n;b.textContent=n}
+function normalClaimable(){return NORMAL_MISSIONS?NORMAL_MISSIONS.filter(normalReady).length:0}
+function updateMissionBadge(){const d=missionClaimable(),k=normalClaimable(),n=d+k,b=$("msBadge");b.hidden=!n;b.textContent=n;
+  const td=$("msTbDaily"),tn=$("msTbNormal");td.hidden=!d;td.textContent=d;tn.hidden=!k;tn.textContent=k}
 function openMissions(){
-  renderMissions();$("msModal").hidden=false;document.body.style.overflow="hidden";
+  renderMissions();renderNormalMissions();updateMissionBadge();
+  msTab(missionClaimable()||!normalClaimable()?"daily":"normal");$("msModal").hidden=false;document.body.style.overflow="hidden";
 }
 function closeMissions(){$("msModal").hidden=true;document.body.style.overflow="";updateMissionBadge()}
 $("msGo").onclick=openMissions;
