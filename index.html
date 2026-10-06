@@ -791,7 +791,7 @@ const ORDER=["UR","SSR","SR","R","N"];
 // [rarity, monogram, name, katakana, flavor, hue, shape]
 const CARDS=[
  ["N","GK","Gumball Kid","ガムボール・キッド","アトラス・プライムに憧れる小学生。街でたまたま見つけたスケート・セイントを「本物のヒーローだ！」と思い込み、勝手について回っているサイドキック。",330,"circle"],
- ["N","TC","Traffic Cone","トラフィック・コーン","立っているだけで車が止まる。本人は動かない主義。",22,"shield"],
+ ["N","TC","Traffic Cone","トラフィック・コーン","街のいたるところに当たり前のように暮らしているトラフィック星人。見た目は顔が付いただけのただのカラーコーンだが、人間に混じって普通に生活している。",22,"shield"],
  ["N","LL","Lunchbox Larry","ランチボックス・ラリー","弁当箱から毎日ちがう道具が出てくる。中身は母の手作り。",45,"circle"],
  ["N","SS","Static Sally","スタティック・サリー","握手するとパチッとくる。セーターの季節は最強。",200,"circle"],
  ["N","PB","Paper Boy","ペーパー・ボーイ","朝刊を投げる腕前は百発百中。悪党の窓にも届く。",210,"shield"],
@@ -819,7 +819,7 @@ const CARDS=[
  ["UR","NM","Nova Mae","ノヴァ・メイ","宇宙の光「ノヴァ・エネルギー」を操り、闇に希望を灯す若きヒーロー。",320,"burst"],
 ].map((c,i)=>({id:i,r:c[0],m:c[1],name:c[2],kana:c[3],flavor:c[4],h:c[5],shape:c[6]}));
 // standard cards that use a picture instead of the drawn portrait
-const PHOTOS={"Rubber Duck":"rubber-duck.jpg","Atlas Prime":"atlas-prime.jpg","Nova Mae":"nova-mae.jpg","Skyline Sentinel":"skyline-sentinel.jpg","Queen Quasar":"queen-quasar.jpg","Thunder Hound":"thunder-hound.jpg","Atomic Bee":"atomic-bee.jpg","Radio Ranger":"radio-ranger.jpg","Mirror Max":"mirror-max.jpg","Velvet Comet":"velvet-comet.jpg","Doctor Fuse":"doctor-fuse.jpg","Neon Noodle":"neon-noodle.jpg","Jukebox Jane":"jukebox-jane.jpg","Skate Saint":"skate-saint.jpg","Diner Dynamo":"diner-dynamo.jpg","Tornado Tess":"tornado-tess.jpg","Captain Cactus":"captain-cactus.jpg","Glitter Gator":"glitter-gator.jpg","Gumball Kid":"gumball-kid.jpg"};
+const PHOTOS={"Rubber Duck":"rubber-duck.jpg","Atlas Prime":"atlas-prime.jpg","Nova Mae":"nova-mae.jpg","Skyline Sentinel":"skyline-sentinel.jpg","Queen Quasar":"queen-quasar.jpg","Thunder Hound":"thunder-hound.jpg","Atomic Bee":"atomic-bee.jpg","Radio Ranger":"radio-ranger.jpg","Mirror Max":"mirror-max.jpg","Velvet Comet":"velvet-comet.jpg","Doctor Fuse":"doctor-fuse.jpg","Neon Noodle":"neon-noodle.jpg","Jukebox Jane":"jukebox-jane.jpg","Skate Saint":"skate-saint.jpg","Diner Dynamo":"diner-dynamo.jpg","Tornado Tess":"tornado-tess.jpg","Captain Cactus":"captain-cactus.jpg","Glitter Gator":"glitter-gator.jpg","Gumball Kid":"gumball-kid.jpg","Traffic Cone":"traffic-cone.jpg"};
 const PHOTO_V="2";
 CARDS.forEach(c=>{if(PHOTOS[c.name])c.photo=PHOTOS[c.name]+"?v="+PHOTO_V});
 /* ---- cover cards: random owned cards, or the rarest ones when nothing is owned ---- */
