@@ -366,6 +366,7 @@ nav button span{font-family:var(--body);font-size:13px;font-weight:700}
 .shop-name small{font-family:var(--jp);font-size:10px;color:var(--mute)}
 .shop-rates{font-size:12px;color:var(--mute)}
 .custom-tag.ltd{background:#7a3cff;color:#fff}
+.custom-tag.msn{background:#e2231a;color:#ffd21f}
 
 /* per-pack dex reset */
 .resetbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;border:3px dashed var(--ink);padding:8px 12px;font-size:13px}
@@ -601,6 +602,16 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
 .vcm-btns .ghost{font-size:16px;padding:6px 16px}
 @media (max-width:760px){.actionbar button{font-size:14px}.actionbar button svg{width:24px;height:24px}}
 
+
+/* mission reward */
+.gt-prize{padding:0 16px;font-size:12px;font-weight:700;color:var(--yellow)}
+.vcm-prize-note{margin:0;font-family:var(--jp);font-size:13px;color:var(--yellow);text-shadow:1px 1px 0 var(--ink)}
+.vcm-prize{display:flex;align-items:center;gap:14px;background:rgba(0,0,0,.35);border:3px solid var(--yellow);padding:10px 14px;max-width:min(440px,100%)}
+.vcm-prize-card{width:96px;flex:none}
+.vcm-prize-text{display:flex;flex-direction:column;text-align:left;color:#fff}
+.vcm-prize-text b{font-family:var(--display);font-weight:400;font-size:30px;letter-spacing:.04em;color:var(--yellow);-webkit-text-stroke:1px var(--ink)}
+.vcm-prize-text span{font-size:13px}
+
 @media (max-width:640px){
   .maker{grid-template-columns:1fr}
   .maker .preview{width:180px;justify-self:center}
@@ -700,6 +711,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
           <span class="gt-title"><b>VELVET COMET</b><i>MISSION</i></span>
           <span class="gt-desc">宇宙船で隕石の群れを撃ち落とすシューティング。ウェーブをクリアするごとにコイン10枚！</span>
           <span class="gt-best">HIGH SCORE <b id="vcmBest">0</b></span>
+          <span class="gt-prize">全クリア報酬：SSR「スター・ヴェルベット」</span>
           <span class="gt-play">PLAY ▶</span>
         </button>
       </div>
@@ -828,7 +840,7 @@ function rarestFirst(list){const o=["UR","SSR","SR","R","N"];return shuffled(lis
 function coverCards(list,k){
   const owned=list.filter(c=>S.owned[c.id]);
   if(owned.length)return shuffled(owned).slice(0,k);
-  return rarestFirst(list.filter(c=>!c.shop)).slice(0,k); // shop cards stay secret until exchanged
+  return rarestFirst(list.filter(c=>!c.shop&&!c.reward)).slice(0,k); // shop and reward cards stay secret until earned
 }
 
 /* ---- star shop: cards that never come from a gacha ---- */
@@ -847,6 +859,13 @@ const SHOP_CARDS=[
   look:{skin:"#8d5a3b",mask:["helmet","#2b1b5a","#c9b8ff"],cape:"#5a3db0",suit:"#1b1b2f",suit2:"#c9b8ff",mouth:"flat",fx:["galaxy","nova"],emb:"Ω"}},
 ].map(c=>Object.assign(c,{shop:true,shape:"burst",m:c.look.emb}));
 const shopByR={};ORDER.forEach(r=>shopByR[r]=SHOP_CARDS.filter(c=>c.r===r));
+/* ---- mission rewards: cards earned only by clearing a mini game ---- */
+const REWARD_CARDS=[
+ {id:"r1",r:"SSR",name:"Star Velvet",kana:"スター・ヴェルベット",h:350,photo:"star-velvet.jpg?v=1",reward:true,shape:"burst",m:"SV",
+  how:"VELVET COMET MISSION を全 50 ウェーブクリア",
+  flavor:"ベルベット・コメットが銀河を旅するために乗り回す高速宇宙船。長距離航行から宇宙戦までこなす、彼の大切な相棒。"},
+];
+const rewardByR={};ORDER.forEach(r=>rewardByR[r]=REWARD_CARDS.filter(c=>c.r===r));
 const PITY=80;
 const SFX={SR:"WHAM!",SSR:"KA-POW!!",UR:"KRAKA-BOOM!!!"};
 const PACK_COLORS=["#e2231a","#1d9e5a","#ff7a00","#7a3cff","#e0218a","#0f8f8f","#3d3d3d"];
@@ -901,7 +920,7 @@ const packOf=id=>S.packs.find(p=>p.id===id);
 const pname=p=>(p&&p.name.trim())||"NO NAME";
 const cardsIn=id=>S.custom.filter(c=>c.pack===id);
 // dex books: STANDARD also lists the shop-only cards (they never come from the gacha)
-function dexPoolOf(id){if(id==="std"){const o={};ORDER.forEach(r=>o[r]=byR[r].concat(shopByR[r]));return o}return poolOf(id)}
+function dexPoolOf(id){if(id==="std"){const o={};ORDER.forEach(r=>o[r]=byR[r].concat(shopByR[r],rewardByR[r]));return o}return poolOf(id)}
 function poolOf(id){if(id==="std")return byR;if(id==="shop")return shopByR;const list=cardsIn(id);const o={};ORDER.forEach(r=>o[r]=list.filter(c=>c.r===r));return o}
 function getPity(id){return id==="std"?S.pity:(S.pityBy[id]||0)}
 function setPity(id,v){if(id==="std")S.pity=v;else S.pityBy[id]=v}
@@ -924,7 +943,7 @@ function drawOne(minSR,pool,bid){
 function cardEl(c,{flipped=false,isNew=false,sfx=false}={}){
   const d=document.createElement("div");
   d.className="card"+(flipped?" flipped":"");d.dataset.r=c.r;d.dataset.shape=c.shape;d.style.setProperty("--h",c.h);
-  const tag=c.shop?`<span class="custom-tag ltd">LIMITED</span>`:c.img?`<span class="custom-tag">ORIGINAL</span>`:`<span class="no">#${String(c.id+1).padStart(2,"0")}</span>`;
+  const tag=c.reward?`<span class="custom-tag msn">MISSION</span>`:c.shop?`<span class="custom-tag ltd">LIMITED</span>`:c.img?`<span class="custom-tag">ORIGINAL</span>`:`<span class="no">#${String(c.id+1).padStart(2,"0")}</span>`;
   const art=(c.img||c.photo)?`<div class="art${c.photo?" photo":""}"></div>`:((c.look||(typeof c.id==="number"&&LOOKS[c.id]))?`<div class="art hero">${heroSVG(c.look||LOOKS[c.id],c.h)}</div>`:`<div class="emblem"><span>${c.m}</span></div>`);
   d.innerHTML=`<div class="inner"><div class="face back"></div><div class="face front"><div class="top"><span class="rar">${c.r}</span>${tag}</div>${art}<div class="name"><b>${esc(c.name||"???")}</b><small>${esc(c.kana||"")}</small></div></div></div>${sfx&&SFX[c.r]?`<span class="sfx">${SFX[c.r]}</span>`:""}${isNew?'<span class="new">NEW!</span>':""}`;
   if(c.img||c.photo)d.querySelector(".art").style.backgroundImage=`url("${c.img||c.photo}")`;
@@ -1679,8 +1698,8 @@ function drawDetail(){
   const cw=document.createElement("div");cw.className="detail-card";
   const card=cardEl(c,{flipped:true});cw.appendChild(card);
   cw.insertAdjacentHTML("beforeend",`<div class="tilt-hint">カードをなぞると傾きます</div>`);
-  const where=c.shop?"STAR SHOP":c.pack?pname(packOf(c.pack)):"STAR LIGHT COMICS";
-  const no=c.shop?"LIMITED":typeof c.id==="number"?"#"+String(c.id+1).padStart(2,"0"):"ORIGINAL";
+  const where=c.reward?"MISSION REWARD":c.shop?"STAR SHOP":c.pack?pname(packOf(c.pack)):"STAR LIGHT COMICS";
+  const no=c.reward?"MISSION":c.shop?"LIMITED":typeof c.id==="number"?"#"+String(c.id+1).padStart(2,"0"):"ORIGINAL";
   const t=document.createElement("div");t.style.minWidth="0";
   t.innerHTML=`<div class="rates" style="margin:0 0 8px"><span><b>${c.r}</b>${esc(where)}</span></div>
     <h4>${esc(c.name)}</h4><div class="jp">${esc(c.kana||"")}</div>
@@ -1866,7 +1885,7 @@ function openMakeFor(id){
 // Only the visible screen is redrawn; the others are marked stale and drawn when opened.
 let dexStale=true,mineStale=true,shopStale=true;
 function updateDexCount(){
-  const ids=CARDS.map(c=>c.id).concat(SHOP_CARDS.map(c=>c.id),S.custom.map(c=>c.id));
+  const ids=CARDS.map(c=>c.id).concat(SHOP_CARDS.map(c=>c.id),REWARD_CARDS.map(c=>c.id),S.custom.map(c=>c.id));
   $("dexCount").textContent=`${ids.filter(id=>S.owned[id]).length}/${ids.length}`;
 }
 function render(){
@@ -2216,6 +2235,7 @@ const VCM=(()=>{
       <p class="vcm-desc">ベルベット・コメットの宇宙船で、迫りくる隕石の群れを撃ち落とせ！<br>指でなぞって左右に移動、弾は自動で発射。全 50 ウェーブ。<br>ウェーブをクリアするとハートが1つ回復。各ウェーブの★1個目はそのウェーブ中ずっと3連射、2個目からは5秒間の無敵シールド（3連射はそのまま）！</p>
       <div class="vcm-best">HIGH SCORE <b>${(S.hiScore||0).toLocaleString()}</b></div>
       <button type="button" class="btn-main" id="vcmGo">LAUNCH!</button>
+      <p class="vcm-prize-note">★ 全 50 ウェーブクリアで SSR「スター・ヴェルベット」をゲット！</p>
       <p class="vcm-note">ウェーブを1つクリアするごとにコイン ${COINS_PER_WAVE} 枚（全クリアで ${MAX_REWARD} 枚）</p>`);
     $g("vcmGo").onclick=e=>{e.stopPropagation();start()};
   }
@@ -2226,14 +2246,18 @@ const VCM=(()=>{
     if(cleared)score+=5000; // clear bonus
     const waves=cleared?MAX_WAVE:wave-1; // waves fully cleared this run
     const coins=Math.min(MAX_REWARD,waves*COINS_PER_WAVE);
+    const prize=cleared?REWARD_CARDS.find(c=>c.id==="r1"):null,firstPrize=prize&&!S.owned[prize.id];
+    if(prize)S.owned[prize.id]=(S.owned[prize.id]||0)+1;
     const best=score>(S.hiScore||0);if(best)S.hiScore=score;
     S.gems+=coins;save();render();
     sfx(best||cleared?"ur":"boom");
     setTimeout(()=>{if(state!=="over")return;
       screen(`<div class="vcm-over">${cleared?"MISSION<br>COMPLETE!":"GAME OVER"}</div>
         ${best?'<div class="vcm-new">NEW RECORD!</div>':""}
+        ${prize?`<div class="vcm-prize"><div class="vcm-prize-card" id="vcmPrize"></div><div class="vcm-prize-text"><b>REWARD GET!</b><span>SSR「${esc(prize.kana)}」${firstPrize?"を手に入れた！":"をもう1枚手に入れた！"}</span></div></div>`:""}
         <div class="vcm-result"><div><small>SCORE</small><b>${score.toLocaleString()}</b></div><div><small>CLEAR</small><b>${waves}</b></div><div><small>COINS</small><b>＋${coins}</b></div></div>
         <div class="vcm-btns"><button type="button" class="btn-main" id="vcmRetry">RETRY</button><button type="button" class="ghost" id="vcmExit2">もどる</button></div>`);
+      if(prize){const pc=$g("vcmPrize");const card=cardEl(prize,{});pc.appendChild(card);setTimeout(()=>{card.classList.add("flipped");sfx("boom")},400)}
       $g("vcmRetry").onclick=e=>{e.stopPropagation();start()};
       $g("vcmExit2").onclick=e=>{e.stopPropagation();close()};
     },700);
@@ -2291,9 +2315,9 @@ renderGames();
 (function titleScreen(){
   const ts=$("titleScreen");
   // a fan of random owned heroes (any gacha), or the rarest heroes when nothing is owned yet
-  const five=coverCards(CARDS.concat(SHOP_CARDS,S.custom),5);
+  const five=coverCards(CARDS.concat(SHOP_CARDS,REWARD_CARDS,S.custom),5);
   [five[3],five[1],five[0],five[2],five[4]].filter(Boolean).forEach(c=>{const w=document.createElement("div");w.className="tsc";w.appendChild(cardEl(c,{flipped:true}));$("tsFan").appendChild(w)});
-  const total=CARDS.length+SHOP_CARDS.length,have=CARDS.concat(SHOP_CARDS).filter(c=>S.owned[c.id]).length;
+  const total=CARDS.length+SHOP_CARDS.length+REWARD_CARDS.length,have=CARDS.concat(SHOP_CARDS,REWARD_CARDS).filter(c=>S.owned[c.id]).length;
   $("tsInfo").textContent=have?`コイン ${S.gems.toLocaleString()} ・ ★${S.points.toLocaleString()} ・ 図鑑 ${have}/${total}`:"ようこそ！ 最初のコイン 3,000 枚をプレゼント";
   let gone=false;
   const start=()=>{
