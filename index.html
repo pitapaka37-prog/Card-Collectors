@@ -346,7 +346,11 @@ nav button span{font-family:var(--body);font-size:13px;font-weight:700}
 /* star shop */
 .chip i.star{width:18px;height:18px;border:0;border-radius:0;background:var(--yellow);clip-path:polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);filter:drop-shadow(0 0 0 var(--ink))}
 .shop-note{margin:0;font-size:14px;max-width:62ch}
-.shop{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:22px 16px}
+.shop{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:20px 12px}
+@media (max-width:900px){.shop{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px 10px}}
+.shop-item .ghost{font-size:12px;padding:3px 4px}
+.shop-item .price b{font-size:17px}
+@media (max-width:420px){.shop-name b{font-size:14px}.shop-name small{font-size:9px}.shop-item .price{font-size:11px}.shop-item .got{font-size:11px}}
 .shop-item{display:flex;flex-direction:column;gap:8px;align-items:stretch}
 .shop-item .price{display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:13px;font-variant-numeric:tabular-nums}
 .shop-item .price b{display:flex;align-items:center;gap:4px;font-family:var(--display);font-weight:400;font-size:20px;letter-spacing:.03em}
