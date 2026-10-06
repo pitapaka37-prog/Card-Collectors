@@ -340,6 +340,7 @@ nav button span{font-family:var(--body);font-size:13px;font-weight:700}
 .fx-cell{position:relative;animation:deal .4s cubic-bezier(.3,1.4,.5,1) backwards}
 @keyframes deal{from{transform:translateY(60px) scale(.6);opacity:0}}
 @media (max-width:520px){.fx-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+#bgmBtn{font-family:var(--display);letter-spacing:.04em;font-size:15px}
 #soundBtn{font-family:var(--display);letter-spacing:.04em;font-size:15px}
 
 /* star shop */
@@ -498,6 +499,7 @@ nav button span{font-family:var(--body);font-size:13px;font-weight:700}
       <span class="chip" aria-label="所持スター"><i class="star"></i><span id="pts">0</span></span>
       <span class="chip pity">天井まで <b id="pity">80</b> 回</span>
       <button class="ghost" id="soundBtn" type="button" aria-pressed="true">SOUND ON</button>
+      <button class="ghost" id="bgmBtn" type="button" aria-pressed="true">BGM ON</button>
       <button class="ghost idle" id="idleBtn" title="カードを集めるほど速く貯まります">放置ボーナス <b id="idleAmt">0</b></button>
     </div>
   </header>
@@ -691,7 +693,7 @@ const SFX={SR:"WHAM!",SSR:"KA-POW!!",UR:"KRAKA-BOOM!!!"};
 const PACK_COLORS=["#e2231a","#1d9e5a","#ff7a00","#7a3cff","#e0218a","#0f8f8f","#3d3d3d"];
 const STD_TEXT="十連なら最後の1枚は SR 以上が確定。80 回 SSR が出なければ、次の1枚は SSR 以上になります。";
 
-const DEFAULT={gems:3000,pity:0,owned:{},custom:[],packs:[],pityBy:{},banner:"std",loginLast:"",streak:0,idleAt:0,points:0,sound:true};
+const DEFAULT={gems:3000,pity:0,owned:{},custom:[],packs:[],pityBy:{},banner:"std",loginLast:"",streak:0,idleAt:0,points:0,sound:true,bgm:true};
 const KEY="cch-gacha";
 const newId=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
 let S=load();
@@ -722,7 +724,7 @@ function load(){
   delete s.packName;delete s.pityMy;delete s.refillAt;
   // numbers and dates must have the right type (data may come from an imported file)
   const num=(x,def,min,max)=>{x=Number(x);return Number.isFinite(x)?Math.min(max,Math.max(min,Math.floor(x))):def};
-  s.sound=s.sound!==false;s.gems=num(s.gems,3000,0,1e9);s.points=num(s.points,0,0,1e9);s.pity=num(s.pity,0,0,PITY);s.streak=num(s.streak,0,0,1e6);
+  s.sound=s.sound!==false;s.bgm=s.bgm!==false;s.gems=num(s.gems,3000,0,1e9);s.points=num(s.points,0,0,1e9);s.pity=num(s.pity,0,0,PITY);s.streak=num(s.streak,0,0,1e6);
   s.idleAt=num(s.idleAt,0,0,Date.now());
   if(typeof s.loginLast!=="string"||!/^\d{4}-\d{2}-\d{2}$/.test(s.loginLast))s.loginLast="";
   if(typeof s.banner!=="string")s.banner="std";
@@ -991,8 +993,10 @@ async function pull(n){
   save();
   pulling=true;
   let shown=false;
+  if(bgmReady)BGM.play("pull");
   try{shown=await playPullFx(got,n,bid==="std"?"STAR LIGHT COMICS":pname(packOf(bid)),fresh)}catch(e){}
   pulling=false;
+  screenMusic();
   const grid=$("grid");grid.innerHTML="";grid.classList.toggle("single",n===1);
   got.forEach((c,i)=>{
     const isNew=fresh[i];
@@ -1030,10 +1034,82 @@ function fxSkip(){fxSkipping=true;if(fxWake)fxWake.done()}
 
 // tiny synth sounds (start only after a tap, as browsers require)
 let actx=null;
+function audioCtx(){actx=actx||new (window.AudioContext||window.webkitAudioContext)();if(actx.state==="suspended")actx.resume();return actx}
+
+/* ---- BGM: original loops played by a tiny synth sequencer (no audio files) ---- */
+const CHORD={M:[0,4,7,12,16],m:[0,3,7,12,15],"7":[0,4,7,10,12],m7:[0,3,7,10,12],M7:[0,4,7,11,12]};
+// 16 steps per bar. kick/snare/hat: x = hit. bass: R 3 5 8 = chord tone. lead: 1-5 = chord tone, . = rest
+const TRACKS={
+  title:{bpm:128,vol:1,chords:[[48,"M"],[44,"M"],[46,"M"],[48,"M"]],kick:"x...x...x...x...",snare:"....x.......x...",hat:"..x...x...x...x.",
+    bass:"R.R.R.R.R.R.5.5.",lead:"5...4.3.5...3...4...3.2.1.......",wave:"square"},
+  gacha:{bpm:110,vol:1,chords:[[50,"m7"],[43,"7"],[50,"m7"],[45,"7"]],kick:"x..x..x...x..x..",snare:"....x.......x..x",hat:"xxxxxxxxxxxxxxxx",
+    bass:"R..R.R..R.5.8.5.",lead:"....3.3.....4.3.........5.4.3...",wave:"sawtooth"},
+  dex:{bpm:86,vol:.9,swing:.33,chords:[[53,"M7"],[52,"m7"],[50,"m7"],[43,"7"]],kick:"x.......x.......",snare:"....x.......x...",hat:"x.x.x.x.x.x.x.x.",
+    bass:"R...3...5...3...",lead:"3.....5...4.......2.....1...3...",wave:"triangle"},
+  shop:{bpm:124,vol:1,chords:[[48,"M"],[45,"m"],[41,"M"],[43,"M"]],kick:"x...x...x...x...",snare:"....x.......x...",hat:"..x...x...x...x.",
+    bass:"R.R.5.R.R.R.5.R.",lead:"1.3.5.3.4.3.2.3.1.3.5.4.5...3...",wave:"square"},
+  make:{bpm:80,vol:.9,swing:.3,chords:[[45,"m7"],[50,"7"],[43,"M7"],[48,"M7"]],kick:"x......x..x.....",snare:"....x.......x...",hat:"x.x.x.x.x.x.x.x.",
+    bass:"R.......5.......",lead:"4...3.......2...3...2.1.........",wave:"triangle"},
+  pull:{bpm:140,vol:.85,chords:[[48,"m"],[48,"m"],[44,"M"],[46,"M"]],kick:"x...x...x...x...",snare:"....x...x.x.x.xx",hat:"xxxxxxxxxxxxxxxx",
+    bass:"RRRRRRRRRRRRRRRR",lead:"5.5.5.5.4.4.4.4.3.3.3.3.4.4.5.5.",wave:"square"},
+};
+const BGM=(()=>{
+  let name=null,track=null,out=null,timer=0,step=0,nextT=0,noiseBuf=null;
+  const mtof=m=>440*Math.pow(2,(m-69)/12);
+  const noise=c=>{if(!noiseBuf){noiseBuf=c.createBuffer(1,c.sampleRate*.5,c.sampleRate);const d=noiseBuf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1}return noiseBuf};
+  function note(c,type,midi,t,dur,vol,cut){
+    const o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.setValueAtTime(mtof(midi),t);
+    let node=o;
+    if(cut){const f=c.createBiquadFilter();f.type="lowpass";f.frequency.value=cut;o.connect(f);node=f}
+    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+    node.connect(g).connect(out);o.start(t);o.stop(t+dur+.05);
+  }
+  function drum(c,kind,t){
+    if(kind==="kick"){const o=c.createOscillator(),g=c.createGain();o.frequency.setValueAtTime(150,t);o.frequency.exponentialRampToValueAtTime(40,t+.15);
+      g.gain.setValueAtTime(.32,t);g.gain.exponentialRampToValueAtTime(.0001,t+.2);o.connect(g).connect(out);o.start(t);o.stop(t+.22);return}
+    const s=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain();s.buffer=noise(c);
+    f.type="highpass";f.frequency.value=kind==="snare"?1500:7000;
+    const len=kind==="snare"?.16:.04,vol=kind==="snare"?.13:.035;
+    g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+len);
+    s.connect(f).connect(g).connect(out);s.start(t);s.stop(t+len+.02);
+  }
+  function play16(c,st,t){
+    const spb=60/track.bpm/4,bar=Math.floor(st/16)%track.chords.length,i=st%16;
+    const [root,q]=track.chords[bar],tones=CHORD[q];
+    if(track.swing&&i%2)t+=spb*track.swing;
+    if(i===0)[0,1,2].forEach(k=>note(c,"sawtooth",root+12+tones[k],t,spb*16,.018,900));
+    if(track.kick[i]==="x")drum(c,"kick",t);
+    if(track.snare[i]==="x")drum(c,"snare",t);
+    if(track.hat[i]==="x")drum(c,"hat",t);
+    const b=track.bass[i];if(b!=="."){const k={R:0,"3":1,"5":2,"8":3}[b]||0;note(c,"sawtooth",root-12+tones[k],t,spb*1.8,.08,600)}
+    const l=track.lead[(st%32)];if(l>="1"&&l<="5")note(c,track.wave,root+12+tones[+l-1]+(track.wave==="triangle"?12:0),t,spb*(track.wave==="triangle"?3:1.6),track.wave==="sawtooth"?.03:.045,track.wave==="sawtooth"?2200:0);
+  }
+  function tick(){
+    const c=actx;if(!c||!track)return;
+    while(nextT<c.currentTime+.15){play16(c,step,nextT);nextT+=60/track.bpm/4;step++}
+  }
+  function stopNow(){clearInterval(timer);timer=0;if(out){const o=out,c=actx;o.gain.setTargetAtTime(0,c.currentTime,.15);setTimeout(()=>o.disconnect(),900)}out=null;track=null}
+  return{
+    play(n){
+      name=n;
+      if(!S.bgm||!TRACKS[n]){stopNow();return}
+      if(track===TRACKS[n]&&timer)return;
+      let c;try{c=audioCtx()}catch(e){return}
+      stopNow();
+      track=TRACKS[n];out=c.createGain();out.gain.setValueAtTime(0,c.currentTime);out.gain.linearRampToValueAtTime(.5*track.vol,c.currentTime+.6);out.connect(c.destination);
+      step=0;nextT=c.currentTime+.08;timer=setInterval(tick,25);tick();
+    },
+    stop:stopNow,
+    current:()=>name,
+  };
+})();
+let currentScreen="gacha",bgmReady=false;
+function screenMusic(){if(bgmReady)BGM.play(currentScreen)}
+document.addEventListener("visibilitychange",()=>{if(!actx)return;if(document.visibilityState==="hidden")actx.suspend();else actx.resume()});
 function sfx(kind){
   if(!S.sound)return;
   try{
-    actx=actx||new (window.AudioContext||window.webkitAudioContext)();
+    audioCtx();
     const t=actx.currentTime;
     const tone=(f1,f2,dur,type="square",vol=.08,at=0)=>{
       const o=actx.createOscillator(),g=actx.createGain();o.type=type;
@@ -1283,7 +1359,7 @@ function showLoginBonus(){
     S.loginLast=dayKey(new Date());S.streak=st.streak;addGems(amt);
     box.querySelector(".day.today").classList.add("done");
     const btn=$("bonusGet");btn.textContent="とじる";btn.insertAdjacentHTML("beforebegin",`<div class="bonus-got">＋${amt.toLocaleString()} COINS!</div>`);
-    btn.onclick=()=>{box.hidden=true;box.innerHTML="";document.body.style.overflow=""};
+    btn.onclick=()=>{box.hidden=true;box.innerHTML="";document.body.style.overflow="";screenMusic()};
   };
 }
 // a new day can start while the app stays open
@@ -1636,6 +1712,7 @@ function render(){
   if(!$("view-make").hidden){renderMine();mineStale=false}else mineStale=true;
 }
 function tab(which){
+  currentScreen=which;screenMusic();
   ["gacha","dex","make","shop"].forEach(t=>{
     const on=t===which;$("tab-"+t).setAttribute("aria-selected",on);$("view-"+t).hidden=!on;
     if(on&&t==="make")$("view-make").style.display="flex";
@@ -1741,6 +1818,9 @@ $("mkForm").addEventListener("submit",e=>{
   $("mkFileName").textContent="JPG / PNG / GIF など。カードの形（縦長）に合わせて自動で切り抜きます";
   updatePreview();
 });
+function drawBgm(){$("bgmBtn").textContent=S.bgm?"BGM ON":"BGM OFF";$("bgmBtn").setAttribute("aria-pressed",S.bgm)}
+$("bgmBtn").onclick=()=>{S.bgm=!S.bgm;save();drawBgm();bgmReady=true;if(S.bgm)screenMusic();else BGM.stop()};
+drawBgm();
 function drawSound(){$("soundBtn").textContent=S.sound?"SOUND ON":"SOUND OFF";$("soundBtn").setAttribute("aria-pressed",S.sound)}
 $("soundBtn").onclick=()=>{S.sound=!S.sound;save();drawSound();if(S.sound)sfx("flip")};
 drawSound();
@@ -1764,7 +1844,12 @@ updateIdle();
   const start=()=>{
     if(gone)return;gone=true;
     sfx("rankup");ts.classList.add("out");
-    setTimeout(()=>{ts.remove();showLoginBonus()},600);
+    // the first tap unlocks audio: the title theme plays while the logo flies off
+    bgmReady=true;BGM.play("title");
+    setTimeout(()=>{ts.remove();showLoginBonus();
+      // no login bonus today: move on to the screen's own music after the intro
+      if($("bonus").hidden)setTimeout(()=>{if(BGM.current()==="title")screenMusic()},4500);
+    },600);
   };
   ts.addEventListener("click",start);
   ts.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();start()}});
