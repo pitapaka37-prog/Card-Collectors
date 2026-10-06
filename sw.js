@@ -1,5 +1,5 @@
 // CARD COLLECTORS service worker: works offline after the first visit.
-const VERSION = "cc-v1";
+const VERSION = "cc-v2";
 const CORE = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png", "icon-180.png"];
 
 self.addEventListener("install", e => {

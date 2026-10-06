@@ -33,6 +33,8 @@ img{max-width:100%}
   color-scheme:light;
 }
 html,body{height:100%}
+html{background:var(--paper)}
+button,.card,[role="button"],.drop{touch-action:manipulation}
 body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.6;
   background-image:radial-gradient(rgba(226,35,26,.13) 1.4px,transparent 1.6px);background-size:10px 10px}
 .wrap{max-width:1000px;margin:0 auto;padding-inline:16px;padding-block:16px 48px;display:flex;flex-direction:column;gap:20px}
@@ -85,7 +87,8 @@ nav button span{font-family:var(--body);font-size:13px;font-weight:700}
 .card{--c:var(--n);position:relative;aspect-ratio:5/7;width:100%;max-width:100%;perspective:900px}
 .card .inner{position:absolute;inset:0;transform-style:preserve-3d;transition:transform .55s cubic-bezier(.3,1.4,.5,1)}
 .card.flipped .inner{transform:rotateY(180deg)}
-.face{position:absolute;inset:0;border:3px solid var(--ink);border-radius:10px;backface-visibility:hidden;overflow:hidden;box-shadow:4px 4px 0 var(--ink)}
+.face{position:absolute;inset:0;border:3px solid var(--ink);border-radius:10px;-webkit-backface-visibility:hidden;backface-visibility:hidden;overflow:hidden;box-shadow:4px 4px 0 var(--ink);isolation:isolate;transform:translateZ(0)}
+.face.front{transform:rotateY(180deg) translateZ(0)}
 .back{background:var(--red);display:grid;place-items:center;
   background-image:radial-gradient(rgba(0,0,0,.25) 1.5px,transparent 1.8px),repeating-conic-gradient(from 0deg at 50% 50%,#ff4a3d 0 10deg,var(--red) 10deg 20deg);background-size:7px 7px,auto}
 .back::after{content:"CC";font-family:var(--display);font-size:clamp(20px,4.5vw,32px);letter-spacing:.04em;color:var(--yellow);-webkit-text-stroke:1.5px var(--ink);background:#fff;border:3px solid var(--ink);border-radius:50%;width:2.3em;height:2.3em;display:grid;place-items:center;transform:rotate(-8deg)}
@@ -165,6 +168,16 @@ nav button span{font-family:var(--body);font-size:13px;font-weight:700}
 .binder .progress{display:block;width:100%;box-sizing:border-box;margin-top:4px}
 .binder .progress span{display:block;height:100%;background:var(--yellow)}
 #dexView.my .progress div{background:repeating-linear-gradient(45deg,var(--cyan) 0 8px,#5fd0f0 8px 16px)}
+
+/* backup */
+.backup{display:flex;flex-direction:column;gap:10px;border-top:3px solid var(--ink);padding-top:14px}
+.backup-text{display:flex;flex-direction:column;font-size:13px;max-width:60ch}
+.backup-text b{font-size:14px}
+.backup-btns{display:flex;flex-wrap:wrap;gap:10px}
+.backup-btns label{cursor:pointer;position:relative}
+.backup-btns input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.backup-btns label:focus-within{outline:3px solid var(--blue);outline-offset:3px}
+.backup-msg{font-size:13px;font-weight:700;min-height:1.4em}
 
 /* banner switch */
 .bswitch{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:-8px}
@@ -280,7 +293,7 @@ nav button span{font-family:var(--body);font-size:13px;font-weight:700}
       <span class="issue" id="cvIssue">ISSUE #1 ・ 25¢</span>
       <div class="cover-text">
         <span class="eyebrow" id="cvEye">ピックアップ：ATLAS PRIME</span>
-        <h2 id="cvTitle">街の危機に集まれ、キャピタル・シティのヒーローたち！</h2>
+        <h2 id="cvTitle">街の危機に集まれ、CARD COLLECTORS のヒーローたち！</h2>
         <p id="cvText">十連なら最後の1枚は SR 以上が確定。80 回 SSR が出なければ、次の1枚は SSR 以上になります。</p>
         <div class="rates" id="rates"></div>
         <div class="pulls">
@@ -305,7 +318,16 @@ nav button span{font-family:var(--body);font-size:13px;font-weight:700}
     <div class="panel" id="dexPick">
       <div class="panel-head"><h3>HERO FILES<small>図鑑をえらぶ</small></h3></div>
       <div class="binders" id="binders"></div>
-      <div style="display:flex;justify-content:flex-end"><button class="ghost" id="resetBtn">記録をリセット</button></div>
+      <div class="backup">
+        <div class="backup-text"><b>データの保存</b><span>カードやガチャはこの端末にだけ保存されています。機種変更やデータ削除に備えて、ときどき書き出しておくと安心です。</span></div>
+        <div class="backup-btns">
+          <button type="button" class="ghost" id="exportBtn">データを書き出す</button>
+          <label class="ghost" for="importFile" id="importLbl">データを読み込む<input type="file" id="importFile" accept="application/json,.json"></label>
+          <button type="button" class="ghost" id="importGo" hidden>読み込みを確定</button>
+          <button type="button" class="ghost" id="resetBtn">記録をリセット</button>
+        </div>
+        <div class="backup-msg" id="backupMsg" role="status"></div>
+      </div>
     </div>
     <div class="panel" id="dexView" hidden>
       <div><button class="ghost" id="dexBack">← 図鑑をえらぶ</button></div>
@@ -412,6 +434,12 @@ function load(){
   const s=Object.assign(JSON.parse(JSON.stringify(DEFAULT)),v);
   if(!Array.isArray(s.custom))s.custom=[];
   if(!Array.isArray(s.packs))s.packs=[];
+  if(!s.owned||typeof s.owned!=="object")s.owned={};
+  // keep only well-formed entries (data may come from an imported file)
+  const isColor=c=>typeof c==="string"&&/^#[0-9a-f]{6}$/i.test(c);
+  s.packs=s.packs.filter(p=>p&&typeof p.id==="string").map(p=>({id:p.id,name:String(p.name||"").slice(0,20),color:isColor(p.color)?p.color:PACK_COLORS[0]}));
+  s.custom=s.custom.filter(c=>c&&typeof c.id==="string"&&typeof c.img==="string"&&/^data:image\/(jpeg|png|webp|gif);base64,[A-Za-z0-9+/=]+$/.test(c.img)&&ORDER.includes(c.r))
+    .map(c=>({id:c.id,r:c.r,name:String(c.name||"").slice(0,22),kana:String(c.kana||"").slice(0,20),flavor:String(c.flavor||"").slice(0,60),h:Number(c.h)||0,shape:"shield",img:c.img,m:"?",pack:typeof c.pack==="string"?c.pack:""}));
   if(!s.pityBy||typeof s.pityBy!=="object")s.pityBy={};
   // migrate the single "MY PACK" from the previous version
   if(!s.packs.length){
@@ -706,16 +734,64 @@ setInterval(()=>{const left=Math.ceil((S.refillAt-Date.now())/1000);const b=$("r
 
 /* two-step button helper (the viewer has no confirm dialogs) */
 function armed(btn,label,armedLabel,action){
-  let on=false;
+  let on=false,timer=0;
   btn.onclick=()=>{
-    if(!on){on=true;btn.textContent=armedLabel;setTimeout(()=>{on=false;btn.textContent=label},3000);return}
+    if(!on){on=true;btn.textContent=armedLabel;timer=setTimeout(()=>{on=false;btn.textContent=label},3000);return}
+    clearTimeout(timer);on=false;btn.textContent=label;
     action();
   };
 }
 armed($("resetBtn"),"記録をリセット","もう一度押すとリセットします",()=>{
   const keep={custom:S.custom,packs:S.packs,banner:S.banner};
-  S=Object.assign(JSON.parse(JSON.stringify(DEFAULT)),keep);save();$("resetBtn").textContent="記録をリセット";$("detail").hidden=true;render();
+  S=Object.assign(JSON.parse(JSON.stringify(DEFAULT)),keep);save();$("detail").hidden=true;render();
+  $("backupMsg").textContent="所持カードとコインをリセットしました。自作カードとガチャは残っています。";
 });
+
+/* ---- backup: export / import ---- */
+// ask the browser not to clear this site's storage on its own (granted mostly for installed apps)
+try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
+$("exportBtn").onclick=()=>{
+  const data={app:"card-collectors",version:1,savedAt:new Date().toISOString(),state:S};
+  const blob=new Blob([JSON.stringify(data)],{type:"application/json"});
+  const a=document.createElement("a");
+  const d=new Date(),pad=n=>String(n).padStart(2,"0");
+  a.href=URL.createObjectURL(blob);
+  a.download=`card-collectors-${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}.json`;
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),10000);
+  $("backupMsg").textContent=`書き出しました（自作カード ${S.custom.length} 枚・ガチャ ${S.packs.length} 個）。ファイルを安全な場所に保存してください。`;
+};
+let pendingImport=null;
+$("importFile").onchange=e=>{
+  const f=e.target.files[0];e.target.value="";
+  if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{
+    let v=null;
+    try{v=JSON.parse(r.result)}catch(err){}
+    const st=v&&v.app==="card-collectors"&&v.state;
+    if(!st||typeof st.gems!=="number"||!Array.isArray(st.custom)||!Array.isArray(st.packs)||typeof st.owned!=="object"){
+      pendingImport=null;$("importGo").hidden=true;
+      $("backupMsg").textContent="このファイルは CARD COLLECTORS のデータではないようです。「データを書き出す」で作ったファイルを選んでください。";return;
+    }
+    pendingImport=st;$("importGo").hidden=false;
+    $("backupMsg").textContent=`自作カード ${st.custom.length} 枚・ガチャ ${st.packs.length} 個・コイン ${st.gems.toLocaleString()} のデータです。「読み込みを確定」を押すと、いまのデータと入れ替わります。`;
+  };
+  r.onerror=()=>{$("backupMsg").textContent="ファイルを読み込めませんでした。もう一度選んでください。"};
+  r.readAsText(f);
+};
+$("importGo").onclick=()=>{
+  if(!pendingImport)return;
+  const before=S;
+  try{localStorage.setItem(KEY,JSON.stringify(pendingImport))}catch(e){
+    $("backupMsg").textContent="保存容量が足りず、読み込めませんでした。";return;
+  }
+  S=load();
+  if(!save()){S=before;save();$("backupMsg").textContent="保存容量が足りず、読み込めませんでした。";return}
+  pendingImport=null;$("importGo").hidden=true;dexSel=null;$("detail").hidden=true;
+  fillPackSelect();render();
+  $("backupMsg").textContent="データを読み込みました。";
+};
 
 /* ---- gacha cover ---- */
 function renderSwitch(){
@@ -744,7 +820,7 @@ function renderCover(){
     cover.style.removeProperty("--pc");
     $("cvIssue").textContent="ISSUE #1 ・ 25¢";
     $("cvEye").textContent="ピックアップ：ATLAS PRIME";
-    $("cvTitle").textContent="街の危機に集まれ、キャピタル・シティのヒーローたち！";
+    $("cvTitle").textContent="街の危機に集まれ、CARD COLLECTORS のヒーローたち！";
     $("cvText").textContent=STD_TEXT;
     feat.appendChild(cardEl(CARDS.find(c=>c.name==="Atlas Prime"),{flipped:true}));
   }else{
@@ -902,17 +978,27 @@ function openMakeFor(id){
   window.scrollTo({top:0,behavior:"smooth"});
 }
 
+// Only the visible screen is redrawn; the others are marked stale and drawn when opened.
+let dexStale=true,mineStale=true;
+function updateDexCount(){
+  const ids=CARDS.map(c=>c.id).concat(S.custom.map(c=>c.id));
+  $("dexCount").textContent=`${ids.filter(id=>S.owned[id]).length}/${ids.length}`;
+}
 function render(){
   $("gems").textContent=S.gems.toLocaleString();
-  renderCover();renderDex();renderMine();
+  renderCover();updateDexCount();
+  if(!$("view-dex").hidden){renderDex();dexStale=false}else dexStale=true;
+  if(!$("view-make").hidden){renderMine();mineStale=false}else mineStale=true;
 }
 function tab(which){
   ["gacha","dex","make"].forEach(t=>{
     const on=t===which;$("tab-"+t).setAttribute("aria-selected",on);$("view-"+t).hidden=!on;
     if(on&&t==="make")$("view-make").style.display="flex";
   });
+  if(which==="dex"&&dexStale){renderDex();dexStale=false}
+  if(which==="make"&&mineStale){renderMine();mineStale=false}
 }
-$("tab-gacha").onclick=()=>tab("gacha");$("tab-dex").onclick=()=>{dexSel=null;$("detail").hidden=true;renderDex();tab("dex")};$("tab-make").onclick=()=>tab("make");
+$("tab-gacha").onclick=()=>tab("gacha");$("tab-dex").onclick=()=>{dexSel=null;$("detail").hidden=true;dexStale=true;tab("dex")};$("tab-make").onclick=()=>tab("make");
 
 /* ---- card maker ---- */
 let mkImg=null;
