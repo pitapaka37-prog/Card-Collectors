@@ -581,6 +581,53 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
 .gt-best{padding:0 16px;font-family:var(--display);font-size:16px;letter-spacing:.05em;color:#c9b8ff}
 .gt-best b{color:#fff;font-weight:400}
 .gt-play{position:absolute;right:12px;bottom:12px;font-family:var(--display);font-size:22px;letter-spacing:.05em;background:var(--yellow);color:var(--ink);border:3px solid var(--ink);padding:0 12px;box-shadow:3px 3px 0 #000}
+/* ---- card battle ---- */
+.hp-battle{background-color:#c2410c}
+.bt-art{background:radial-gradient(rgba(255,255,255,.14) 1.3px,transparent 1.6px) 0 0/10px 10px,linear-gradient(135deg,#e2231a,#7a1010 55%,#141414)}
+.bt-art .bt-mini{position:absolute;top:22px;width:62px;height:86px;border:3px solid var(--ink);border-radius:6px;background:#fff6dc;box-shadow:4px 4px 0 var(--ink)}
+.bt-art .bt-mini.a{left:22%;transform:rotate(-12deg);background:var(--blue)}.bt-art .bt-mini.b{right:22%;transform:rotate(12deg);background:var(--yellow)}
+.bt-art .bt-boom{position:absolute;left:50%;top:40px;transform:translateX(-50%) rotate(-8deg);font-family:var(--display);font-size:40px;color:#fff;-webkit-text-stroke:1.5px var(--ink);text-shadow:3px 3px 0 var(--ink);animation:pu-pulse 1.2s ease-in-out infinite}
+.bt-intro{display:flex;flex-direction:column;gap:12px;align-items:flex-start;font-weight:700}
+.bt-intro p{margin:0}
+.bt-rules{display:flex;flex-wrap:wrap;gap:8px 16px;margin:0;padding:0;list-style:none}
+.bt-rules li{display:flex;align-items:center;gap:4px;background:#fff;border:3px solid var(--ink);padding:4px 10px;box-shadow:3px 3px 0 var(--ink)}
+.bt-type{display:inline-grid;place-items:center;width:24px;height:24px;border:2px solid var(--ink);border-radius:50%;color:#fff;font:700 13px/1 var(--jp);flex:none}
+.bt-type.t0{background:#e2231a}.bt-type.t1{background:#1d5fd6}.bt-type.t2{background:#1d9e5a}
+.bt-need{color:var(--red)}
+.bt-arena{display:flex;flex-direction:column;gap:14px}
+.bt-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;font-family:var(--display);font-size:20px;letter-spacing:.04em}
+.bt-left{display:flex;gap:4px}
+.bt-left i{width:16px;height:22px;border:2px solid var(--ink);border-radius:3px;background:var(--red)}
+.bt-left i.used{background:transparent;border-style:dashed;opacity:.5}
+.bt-score{margin-left:auto;font-weight:400;font-size:28px;background:var(--ink);color:var(--yellow);padding:0 12px}
+.bt-field{position:relative;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;padding:16px;border:4px solid var(--ink);background:radial-gradient(rgba(0,0,0,.12) 1.4px,transparent 1.7px) 0 0/8px 8px,linear-gradient(135deg,#ffe9a8,#ffb36b);box-shadow:6px 6px 0 var(--ink);min-height:260px}
+.bt-slot{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}
+.bt-slot .bt-unit{width:min(150px,100%)}
+.bt-slot .bt-who{font-family:var(--display);font-size:18px;letter-spacing:.06em;background:#fff;border:2px solid var(--ink);padding:0 8px}
+.bt-slot.win .bt-unit{animation:bt-win .5s cubic-bezier(.3,1.6,.5,1)}
+.bt-slot.lose .bt-unit{filter:grayscale(.85) brightness(.8);transform:rotate(6deg) translateY(8px);transition:.3s}
+@keyframes bt-win{40%{transform:scale(1.15) rotate(-4deg)}}
+.bt-empty{width:min(150px,100%);aspect-ratio:5/7;border:4px dashed rgba(20,20,20,.5);border-radius:10px;display:grid;place-items:center;font-family:var(--display);font-size:20px;color:rgba(20,20,20,.55);text-align:center;padding:6px}
+.bt-vs{font-family:var(--display);font-size:42px;color:var(--yellow);-webkit-text-stroke:2px var(--ink);text-shadow:4px 4px 0 var(--ink);transform:rotate(-8deg)}
+.bt-vs.pow{color:#fff;font-size:46px;animation:pop-in .3s cubic-bezier(.3,1.6,.5,1)}
+.bt-pow{font-family:var(--display);font-size:30px;line-height:1;color:var(--ink)}
+.bt-pow small{display:block;font-size:13px;font-family:var(--jp);font-weight:700;color:var(--red);text-align:center}
+.bt-msg{margin:0;min-height:1.4em;font-weight:700;text-align:center}
+.bt-hand{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.bt-unit{position:relative;display:flex;flex-direction:column;gap:4px;background:none;border:0;padding:0;text-align:left;color:inherit}
+.bt-unit .card .inner{transform:rotateY(180deg)}
+.bt-stat{display:flex;align-items:center;gap:4px;justify-content:center;background:#fff;border:2px solid var(--ink);padding:1px 4px;font-family:var(--display);font-size:18px;letter-spacing:.03em;box-shadow:2px 2px 0 var(--ink)}
+.bt-hand .bt-unit{cursor:pointer;transition:transform .12s}
+.bt-hand .bt-unit:hover:not(:disabled){transform:translateY(-6px)}
+.bt-hand .bt-unit:disabled{cursor:default;opacity:.5}
+.bt-hand .bt-unit.used{visibility:hidden}
+.bt-hand .bt-unit.adv::after{content:"有利!";position:absolute;top:-10px;right:-6px;z-index:3;background:var(--yellow);border:2px solid var(--ink);font:700 12px/1.3 var(--jp);padding:0 5px;transform:rotate(8deg);animation:pu-pulse 1s ease-in-out infinite}
+.bt-res{text-align:center}
+.bt-res .bt-big{font-family:var(--display);font-size:72px;line-height:1;letter-spacing:.04em;-webkit-text-stroke:2px var(--ink);text-shadow:5px 5px 0 var(--ink);color:var(--yellow)}
+.bt-res.lose .bt-big{color:#9aa4b8}.bt-res.draw .bt-big{color:#fff}
+.bt-res p{font-weight:700}
+.bt-res .bt-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+@media (max-width:640px){.bt-hand{gap:6px}.bt-stat{font-size:14px}.bt-stat .bt-type{width:18px;height:18px;font-size:10px}.bt-field{padding:10px;gap:6px;min-height:200px}.bt-vs{font-size:30px}.bt-pow{font-size:24px}}
 .vcm{position:fixed;inset:0;z-index:85;background:#0b1240;touch-action:none;-webkit-user-select:none;user-select:none}
 .vcm canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .vcm-hud{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));left:12px;right:110px;display:flex;gap:14px;align-items:center;font-family:var(--display);font-size:24px;letter-spacing:.05em;color:#fff;text-shadow:2px 2px 0 var(--ink);pointer-events:none}
@@ -788,6 +835,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
         <button type="button" class="hp hp-shop" data-go="shop"><span class="hp-sfx">KA-CHING!</span><b>SHOP</b><i>スター交換所</i><small id="hpShop"></small></button>
         <button type="button" class="hp hp-games" data-go="games"><span class="hp-sfx">ZOOOM!</span><b>GAMES</b><i>ミニゲーム</i><small id="hpGames"></small></button>
         <button type="button" class="hp hp-make" data-go="make"><span class="hp-sfx">SKETCH!</span><b>MAKE</b><i>カードを作る</i><small id="hpMake"></small></button>
+        <button type="button" class="hp hp-battle" data-go="battle"><span class="hp-sfx">BAM!</span><b>BATTLE</b><i>カードバトル</i><small id="hpBattle"></small></button>
       </div>
     </div>
   </section>
@@ -857,9 +905,47 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
           <span class="gt-prize">全クリアのミッション報酬：SSR「スター・ヴェルベット号」</span>
           <span class="gt-play">PLAY ▶</span>
         </button>
+        <button type="button" class="game-tile" id="playBattle">
+          <span class="gt-art bt-art" aria-hidden="true"><span class="bt-mini a"></span><span class="bt-mini b"></span><span class="bt-boom">VS!</span></span>
+          <span class="gt-title"><b>CARD BATTLE</b><i>5 VS 5</i></span>
+          <span class="gt-desc">持っているカードからランダムに選ばれた5枚で、敵チームと5回勝負！相性を見て出すカードを選ぼう。</span>
+          <span class="gt-best">RECORD <b id="btTileRec">0勝 0敗</b></span>
+          <span class="gt-play">PLAY ▶</span>
+        </button>
       </div>
     </div>
   </section>
+
+  <section id="view-battle" hidden>
+    <div class="panel">
+      <div class="panel-head"><h3>CARD BATTLE<small>カードバトル</small></h3><span class="chip" id="btRecord"></span></div>
+      <div class="bt-intro" id="btIntro">
+        <p>持っているカードからランダムに選ばれた<b>5枚</b>で、敵チーム5枚と<b>5回勝負</b>！ 毎ラウンド、先に敵のカードが出るので、手札から1枚選んで迎え撃とう。</p>
+        <ul class="bt-rules">
+          <li><span class="bt-type t0">力</span>パワー は <span class="bt-type t2">技</span>テクニック に強い</li>
+          <li><span class="bt-type t2">技</span>テクニック は <span class="bt-type t1">速</span>スピード に強い</li>
+          <li><span class="bt-type t1">速</span>スピード は <span class="bt-type t0">力</span>パワー に強い</li>
+        </ul>
+        <p>相性が有利だとパワー1.5倍！ レアリティが高いカードほど基本パワーが高いよ。勝ったラウンドが多いほうの勝ち。</p>
+        <p>ごほうび：勝ち 30コイン ・ 引き分け 10コイン ・ 負け 5コイン</p>
+        <button type="button" class="btn-main" id="btStart">BATTLE START!</button>
+        <p class="bt-need" id="btNeed" hidden></p>
+      </div>
+      <div class="bt-arena" id="btArena" hidden>
+        <div class="bt-bar"><span id="btRound">ROUND 1/5</span><span>ENEMY</span><span class="bt-left" id="btEnemyLeft"></span><b class="bt-score" id="btScore">0 - 0</b></div>
+        <div class="bt-field">
+          <div class="bt-slot" id="btFoe"></div>
+          <div class="bt-vs" id="btVs">VS</div>
+          <div class="bt-slot" id="btMine"></div>
+        </div>
+        <p class="bt-msg" id="btMsg" role="status"></p>
+        <div class="bt-hand" id="btHand"></div>
+      </div>
+    </div>
+  </section>
+  <div class="detail ms-modal" id="btResult" hidden role="dialog" aria-modal="true" aria-label="バトル結果">
+    <div class="mission bt-res" id="btResBox"></div>
+  </div>
 
   <section id="view-shop" hidden>
     <div class="panel">
@@ -1041,7 +1127,7 @@ const SFX={SR:"WHAM!",SSR:"KA-POW!!",UR:"KRAKA-BOOM!!!"};
 const PACK_COLORS=["#e2231a","#1d9e5a","#ff7a00","#7a3cff","#e0218a","#0f8f8f","#3d3d3d"];
 const STD_TEXT="十連なら最後の1枚は SR 以上が確定。80 回 SSR が出なければ、次の1枚は SSR 以上になります。";
 
-const DEFAULT={gems:3000,pity:0,owned:{},custom:[],packs:[],pityBy:{},banner:"std",loginLast:"",streak:0,idleAt:0,points:0,sound:true,bgm:true,hiScore:0,mission:null,stats:{pulls:0,bestWave:0},normalClaimed:{}};
+const DEFAULT={gems:3000,pity:0,owned:{},custom:[],packs:[],pityBy:{},banner:"std",loginLast:"",streak:0,idleAt:0,points:0,sound:true,bgm:true,hiScore:0,mission:null,stats:{pulls:0,bestWave:0},normalClaimed:{},battle:{w:0,l:0,d:0}};
 const KEY="cch-gacha";
 const newId=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
 let S=load();
@@ -1080,6 +1166,7 @@ function load(){
   const nc=s.normalClaimed&&typeof s.normalClaimed==="object"?s.normalClaimed:{};s.normalClaimed=Object.fromEntries(Object.entries(nc).map(([k,v])=>[k,!!v]));
   // players who already earned Star Velvet before missions existed
   if(s.owned.r1>0){s.normalClaimed.vcm50=true;s.stats.bestWave=50}
+  if(!s.battle||typeof s.battle!=="object")s.battle={};s.battle={w:num(s.battle.w,0,0,1e7),l:num(s.battle.l,0,0,1e7),d:num(s.battle.d,0,0,1e7)};
   s.hiScore=Math.max(0,Math.floor(Number(s.hiScore)||0));s.sound=s.sound!==false;s.bgm=s.bgm!==false;s.gems=num(s.gems,3000,0,1e9);s.points=num(s.points,0,0,1e9);s.pity=num(s.pity,0,0,PITY);s.streak=num(s.streak,0,0,1e6);
   s.idleAt=num(s.idleAt,0,0,Date.now());
   if(typeof s.loginLast!=="string"||!/^\d{4}-\d{2}-\d{2}$/.test(s.loginLast))s.loginLast="";
@@ -1426,6 +1513,8 @@ const TRACKS={
     bass:"R.R.8.R.R.R.8.5.",lead:"1.3.5.4.3...1...2.3.4.3.2.......",wave:"square"},
   arcade:{bpm:150,vol:.85,chords:[[40,"m"],[48,"M"],[50,"M"],[47,"7"]],kick:"x..xx...x..xx...",snare:"....x.......x...",hat:"xxxxxxxxxxxxxxxx",
     bass:"R.RR8.R.R.RR8.5.",lead:"5.4.3.4.5.5.5...4.4.4...5.5.5...",wave:"square"},
+  battle:{bpm:144,vol:.85,chords:[[45,"m"],[45,"m"],[41,"M"],[43,"M"]],kick:"x..x..x.x..x..x.",snare:"....x.......x..x",hat:"x.xxx.xxx.xxx.xx",
+    bass:"RRR.RRR.RRR.R5R8",lead:"1.1.5...4.3.2...1.1.5...6.5.4...",wave:"sawtooth"},
   pull:{bpm:140,vol:.85,chords:[[48,"m"],[48,"m"],[44,"M"],[46,"M"]],kick:"x...x...x...x...",snare:"....x...x.x.x.xx",hat:"xxxxxxxxxxxxxxxx",
     bass:"RRRRRRRRRRRRRRRR",lead:"5.5.5.5.4.4.4.4.3.3.3.3.4.4.5.5.",wave:"square"},
 };
@@ -2107,8 +2196,8 @@ function render(){
 function tab(which){
   currentScreen=which;screenMusic();
   if(which==="home")setTimeout(renderHome,0);
-  ["home","gacha","dex","make","shop","games"].forEach(t=>{
-    const on=t===which;$("tab-"+t).setAttribute("aria-selected",on);$("view-"+t).hidden=!on;
+  ["home","gacha","dex","make","shop","games","battle"].forEach(t=>{
+    const on=t===which;const tb=document.getElementById("tab-"+t);if(tb)tb.setAttribute("aria-selected",on||(t==="games"&&which==="battle"));$("view-"+t).hidden=!on;
     if(on&&t==="make")$("view-make").style.display="flex";
     if(on&&t==="gacha")$("view-gacha").style.display="flex";
   });
@@ -2116,6 +2205,7 @@ function tab(which){
   if(which==="dex"&&dexStale){renderDex();dexStale=false}
   if(which==="make"&&mineStale){renderMine();mineStale=false}
   if(which==="shop"&&shopStale){renderShop();shopStale=false}
+  if(which==="battle"&&typeof renderBattle==="function")renderBattle();
 }
 function renderShop(){
   $("shopPts").textContent=S.points.toLocaleString();
@@ -2517,7 +2607,7 @@ const VCM=(()=>{
   }
   return{open,init,tileArt};
 })();
-function renderGames(){$("vcmBest").textContent=(S.hiScore||0).toLocaleString()}
+function renderGames(){$("vcmBest").textContent=(S.hiScore||0).toLocaleString();const t=document.getElementById("btTileRec");if(t&&S.battle)t.textContent=`${S.battle.w}勝 ${S.battle.l}敗`}
 VCM.init();
 VCM.tileArt();
 $("playVcm").onclick=()=>VCM.open();
@@ -2668,6 +2758,112 @@ $("msGo").onclick=openMissions;
 $("msClose").onclick=closeMissions;
 $("msModal").addEventListener("click",e=>{if(e.target===$("msModal"))closeMissions()});
 
+/* ---- card battle: 5 random owned cards vs 5 enemy cards ---- */
+const BT_BASE={N:100,R:140,SR:190,SSR:250,UR:320};
+const BT_TYPES=["力","速","技"]; // 力 beats 技, 技 beats 速, 速 beats 力
+const BT_REWARD={win:30,draw:10,lose:5};
+function btHash(str){let h=2166136261;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
+function btStats(c){const k=String(c.id)+"|"+(c.name||"");const h=btHash(k),h2=btHash(k+"#");return{type:h%3,pow:Math.round(BT_BASE[c.r]*(.85+(h2%1000)/1000*.3))}}
+const btBeats=(a,b)=>(a===0&&b===2)||(a===2&&b===1)||(a===1&&b===0);
+let BT=null;
+function btPool(){return CARDS.concat(SHOP_CARDS,REWARD_CARDS,S.custom).filter(c=>S.owned[c.id])}
+function btUnit(c,tag){
+  const st=btStats(c);
+  const el=document.createElement(tag||"div");el.className="bt-unit";if(tag==="button")el.type="button";
+  el.appendChild(cardEl(c,{flipped:true}));
+  const bar=document.createElement("span");bar.className="bt-stat";bar.innerHTML=`<span class="bt-type t${st.type}">${BT_TYPES[st.type]}</span>${st.pow}`;
+  el.appendChild(bar);return el;
+}
+function renderBattle(){
+  const rec=S.battle;
+  $("btRecord").textContent=`${rec.w}勝 ${rec.l}敗 ${rec.d}分`;
+  if(BT){$("btIntro").hidden=true;$("btArena").hidden=false;return}
+  $("btIntro").hidden=false;$("btArena").hidden=true;
+  const n=btPool().length;
+  $("btStart").disabled=n<5;
+  $("btNeed").hidden=n>=5;
+  $("btNeed").textContent=`バトルには5種類以上のカードが必要です（いま ${n} 種類）。ガチャでカードを集めよう！`;
+}
+function btStart(){
+  const pool=btPool();if(pool.length<5)return;
+  const mine=shuffled(pool).slice(0,5);
+  const foes=CARDS.concat(SHOP_CARDS,REWARD_CARDS);
+  const used=new Set();
+  const enemy=mine.map(m=>{
+    let opts=foes.filter(c=>c.r===m.r&&!used.has(c.id));
+    if(!opts.length)opts=foes.filter(c=>!used.has(c.id));
+    const c=opts[Math.floor(Math.random()*opts.length)];used.add(c.id);return c;
+  });
+  BT={mine,enemy:shuffled(enemy),round:0,me:0,foe:0,used:new Set(),busy:false};
+  sfx("up");renderBattle();btRound();
+}
+function btScoreText(){$("btScore").textContent=`${BT.me} - ${BT.foe}`;$("btRound").textContent=`ROUND ${Math.min(BT.round+1,5)}/5`;
+  $("btEnemyLeft").innerHTML=BT.enemy.map((_,i)=>`<i class="${i<BT.round?"used":""}"></i>`).join("")}
+function btRound(){
+  BT.busy=false;btScoreText();
+  const foe=BT.enemy[BT.round],fs=btStats(foe);
+  const fslot=$("btFoe");fslot.className="bt-slot";fslot.innerHTML=`<span class="bt-who">ENEMY</span>`;fslot.appendChild(btUnit(foe));
+  const mslot=$("btMine");mslot.className="bt-slot";mslot.innerHTML=`<span class="bt-who">YOU</span><div class="bt-empty">カードを<br>えらんでね</div>`;
+  $("btVs").className="bt-vs";$("btVs").textContent="VS";
+  $("btMsg").textContent=`敵は ${foe.name}（${BT_TYPES[fs.type]}・${fs.pow}）！ 手札から迎え撃つカードを選ぼう。`;
+  sfx("flip");
+  const hand=$("btHand");hand.innerHTML="";
+  BT.mine.forEach((c,i)=>{
+    const b=btUnit(c,"button");
+    if(BT.used.has(i))b.classList.add("used");
+    else if(btBeats(btStats(c).type,fs.type))b.classList.add("adv");
+    b.disabled=BT.used.has(i);
+    b.onclick=()=>btPlay(i);
+    hand.appendChild(b);
+  });
+}
+function btPlay(i){
+  if(!BT||BT.busy||BT.used.has(i))return;
+  BT.busy=true;BT.used.add(i);
+  const c=BT.mine[i],foe=BT.enemy[BT.round];
+  const ms=btStats(c),fs=btStats(foe);
+  const mAdv=btBeats(ms.type,fs.type),fAdv=btBeats(fs.type,ms.type);
+  const roll=()=>.85+Math.random()*.3;
+  const mp=Math.round(ms.pow*(mAdv?1.5:1)*roll()),fp=Math.round(fs.pow*(fAdv?1.5:1)*roll());
+  $("btHand").querySelectorAll(".bt-unit").forEach((b,k)=>{b.disabled=true;if(k===i)b.classList.add("used")});
+  const mslot=$("btMine");mslot.innerHTML=`<span class="bt-who">YOU</span>`;mslot.appendChild(btUnit(c));
+  sfx("drop");
+  setTimeout(()=>{
+    const pw=(p,adv)=>`<div class="bt-pow">${p}${adv?"<small>有利 ×1.5</small>":""}</div>`;
+    $("btFoe").insertAdjacentHTML("beforeend",pw(fp,fAdv));
+    mslot.insertAdjacentHTML("beforeend",pw(mp,mAdv));
+    const vs=$("btVs");vs.className="bt-vs pow";
+    let msg;
+    if(mp>fp){BT.me++;vs.textContent="POW!";mslot.classList.add("win");$("btFoe").classList.add("lose");msg=`${c.name} の勝ち！`;sfx("boom")}
+    else if(fp>mp){BT.foe++;vs.textContent="OUCH!";$("btFoe").classList.add("win");mslot.classList.add("lose");msg=`${foe.name} にやられた…`;sfx("crash")}
+    else{vs.textContent="CLASH!";msg="互角！ このラウンドは引き分け";sfx("tink")}
+    $("btMsg").textContent=msg;
+    BT.round++;btScoreText();
+    setTimeout(()=>{if(BT.round>=5)btEnd();else btRound()},1500);
+  },550);
+}
+function btEnd(){
+  const r=BT.me>BT.foe?"win":BT.me<BT.foe?"lose":"draw";
+  const coins=BT_REWARD[r];
+  S.gems+=coins;
+  if(r==="win")S.battle.w++;else if(r==="lose")S.battle.l++;else S.battle.d++;
+  save();render();
+  const box=$("btResBox");box.className="mission bt-res "+r;
+  box.innerHTML=`<div class="bt-big">${r==="win"?"YOU WIN!":r==="lose"?"YOU LOSE…":"DRAW!"}</div>
+    <p>${BT.me} - ${BT.foe} ・ ごほうび ${coins} コイン</p>
+    <p>通算 ${S.battle.w}勝 ${S.battle.l}敗 ${S.battle.d}分</p>
+    <div class="bt-btns"><button type="button" class="btn-main" id="btAgain">もう一度！</button><button type="button" class="ghost" id="btHome">ホームへ</button></div>`;
+  sfx(r==="win"?"ur":r==="lose"?"shake":"rare");
+  BT=null;
+  $("btResult").hidden=false;document.body.style.overflow="hidden";
+  const close=()=>{$("btResult").hidden=true;document.body.style.overflow=""};
+  $("btAgain").onclick=()=>{close();btStart()};
+  $("btHome").onclick=()=>{close();tab("home");window.scrollTo({top:0})};
+  renderBattle();
+}
+$("btStart").onclick=btStart;
+$("playBattle").onclick=()=>{tab("battle");window.scrollTo({top:0,behavior:"smooth"})};
+
 /* ---- home screen ---- */
 function renderHome(){
   updateMissionBadge();
@@ -2690,6 +2886,7 @@ function renderHome(){
   const open=SHOP_CARDS.filter(c=>!S.owned[c.id]).length;
   $("hpShop").textContent=`★${S.points.toLocaleString()} ・ 交換できるカード ${open} 枚`;
   $("hpGames").textContent=`HIGH SCORE ${(S.hiScore||0).toLocaleString()}`;
+  $("hpBattle").textContent=`${S.battle.w}勝 ${S.battle.l}敗 ${S.battle.d}分`;
   $("hpMake").textContent=`自作 ${S.custom.length} 枚 ・ ガチャ ${S.packs.length} 個`;
 }
 document.querySelectorAll(".hp").forEach(b=>b.onclick=()=>{const go=b.dataset.go;if(go==="dex"){dexSel=null;closeDetail();dexStale=true}tab(go);window.scrollTo({top:0,behavior:"smooth"})});
