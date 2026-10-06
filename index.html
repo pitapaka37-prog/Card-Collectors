@@ -464,7 +464,7 @@ const CARDS=[
  ["R","TT","Tornado Tess","トルネード・テス","回るほど強くなる。止まったあと少し目が回る。",190,"diamond"],
  ["R","CC","Captain Cactus","キャプテン・カクタス","砂漠の町から来た保安官。トゲで守り、水は分けてくれる。",110,"diamond"],
  ["R","GG","Glitter Gator","グリッター・ゲイター","下水道に住むきらきらのワニ。意外と面倒見がいい。",140,"diamond"],
- ["SR","AB","Atomic Bee","アトミック・ビー","研究所の花壇で生まれた。羽音で鋼鉄を震わせる。",48,"shield"],
+ ["SR","AB","Atomic Bee","アトミック・ビー","原子エネルギーを操るハチ型ヒーロー。超高速飛行と強烈なエネルギー攻撃、無数のメカ蜂を武器に戦う。",48,"shield"],
  ["SR","RR","Radio Ranger","レディオ・レンジャー","街中の電波を聞き分け、助けを呼ぶ声を拾う。",0,"shield"],
  ["SR","MX","Mirror Max","ミラー・マックス","ショーウィンドウの中を自由に移動できる。",175,"shield"],
  ["SR","VC","Velvet Comet","ベルベット・コメット","夜空を横切る赤い軌跡。通ったあとは少しあたたかい。",350,"shield"],
@@ -476,7 +476,7 @@ const CARDS=[
  ["UR","NM","Nova Mae","ノヴァ・メイ","宇宙の光「ノヴァ・エネルギー」を操り、闇に希望を灯す若きヒーロー。",320,"burst"],
 ].map((c,i)=>({id:i,r:c[0],m:c[1],name:c[2],kana:c[3],flavor:c[4],h:c[5],shape:c[6]}));
 // standard cards that use a picture instead of the drawn portrait
-const PHOTOS={"Rubber Duck":"rubber-duck.jpg","Atlas Prime":"atlas-prime.jpg","Nova Mae":"nova-mae.jpg","Skyline Sentinel":"skyline-sentinel.jpg","Queen Quasar":"queen-quasar.jpg","Thunder Hound":"thunder-hound.jpg"};
+const PHOTOS={"Rubber Duck":"rubber-duck.jpg","Atlas Prime":"atlas-prime.jpg","Nova Mae":"nova-mae.jpg","Skyline Sentinel":"skyline-sentinel.jpg","Queen Quasar":"queen-quasar.jpg","Thunder Hound":"thunder-hound.jpg","Atomic Bee":"atomic-bee.jpg"};
 CARDS.forEach(c=>{if(PHOTOS[c.name])c.photo=PHOTOS[c.name]});
 const PITY=80;
 const SFX={SR:"WHAM!",SSR:"KA-POW!!",UR:"KRAKA-BOOM!!!"};
