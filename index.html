@@ -470,13 +470,13 @@ const CARDS=[
  ["SR","VC","Velvet Comet","ベルベット・コメット","夜空を横切る赤い軌跡。通ったあとは少しあたたかい。",350,"shield"],
  ["SR","DF","Doctor Fuse","ドクター・フューズ","停電の街を救う発明家。導火線のような口ひげ。",30,"shield"],
  ["SSR","SS","Skyline Sentinel","スカイライン・センチネル","超高層都市を空から監視し、最新鋭のアーマーで街を脅威から守る孤高の守護者。",220,"burst"],
- ["SSR","QQ","Queen Quasar","クイーン・クエーサー","遠い星から来た女王。手のひらに小さな銀河を持つ。",270,"burst"],
+ ["SSR","QQ","Queen Quasar","クイーン・クエーサー","ノヴァ・エネルギーを自在に操り、銀河の平和を守る気高き宇宙の女王戦士。",270,"burst"],
  ["SSR","TH","Thunder Hound","サンダー・ハウンド","雷雲を連れて走る大型犬。吠えると街灯が一斉につく。",58,"burst"],
  ["UR","AP","Atlas Prime","アトラス・プライム","宇宙の核と融合し、重力そのものを武器に戦う超重量級ヒーロー。",205,"burst"],
  ["UR","NM","Nova Mae","ノヴァ・メイ","宇宙の光「ノヴァ・エネルギー」を操り、闇に希望を灯す若きヒーロー。",320,"burst"],
 ].map((c,i)=>({id:i,r:c[0],m:c[1],name:c[2],kana:c[3],flavor:c[4],h:c[5],shape:c[6]}));
 // standard cards that use a picture instead of the drawn portrait
-const PHOTOS={"Rubber Duck":"rubber-duck.jpg","Atlas Prime":"atlas-prime.jpg","Nova Mae":"nova-mae.jpg","Skyline Sentinel":"skyline-sentinel.jpg"};
+const PHOTOS={"Rubber Duck":"rubber-duck.jpg","Atlas Prime":"atlas-prime.jpg","Nova Mae":"nova-mae.jpg","Skyline Sentinel":"skyline-sentinel.jpg","Queen Quasar":"queen-quasar.jpg"};
 CARDS.forEach(c=>{if(PHOTOS[c.name])c.photo=PHOTOS[c.name]});
 const PITY=80;
 const SFX={SR:"WHAM!",SSR:"KA-POW!!",UR:"KRAKA-BOOM!!!"};
