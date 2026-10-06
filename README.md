@@ -34,11 +34,11 @@
 | `manifest.webmanifest` | アプリ名・アイコン・テーマ色 |
 | `sw.js` | オフライン用のキャッシュ（Service Worker） |
 | `icon-*.png` | アプリのアイコン |
-| `rubber-duck.jpg`, `atlas-prime.jpg`, `nova-mae.jpg`, `skyline-sentinel.jpg`, `queen-quasar.jpg`, `thunder-hound.jpg`, `atomic-bee.jpg`, `radio-ranger.jpg`, `mirror-max.jpg`, `velvet-comet.jpg`, `doctor-fuse.jpg`, `neon-noodle.jpg`, `jukebox-jane.jpg`, `skate-saint.jpg`, `diner-dynamo.jpg`, `tornado-tess.jpg`, `captain-cactus.jpg`, `glitter-gator.jpg`, `gumball-kid.jpg`, `traffic-cone.jpg`, `lunchbox-larry.jpg`, `static-sally.jpg`, `paper-boy.jpg`, `star-velvet.jpg` | 画像を使うカードの絵 |
+| `rubber-duck.jpg`, `atlas-prime.jpg`, `nova-mae.jpg`, `skyline-sentinel.jpg`, `queen-quasar.jpg`, `thunder-hound.jpg`, `atomic-bee.jpg`, `radio-ranger.jpg`, `mirror-max.jpg`, `velvet-comet.jpg`, `doctor-fuse.jpg`, `neon-noodle.jpg`, `jukebox-jane.jpg`, `skate-saint.jpg`, `diner-dynamo.jpg`, `tornado-tess.jpg`, `captain-cactus.jpg`, `glitter-gator.jpg`, `gumball-kid.jpg`, `traffic-cone.jpg`, `lunchbox-larry.jpg`, `static-sally.jpg`, `paper-boy.jpg`, `star-velvet.jpg`, `night-janitor.jpg` | 画像を使うカードの絵 |
 
 ## 更新するとき
 
-`sw.js` の `VERSION`（いまは `cc-v62`）を `cc-v63` のように上げると、利用者の端末の古いキャッシュが入れ替わります。
+`sw.js` の `VERSION`（いまは `cc-v63`）を `cc-v64` のように上げると、利用者の端末の古いキャッシュが入れ替わります。
 
 ## データについて
 

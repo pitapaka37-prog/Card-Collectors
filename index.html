@@ -808,7 +808,7 @@ const CARDS=[
  ["N","SS","Static Sally","スタティック・サリー","セーターに溜まった静電気を操る弱小ヴィラン。ただし、せいぜい触った相手をちょっとビリッとさせる程度で、やる気も実力も微妙。",200,"circle"],
  ["N","PB","Paper Boy","ペーパー・ボーイ","貧しい家を支えるために働く普通の少年。学校に通いながら毎日街中を自転車で走り回り、手紙や新聞を届けて小銭を稼いでいる。",210,"shield"],
  ["N","RD","Rubber Duck","ラバー・ダック","アヒルのスーツと嘴型のおしゃぶりがトレードマークの赤ちゃんヒーロー。まだしゃべることもできない。",52,"circle"],
- ["N","NJ","Night Janitor","ナイト・ジャニター","真夜中のビルを知り尽くした男。モップが武器。",160,"shield"],
+ ["N","NJ","Night Janitor","ナイト・ジャニター","夜の博物館をたった一人で見回る年老いた管理人。特別な力は何もないが、懐中電灯と長年の勘だけを頼りに館内の異変を見張っている。",160,"shield"],
  ["N","HD","Hot Dog Man","ホットドッグ・マン","屋台の前で起きた事件は見逃さない。ケチャップ多め。",10,"circle"],
  ["N","MM","Mailbox Mike","メールボックス・マイク","手紙は必ず届ける。たとえ宛先が月面でも。",215,"shield"],
  ["N","CO","Coin Op","コイン・オップ","25セント入れると一回だけ本気を出す。",95,"circle"],
@@ -831,7 +831,7 @@ const CARDS=[
  ["UR","NM","Nova Mae","ノヴァ・メイ","宇宙の光「ノヴァ・エネルギー」を操り、闇に希望を灯す若きヒーロー。",320,"burst"],
 ].map((c,i)=>({id:i,r:c[0],m:c[1],name:c[2],kana:c[3],flavor:c[4],h:c[5],shape:c[6]}));
 // standard cards that use a picture instead of the drawn portrait
-const PHOTOS={"Rubber Duck":"rubber-duck.jpg","Atlas Prime":"atlas-prime.jpg","Nova Mae":"nova-mae.jpg","Skyline Sentinel":"skyline-sentinel.jpg","Queen Quasar":"queen-quasar.jpg","Thunder Hound":"thunder-hound.jpg","Atomic Bee":"atomic-bee.jpg","Radio Ranger":"radio-ranger.jpg","Mirror Max":"mirror-max.jpg","Velvet Comet":"velvet-comet.jpg","Doctor Fuse":"doctor-fuse.jpg","Neon Noodle":"neon-noodle.jpg","Jukebox Jane":"jukebox-jane.jpg","Skate Saint":"skate-saint.jpg","Diner Dynamo":"diner-dynamo.jpg","Tornado Tess":"tornado-tess.jpg","Captain Cactus":"captain-cactus.jpg","Glitter Gator":"glitter-gator.jpg","Gumball Kid":"gumball-kid.jpg","Traffic Cone":"traffic-cone.jpg","Lunchbox Larry":"lunchbox-larry.jpg","Static Sally":"static-sally.jpg","Paper Boy":"paper-boy.jpg"};
+const PHOTOS={"Rubber Duck":"rubber-duck.jpg","Atlas Prime":"atlas-prime.jpg","Nova Mae":"nova-mae.jpg","Skyline Sentinel":"skyline-sentinel.jpg","Queen Quasar":"queen-quasar.jpg","Thunder Hound":"thunder-hound.jpg","Atomic Bee":"atomic-bee.jpg","Radio Ranger":"radio-ranger.jpg","Mirror Max":"mirror-max.jpg","Velvet Comet":"velvet-comet.jpg","Doctor Fuse":"doctor-fuse.jpg","Neon Noodle":"neon-noodle.jpg","Jukebox Jane":"jukebox-jane.jpg","Skate Saint":"skate-saint.jpg","Diner Dynamo":"diner-dynamo.jpg","Tornado Tess":"tornado-tess.jpg","Captain Cactus":"captain-cactus.jpg","Glitter Gator":"glitter-gator.jpg","Gumball Kid":"gumball-kid.jpg","Traffic Cone":"traffic-cone.jpg","Lunchbox Larry":"lunchbox-larry.jpg","Static Sally":"static-sally.jpg","Paper Boy":"paper-boy.jpg","Night Janitor":"night-janitor.jpg"};
 const PHOTO_V="3";
 CARDS.forEach(c=>{if(PHOTOS[c.name])c.photo=PHOTOS[c.name]+"?v="+PHOTO_V});
 /* ---- cover cards: random owned cards, or the rarest ones when nothing is owned ---- */
