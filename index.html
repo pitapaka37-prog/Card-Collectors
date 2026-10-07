@@ -1275,7 +1275,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
     <div class="mission">
       <button type="button" class="close" id="gsClose" aria-label="閉じる">×</button>
       <div class="ms-head"><b>SHARE</b><span id="gsName"></span></div>
-      <p class="ab-note">このコードをフレンドに伝えてね。フレンドがガチャ画面の「+ FRIEND」でコードを入れると、このガチャがフレンドガチャ枠に追加されます。<b>フレンドが受け取るまで、この画面を開いたままにしてね</b>（通信でガチャを送ります）。</p>
+      <p class="ab-note">このコードをフレンドに伝えてね。フレンドがガチャ画面の「+ FRIEND」でコードを入れると、このガチャがフレンドガチャ枠に追加されます。<b>コードはずっと同じ</b>で、あとからカードを追加・削除すると、フレンドがアプリを開いたときに自動で最新になります（あなたがアプリを閉じていてもOK）。</p>
       <div class="on-room"><small>ガチャコード</small><b id="gsCode">------</b><span id="gsInfo">準備中…</span></div>
     </div>
   </div>
@@ -1283,7 +1283,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
     <div class="mission">
       <button type="button" class="close" id="gfClose" aria-label="閉じる">×</button>
       <div class="ms-head"><b>FRIEND GACHA</b></div>
-      <p class="ab-note">フレンドから聞いた「ガチャコード」を入れてね。フレンドがコードの画面を開いているあいだに受け取れます。</p>
+      <p class="ab-note">フレンドから聞いた「ガチャコード」を入れてね。受け取ったガチャは、作った人がカードを追加すると自動で最新になります。</p>
       <div class="on-join"><input type="text" id="gfCode" maxlength="6" placeholder="コード" autocomplete="off" autocapitalize="characters" aria-label="ガチャコード"><button type="button" class="btn-main" id="gfGo">受け取る</button></div>
       <p class="fr-msg" id="gfMsg" role="status"></p>
     </div>
@@ -1518,7 +1518,8 @@ function load(){
   const isColor=c=>typeof c==="string"&&/^#[0-9a-f]{6}$/i.test(c);
   s.packs=s.packs.filter(p=>p&&typeof p.id==="string").map(p=>{const o={id:p.id,name:String(p.name||"").slice(0,20),color:isColor(p.color)?p.color:PACK_COLORS[0]};
     if(typeof p.shareUid==="string")o.shareUid=p.shareUid.slice(0,40);
-    if(p.friend&&typeof p.friend==="object")o.friend={from:String(p.friend.from||"").slice(0,12),uid:String(p.friend.uid||"").slice(0,40)};return o});
+    if(p.cloud&&typeof p.cloud.code==="string")o.cloud={code:p.cloud.code.slice(0,6),sig:p.cloud.sig&&typeof p.cloud.sig==="object"?p.cloud.sig:{},metaSig:String(p.cloud.metaSig||"")};
+    if(p.friend&&typeof p.friend==="object"){o.friend={from:String(p.friend.from||"").slice(0,12),uid:String(p.friend.uid||"").slice(0,40)};if(typeof p.friend.code==="string")o.friend.code=p.friend.code.slice(0,6);o.friend.ver=Math.max(0,Number(p.friend.ver)||0)}return o});
   s.custom=s.custom.filter(c=>c&&typeof c.id==="string"&&typeof c.img==="string"&&/^data:image\/(jpeg|png|webp|gif);base64,[A-Za-z0-9+/=]+$/.test(c.img)&&ORDER.includes(c.r))
     .map(c=>({id:c.id,r:c.r,name:String(c.name||"").slice(0,22),kana:String(c.kana||"").slice(0,20),flavor:String(c.flavor||"").slice(0,60),h:Number(c.h)||0,shape:"shield",img:c.img,m:"?",pack:typeof c.pack==="string"?c.pack:"",bt:cleanBt(c.bt),...(c.friend?{friend:true}:{})}));
   if(!s.pityBy||typeof s.pityBy!=="object")s.pityBy={};
@@ -1549,6 +1550,7 @@ function load(){
   s.cdecks=[0,1,2].map(k=>Array.isArray(s.cdecks[k])?s.cdecks[k].filter(x=>typeof x==="string").map(x=>x.slice(0,40)).filter((x,i,a)=>a.indexOf(x)===i).slice(0,5):[]);
   s.cdeckSel=num(s.cdeckSel,0,0,2);
   s.nick=typeof s.nick==="string"?s.nick.slice(0,12):"";
+  if(s.cloudAuth&&typeof s.cloudAuth==="object"&&typeof s.cloudAuth.refresh==="string")s.cloudAuth={uid:String(s.cloudAuth.uid||""),refresh:s.cloudAuth.refresh,token:String(s.cloudAuth.token||""),exp:num(s.cloudAuth.exp,0,0,9e15)};else s.cloudAuth=null;
   {const L=s.lv&&typeof s.lv==="object"&&!Array.isArray(s.lv)?s.lv:{};s.lv={};Object.keys(L).slice(0,500).forEach(k=>{const e=L[k];if(e&&typeof e==="object")s.lv[String(k).slice(0,60)]={lv:num(e.lv,1,1,100),xp:num(e.xp,0,0,1e6)}})}
   {const f=s.fav&&typeof s.fav==="object"&&!Array.isArray(s.fav)?s.fav:{};s.fav={};Object.keys(f).slice(0,2000).forEach(k=>{if(f[k]===true)s.fav[String(k).slice(0,60)]=true})}
   s.hiScore=Math.max(0,Math.floor(Number(s.hiScore)||0));s.sound=s.sound!==false;s.bgm=s.bgm!==false;s.gems=num(s.gems,3000,0,1e9);s.points=num(s.points,0,0,1e9);s.pity=num(s.pity,0,0,PITY);s.streak=num(s.streak,0,0,1e6);
@@ -2649,7 +2651,9 @@ function renderMine(){
     dexBtn.onclick=()=>{dexSel=p.id;closeDetail();renderDex();tab("dex");window.scrollTo({top:0,behavior:"smooth"})};
     blk.querySelector('[data-a="add"]').onclick=()=>openMakeFor(p.id);
     const sh=blk.querySelector('[data-a="share"]');sh.disabled=!list.length;sh.onclick=()=>gsOpen(p);
+    if(p.cloud&&p.cloud.code)sh.textContent=`ガチャコード：${p.cloud.code}`;
     armed(blk.querySelector('[data-a="del"]'),"ガチャを削除",list.length?`カード ${list.length} 枚ごと削除します。もう一度押して確定`:"もう一度押すと削除",()=>{
+      if(p.cloud&&p.cloud.code){const code=p.cloud.code,ids=Object.keys(p.cloud.sig||{});(async()=>{try{for(const id of ids)await fsReq("DELETE",`/packs/${code}/cards/${encodeURIComponent(id)}`,null,true);await fsReq("DELETE",`/packs/${code}`,null,true)}catch(e){}})()}
       S.custom.filter(c=>c.pack===p.id).forEach(c=>delete S.owned[c.id]);
       S.custom=S.custom.filter(c=>c.pack!==p.id);
       S.packs=S.packs.filter(x=>x.id!==p.id);delete S.pityBy[p.id];
@@ -2699,6 +2703,7 @@ function render(){
   if(!$("view-dex").hidden){renderDex();dexStale=false}else dexStale=true;
   if(!$("view-make").hidden){renderMine();mineStale=false}else mineStale=true;
   if(!$("view-cards").hidden&&typeof renderCards==="function")renderCards();
+  if(typeof cloudSyncSoon==="function"&&S.packs.some(p=>p.cloud&&!p.friend))cloudSyncSoon();
 }
 function tab(which){
   currentScreen=which;screenMusic();
@@ -2714,6 +2719,7 @@ function tab(which){
   if(which==="shop"&&shopStale){renderShop();shopStale=false}
   if(which==="battle"&&typeof renderBattle==="function")renderBattle();
   if(which==="deck"&&typeof dkDrawEdit==="function")dkDrawEdit();
+  if(which==="gacha"&&typeof cloudCheckFriends==="function")cloudCheckFriends();
   if(which==="cards"&&typeof renderCards==="function"){mcShown=MC_STEP;renderCards()}
 }
 function renderShop(){
@@ -4270,9 +4276,40 @@ $("onHostCus").onclick=()=>netHost("c");
 $("onJoin").onclick=()=>netJoin($("onJoinCode").value);
 $("onCancel").onclick=()=>netLeave("部屋をとじました。");
 /* ---- friend gacha: share one of your packs with a short code (sent peer to peer while the share window is open) ---- */
-const GS_PREFIX="starlightcc-g-";
-let GS=null,GF=null;
-function gsShrink(src){ // pictures are made smaller so the pack fits in the friend's storage
+/* ---- cloud (Firebase): shared gachas live online so friends get updates even when the maker's app is closed ---- */
+const FB={apiKey:"AIzaSyAl7Hg-vfG62KCLIYlIiOp9GVnk0s2uM5g",projectId:"star-light-comics"};
+const FS_BASE=`https://firestore.googleapis.com/v1/projects/${FB.projectId}/databases/(default)/documents`;
+let cloudAuthP=null;
+// anonymous sign-in (no account needed); the id stays on this device so only the maker can change their gacha
+async function cloudToken(){
+  const a=S.cloudAuth;
+  if(a&&a.token&&a.exp>Date.now()+60000)return a.token;
+  if(cloudAuthP)return cloudAuthP;
+  cloudAuthP=(async()=>{
+    try{
+      let r,j;
+      if(a&&a.refresh){
+        r=await fetch(`https://securetoken.googleapis.com/v1/token?key=${FB.apiKey}`,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:"grant_type=refresh_token&refresh_token="+encodeURIComponent(a.refresh)});
+        j=await r.json();
+        if(r.ok){S.cloudAuth={uid:j.user_id,refresh:j.refresh_token,token:j.id_token,exp:Date.now()+(+j.expires_in||3600)*1000};save();return j.id_token}
+      }
+      r=await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${FB.apiKey}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({returnSecureToken:true})});
+      j=await r.json();if(!r.ok)throw new Error("auth");
+      S.cloudAuth={uid:j.localId,refresh:j.refreshToken,token:j.idToken,exp:Date.now()+(+j.expiresIn||3600)*1000};save();return j.idToken;
+    }finally{cloudAuthP=null}
+  })();
+  return cloudAuthP;
+}
+const fsStr=v=>({stringValue:String(v)});
+const fsVal=f=>f?(f.stringValue!=null?f.stringValue:f.integerValue!=null?+f.integerValue:null):null;
+async function fsReq(method,path,body,auth){
+  const h={};if(body)h["Content-Type"]="application/json";
+  if(auth)h.Authorization="Bearer "+await cloudToken();
+  const r=await fetch(FS_BASE+path,{method,headers:h,body:body?JSON.stringify(body):undefined});
+  const j=r.status===204?{}:await r.json().catch(()=>({}));
+  return{ok:r.ok,status:r.status,j};
+}
+function gsShrink(src){ // pictures are made smaller so a pack stays light for friends
   return new Promise(res=>{
     if(!src||typeof Image==="undefined"){res(src);return}
     const im=new Image();let done=false;const fin=v=>{if(!done){done=true;res(v)}};
@@ -4281,31 +4318,131 @@ function gsShrink(src){ // pictures are made smaller so the pack fits in the fri
     im.onerror=()=>fin(src);im.src=src;
   });
 }
-function gsStop(){if(GS){try{GS.peer.destroy()}catch(e){}GS=null}}
+const cardSig=c=>[c.r,c.name,c.kana,c.flavor,c.h,JSON.stringify(c.bt||null),c.img.length,c.img.slice(-40)].join("|");
+function packMeta(p,ver){
+  return{fields:{owner:fsStr(S.cloudAuth.uid),uid:fsStr(p.shareUid),name:fsStr(pname(p)),color:fsStr(p.color),from:fsStr(frNick()||"フレンド"),ver:{integerValue:String(ver)},count:{integerValue:String(cardsIn(p.id).length)}}};
+}
+// upload what changed in one of my shared packs
+let cloudBusy=false,cloudAgain=false,cloudTimer=0;
+async function cloudSyncPack(p){
+  await cloudToken();
+  const code=p.cloud.code,list=cardsIn(p.id),old=p.cloud.sig||{},now={};
+  let changed=false;
+  for(const c of list){
+    const sg=cardSig(c);now[c.id]=sg;
+    if(old[c.id]===sg)continue;
+    const data={id:c.id,r:c.r,name:c.name,kana:c.kana||"",flavor:c.flavor||"",h:c.h||0,bt:c.bt||btCustomDefaults(c),img:await gsShrink(c.img)};
+    const r=await fsReq("PATCH",`/packs/${code}/cards/${encodeURIComponent(c.id)}`,{fields:{owner:fsStr(S.cloudAuth.uid),data:fsStr(JSON.stringify(data))}},true);
+    if(!r.ok)throw new Error("card "+r.status);
+    changed=true;
+  }
+  for(const id of Object.keys(old))if(!now[id]){await fsReq("DELETE",`/packs/${code}/cards/${encodeURIComponent(id)}`,null,true);changed=true}
+  const metaSig=[pname(p),p.color,frNick(),list.length].join("|");
+  if(changed||metaSig!==p.cloud.metaSig){
+    const r=await fsReq("PATCH",`/packs/${code}`,packMeta(p,Date.now()),true);
+    if(!r.ok)throw new Error("meta "+r.status);
+    p.cloud.metaSig=metaSig;
+  }
+  p.cloud.sig=now;save();
+}
+async function cloudSyncAll(){
+  if(cloudBusy){cloudAgain=true;return}
+  const packs=S.packs.filter(p=>!p.friend&&p.cloud&&p.cloud.code);
+  if(!packs.length)return;
+  cloudBusy=true;
+  try{for(const p of packs){if(S.packs.includes(p))await cloudSyncPack(p)}}catch(e){console.warn("cloud sync",e)}
+  cloudBusy=false;
+  if(cloudAgain){cloudAgain=false;cloudSyncSoon()}
+}
+function cloudSyncSoon(){clearTimeout(cloudTimer);cloudTimer=setTimeout(cloudSyncAll,2500)}
 async function gsOpen(p){
-  gsStop();
   const list=cardsIn(p.id);if(!list.length)return;
   $("gsModal").hidden=false;document.body.style.overflow="hidden";
-  $("gsName").textContent=pname(p);$("gsCode").textContent="------";$("gsInfo").textContent="準備中…";
+  $("gsName").textContent=pname(p);
   if(!p.shareUid){p.shareUid=newId("share");save()}
-  const cards=[];for(const c of list)cards.push({id:c.id,r:c.r,name:c.name,kana:c.kana||"",flavor:c.flavor||"",h:c.h||0,bt:c.bt||btCustomDefaults(c),img:await gsShrink(c.img)});
-  const payload={t:"pack",pack:{uid:p.shareUid,name:pname(p),color:p.color,from:frNick()||"フレンド",cards}};
-  try{await netLoadLib()}catch(e){$("gsInfo").textContent="通信の準備ができませんでした。インターネットにつながっているか確かめてね。";return}
-  const code=Array.from({length:6},()=>NET_CHARS[Math.floor(Math.random()*NET_CHARS.length)]).join("");
-  const peer=new Peer(GS_PREFIX+code);GS={peer,sent:0};
-  peer.on("open",()=>{if(!GS||GS.peer!==peer)return;$("gsCode").textContent=code;$("gsInfo").textContent="フレンドが受け取るのを待っています…"});
-  peer.on("connection",conn=>{conn.on("open",()=>{conn.send(payload)});conn.on("data",d=>{if(d&&d.t==="thanks"&&GS){GS.sent++;$("gsInfo").textContent=`${GS.sent} 人が受け取りました！ ほかの人にも送れます。`;sfx("rare")}})});
-  peer.on("error",()=>{if(GS&&GS.peer===peer)$("gsInfo").textContent="通信エラーが起きました。閉じてもう一度ためしてね。"});
+  if(p.cloud&&p.cloud.code){
+    $("gsCode").textContent=p.cloud.code;$("gsInfo").textContent="最新の内容をアップロード中…";
+    try{await cloudSyncPack(p);$("gsInfo").textContent="このコードはずっと使えます。カードを追加すると自動でフレンドに届きます。"}
+    catch(e){$("gsInfo").textContent="アップロードできませんでした。インターネットにつながっているか確かめてね。"}
+    return;
+  }
+  $("gsCode").textContent="------";$("gsInfo").textContent="コードを作っています…";
+  try{
+    await cloudToken();
+    let code=null;
+    for(let i=0;i<6&&!code;i++){
+      const c=Array.from({length:6},()=>NET_CHARS[Math.floor(Math.random()*NET_CHARS.length)]).join("");
+      const r=await fsReq("POST",`/packs?documentId=${c}`,packMeta(p,Date.now()),true);
+      if(r.ok)code=c;else if(r.status!==409)throw new Error("create "+r.status);
+    }
+    if(!code)throw new Error("code");
+    p.cloud={code,sig:{},metaSig:""};save();
+    $("gsCode").textContent=code;$("gsInfo").textContent="カードをアップロード中…";
+    await cloudSyncPack(p);
+    $("gsInfo").textContent="できあがり！ このコードはずっと使えます。カードを追加すると自動でフレンドに届きます。";sfx("rare");
+    renderMine();
+  }catch(e){console.warn(e);$("gsInfo").textContent="コードを作れませんでした。インターネットにつながっているか確かめて、もう一度ためしてね。"}
 }
-function gsClose(){gsStop();$("gsModal").hidden=true;document.body.style.overflow=""}
+function gsClose(){$("gsModal").hidden=true;document.body.style.overflow=""}
 $("gsClose").onclick=gsClose;
 $("gsModal").addEventListener("click",e=>{if(e.target===$("gsModal"))gsClose()});
 function gfOpen(){$("gfModal").hidden=false;document.body.style.overflow="hidden";$("gfMsg").textContent="";$("gfCode").value=""}
-function gfClose(){if(GF){try{GF.destroy()}catch(e){}GF=null}$("gfModal").hidden=true;document.body.style.overflow=""}
+function gfClose(){$("gfModal").hidden=true;document.body.style.overflow=""}
 $("gfClose").onclick=gfClose;
 $("gfModal").addEventListener("click",e=>{if(e.target===$("gfModal"))gfClose()});
-// add (or update) a friend's pack from what was received, checking every value
-function gfImport(pk){
+// download a shared pack (anyone can read; no sign-in needed)
+async function cloudFetchPack(code){
+  const m=await fsReq("GET",`/packs/${code}`);
+  if(m.status===404)return{err:"そのコードのガチャは見つかりませんでした。コードを確かめてね。"};
+  if(!m.ok)return{err:"ガチャを受け取れませんでした。インターネットにつながっているか確かめてね。"};
+  const f=m.j.fields||{};
+  const cards=[];let token="";
+  for(let i=0;i<10;i++){
+    const r=await fsReq("GET",`/packs/${code}/cards?pageSize=100${token?`&pageToken=${encodeURIComponent(token)}`:""}`);
+    if(!r.ok)return{err:"ガチャを受け取れませんでした。もう一度ためしてね。"};
+    (r.j.documents||[]).forEach(d=>{try{cards.push(JSON.parse(fsVal(d.fields&&d.fields.data)))}catch(e){}});
+    token=r.j.nextPageToken;if(!token)break;
+  }
+  return{pack:{uid:fsVal(f.uid)||("cloud-"+code),name:fsVal(f.name),color:fsVal(f.color),from:fsVal(f.from),cards},ver:fsVal(f.ver)||0};
+}
+async function gfReceive(){
+  const code=String($("gfCode").value||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
+  if(code.length!==6){$("gfMsg").textContent="6文字のガチャコードを入れてね。";return}
+  $("gfMsg").textContent="受け取っています…";
+  const res=await cloudFetchPack(code).catch(()=>({err:"ガチャを受け取れませんでした。インターネットにつながっているか確かめてね。"}));
+  if(res.err){$("gfMsg").textContent=res.err;return}
+  if(!res.pack.cards.length){$("gfMsg").textContent="このガチャにはまだカードがありません。";return}
+  const err=gfImport(res.pack);
+  if(err){$("gfMsg").textContent=err;return}
+  const p=S.packs.find(x=>x.friend&&x.friend.uid===String(res.pack.uid).slice(0,40));
+  if(p){p.friend.code=code;p.friend.ver=res.ver;save()}
+  sfx("ur");toast(`フレンドガチャ「${String(res.pack.name||"").slice(0,20)}」を追加しました！`);
+  gfClose();tab("gacha");window.scrollTo({top:0,behavior:"smooth"});
+}
+$("gfGo").onclick=gfReceive;
+// friends' gachas: check for updates when the app opens / the gacha screen is shown
+let cloudCheckAt=0;
+async function cloudCheckFriends(force){
+  if(!force&&Date.now()-cloudCheckAt<60000)return;
+  cloudCheckAt=Date.now();
+  for(const p of S.packs.filter(x=>x.friend&&x.friend.code)){
+    try{
+      const m=await fsReq("GET",`/packs/${p.friend.code}`);
+      if(!m.ok)continue;
+      const ver=fsVal(m.j.fields&&m.j.fields.ver)||0;
+      if(ver<=(p.friend.ver||0))continue;
+      const res=await cloudFetchPack(p.friend.code);if(res.err||!res.pack.cards.length)continue;
+      const before=cardsIn(p.id).length;
+      if(!gfImport(res.pack,true)){
+        p.friend.ver=res.ver;save();
+        const n=cardsIn(p.id).length;
+        if(n>before)toast(`フレンドガチャ「${pname(p)}」に新しいカードが追加されました！`);
+      }
+    }catch(e){}
+  }
+}
+setTimeout(()=>cloudCheckFriends(true),3000);
+function gfImport(pk,quiet){
   if(!pk||typeof pk!=="object"||!Array.isArray(pk.cards)||!pk.cards.length||pk.cards.length>300)return "ガチャの中身が正しくありません。";
   const uid=String(pk.uid||"").slice(0,40);if(!uid)return "ガチャの中身が正しくありません。";
   if(S.packs.some(p=>!p.friend&&p.shareUid===uid))return "これはあなた自身のガチャです。";
@@ -4324,34 +4461,9 @@ function gfImport(pk){
   });
   S.custom=S.custom.filter(c=>c.pack!==p.id||keepIds.has(c.id)); // cards the friend removed disappear
   if(!save()){S=JSON.parse(before);save();return "端末の保存容量が足りず、追加できませんでした。使っていないガチャを消してからためしてね。"}
-  setBanner(p.id);render();
+  if(!quiet)setBanner(p.id);render();
   return null;
 }
-async function gfReceive(){
-  const code=String($("gfCode").value||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
-  if(code.length!==6){$("gfMsg").textContent="6文字のガチャコードを入れてね。";return}
-  $("gfMsg").textContent="つないでいます…";
-  try{await netLoadLib()}catch(e){$("gfMsg").textContent="通信の準備ができませんでした。インターネットにつながっているか確かめてね。";return}
-  if(GF){try{GF.destroy()}catch(e){}}
-  const peer=new Peer();GF=peer;let got=false;
-  const fail=t=>{if(GF!==peer)return;$("gfMsg").textContent=t;try{peer.destroy()}catch(e){}GF=null};
-  setTimeout(()=>{if(!got)fail("ガチャが見つかりませんでした。コードと、フレンドがコードの画面を開いているか確かめてね。")},20000);
-  peer.on("open",()=>{
-    const conn=peer.connect(GS_PREFIX+code,{reliable:true});
-    conn.on("data",d=>{
-      if(got||!d||d.t!=="pack")return;got=true;
-      const err=gfImport(d.pack);
-      try{conn.send({t:"thanks"})}catch(e){}
-      setTimeout(()=>{try{peer.destroy()}catch(e){}if(GF===peer)GF=null},800);
-      if(err){$("gfMsg").textContent=err;return}
-      sfx("ur");toast(`フレンドガチャ「${String(d.pack.name||"").slice(0,20)}」を追加しました！`);
-      $("gfModal").hidden=true;document.body.style.overflow="";
-      tab("gacha");window.scrollTo({top:0,behavior:"smooth"});
-    });
-  });
-  peer.on("error",e=>fail(e&&e.type==="peer-unavailable"?"ガチャが見つかりませんでした。コードと、フレンドがコードの画面を開いているか確かめてね。":"通信エラーが起きました。もう一度ためしてね。"));
-}
-$("gfGo").onclick=gfReceive;
 function gfDelete(id){
   S.custom.filter(c=>c.pack===id).forEach(c=>delete S.owned[c.id]);
   S.custom=S.custom.filter(c=>c.pack!==id);
