@@ -3353,8 +3353,8 @@ function btProfile(c,lv){
 const btBeats=(a,b)=>(a===0&&b===2)||(a===2&&b===1)||(a===1&&b===0);
 function btAbilityHTML(c,base){
   const p=btProfile(c,base?1:undefined);if(!p)return "";
-  return `<div class="bt-abil"><div class="bt-abil-row">${base?"":`<b class="lv-badge">Lv ${p.lv}</b>`}<span class="bt-type t${p.type}">${BT_TYPES[p.type]}</span><b>${BT_TNAME[p.type]}</b><span>HP ${p.hp}</span><span>ATK ${p.atk}</span><span>SPD ${p.spd}</span></div>
-    <div class="bt-abil-sk"><small>わざ ・ チャージ${p.skill.cost}</small><b>${esc(p.skill.name)}</b><span>${esc(p.skill.desc)}</span></div>
+  return `<div class="bt-abil"><div class="bt-abil-row"><span class="bt-type t${p.type}">${BT_TYPES[p.type]}</span><b>${BT_TNAME[p.type]}</b><span>HP ${p.hp}</span><span>ATK ${p.atk}</span><span>SPD ${p.spd}</span></div>
+    <div class="bt-abil-sk"><small>わざ ・ チャージ${p.skill.cost}（わざの威力はレベルで変わりません）</small><b>${esc(p.skill.name)}</b><span>${esc(p.skill.desc)}</span></div>
     ${p.passive?`<div class="bt-abil-sk ps"><small>とくせい</small><b>${esc(p.passive.name)}</b><span>${esc(p.passive.desc)}</span></div>`:""}</div>`;
 }
 
@@ -3364,7 +3364,8 @@ const btWait=ms=>BT_FAST?Promise.resolve():new Promise(r=>setTimeout(r,ms));
 function btPool(){return CARDS.concat(SHOP_CARDS,REWARD_CARDS).filter(c=>S.owned[c.id]&&btHasAbility(c))}
 function btMake(c,side,lv){
   const p=btProfile(c,lv);
-  return{c,side,lv:p.lv,type:p.type,maxHp:p.hp,hp:p.hp,atk:p.atk,spd:p.spd,skill:p.skill,passive:p.passive,
+  // skills (わざ) do not grow with level: their damage uses the Lv 1 attack
+  return{c,side,lv:p.lv,baseAtk:btProfile(c,1).atk,type:p.type,maxHp:p.hp,hp:p.hp,atk:p.atk,spd:p.spd,skill:p.skill,passive:p.passive,
     charge:0,mods:[],stun:false,evade:0,dot:null,gutsUsed:false,souls:0,ambush:false,ko:false,entered:false};
 }
 const btPk=(u,k)=>u.passive&&u.passive.k===k?u.passive:null;
@@ -3392,13 +3393,13 @@ function btPop(u,text,cls){
   if(cls==="dmg"){box.classList.remove("hit");void box.offsetWidth;box.classList.add("hit")}
   setTimeout(()=>s.remove(),1100);
 }
-async function btHit(att,def,m,pierce){
+async function btHit(att,def,m,pierce,skill){
   if(att.hp<=0||def.hp<=0)return;
   if(def.evade>0){def.evade--;btLog(`${esc(btName(def))} はひらりとよけた！`);btPop(def,"MISS","miss");sfx("tink");await btWait(380);return}
   const dg=btPk(def,"dodge");if(dg&&Math.random()<dg.v){btLog(`${esc(btName(def))} は「${esc(dg.name)}」で攻撃をよけた！`);btPop(def,"MISS","miss");sfx("tink");await btWait(380);return}
   let tm=1;if(!pierce){if(btBeats(att.type,def.type))tm=1.5;else if(btBeats(def.type,att.type))tm=.75}
   let mult=m;if(att.ambush){mult*=btPk(att,"ambush").v;att.ambush=false}
-  let d=att.atk*btAtkMul(att)*mult*tm*(.9+Math.random()*.2)*(1-btGuard(def));
+  let d=(skill?att.baseAtk:att.atk)*btAtkMul(att)*mult*tm*(.9+Math.random()*.2)*(1-btGuard(def));
   d=Math.max(1,Math.round(d));
   def.hp-=d;
   if(def.hp<=0&&btPk(def,"guts")&&!def.gutsUsed){def.hp=1;def.gutsUsed=true;btLog(`${esc(btName(def))} は「${esc(btPk(def,"guts").name)}」で踏みとどまった！`)}
@@ -3415,7 +3416,7 @@ async function btApply(u,fx){
   const team=btTeam(u.side).list.filter(x=>x.hp>0);
   for(const f of fx){
     if(u.hp<=0)return;
-    if(f.k==="hit"){for(let i=0;i<f.n;i++){if(foe.hp<=0)break;await btHit(u,foe,f.m,f.pierce)}}
+    if(f.k==="hit"){for(let i=0;i<f.n;i++){if(foe.hp<=0)break;await btHit(u,foe,f.m,f.pierce,true)}}
     else if(f.k==="heal"){(f.team?team:[u]).forEach(x=>{const h=Math.round(x.maxHp*f.v);x.hp=Math.min(x.maxHp,x.hp+h)});btLog(f.team?"味方全員のHPが回復した！":`${esc(btName(u))} のHPが回復した！`);btDraw();btPop(u,"HEAL","heal");sfx("up")}
     else if(f.k==="buff"){(f.team?team:[u]).forEach(x=>x.mods.push({k:"buff",v:f.v,t:f.turns}));btLog(f.team?"味方全員の攻撃力がアップ！":`${esc(btName(u))} の攻撃力がアップ！`);btPop(u,"ATK UP","heal");sfx("rankup")}
     else if(f.k==="guard"){(f.team?team:[u]).forEach(x=>x.mods.push({k:"guard",v:f.v,t:f.turns}));btLog(f.team?"味方全員が守りをかためた！":`${esc(btName(u))} は守りをかためた！`);btPop(u,"GUARD","heal");sfx("tink")}
