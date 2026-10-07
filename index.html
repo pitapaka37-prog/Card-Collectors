@@ -1992,7 +1992,7 @@ function addGems(n){S.gems+=n;save();$("gems").textContent=S.gems.toLocaleString
 
 /* ---- coins: idle earnings ---- */
 // more different cards owned = faster; stored up to IDLE_CAP_H hours
-const IDLE_BASE=100,IDLE_PER_CARD=15,IDLE_CAP_H=12;
+const IDLE_BASE=20,IDLE_PER_CARD=3,IDLE_CAP_H=8;
 function uniqueOwned(){return Object.keys(S.owned).filter(k=>S.owned[k]>0).length}
 function idleRate(){return IDLE_BASE+IDLE_PER_CARD*uniqueOwned()} // coins per hour
 function idleEarned(){
