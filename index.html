@@ -613,6 +613,16 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
 .fav-btn.on{background:var(--yellow);color:var(--red)}
 .fav-detail{margin:6px 0}
 .fav-detail.on{background:var(--yellow)}
+.ab-set{display:flex;flex-direction:column;gap:8px;margin:4px 0;padding:10px 12px;border:3px solid var(--ink);background:#fff}
+.ab-set legend{font-weight:700;font-size:13px;padding:0 6px;background:var(--yellow);border:2px solid var(--ink)}
+.ab-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px}
+.ab-set select,.ab-set input{width:100%;min-width:0}
+.ab-set select:disabled,.ab-set input:disabled{opacity:.45}
+.ab-note{margin:0;font-size:12px;font-weight:700;opacity:.8}
+.ab-modal .mission{width:min(560px,100%);display:flex;flex-direction:column;gap:10px}
+.cb-panel{align-self:stretch;display:flex;flex-direction:column;gap:8px;padding:14px;background:#fff6dc;border:4px solid var(--ink);box-shadow:6px 6px 0 #d6336c}
+.cb-panel .dk-head small{font-size:13px;font-weight:700}
+@media (max-width:640px){.ab-grid{grid-template-columns:1fr}}
 .lv-badge{display:inline-block;font-family:var(--display);font-weight:400;font-size:18px;letter-spacing:.04em;background:var(--ink);color:var(--yellow);padding:0 8px;line-height:1.3}
 .lv-badge.sm{font-size:13px;padding:0 5px}
 .lv-box{display:flex;flex-direction:column;gap:6px;margin:8px 0;padding:10px;background:#fff;border:3px solid var(--ink);box-shadow:4px 4px 0 var(--ink)}
@@ -1180,6 +1190,11 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
           <button type="button" class="ghost" id="btStart">ランダムでバトル</button>
           <span>持っているカードからランダムに5枚選んで戦うモード</span>
         </div>
+        <div class="cb-panel">
+          <div class="dk-head"><b>ORIGINAL BATTLE</b><small>自作カードバトル</small></div>
+          <p class="dk-note">自分で作ったカードだけで戦うモード。持っている自作カードからランダムに5枚、敵も自作カードから選ばれます。自作カードの能力（わざ・とくせい）は、手持ちカードの詳しい画面や MAKE で自分で決められます。勝ち負けのコインは同じですが、ランクと経験値には入りません。</p>
+          <div class="dk-btns"><button type="button" class="btn-main" id="btStartCustom">自作カードでバトル！</button><span class="bt-need" id="btNeedCustom"></span></div>
+        </div>
         <p class="bt-need" id="btNeed" hidden></p>
       </div>
       <div class="bt-arena" id="btArena" hidden>
@@ -1206,6 +1221,14 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
       <div class="ms-head"><b>RANK LIST</b></div>
       <p class="rk-note">バトルポイント（BP）は 勝ち +20 ・ 引き分け +10 ・ 負け −10。100 BP ごとにランクが上がります。ランクは毎月1日にリセット。</p>
       <ol class="rk-list" id="rkList"></ol>
+    </div>
+  </div>
+  <div class="detail ms-modal ab-modal" id="abModal" hidden role="dialog" aria-modal="true" aria-label="能力を編集">
+    <div class="mission">
+      <button type="button" class="close" id="abClose" aria-label="閉じる">×</button>
+      <div class="ms-head"><b>ABILITY</b><span id="abTitle"></span></div>
+      <fieldset class="ab-set" id="abEdit"><legend>バトルの能力</legend></fieldset>
+      <div class="dk-btns"><button type="button" class="btn-main" id="abSave">この能力にする</button><button type="button" class="ghost" id="abCancel">やめる</button></div>
     </div>
   </div>
   <div class="detail ms-modal bt-iv" id="btInfo" hidden role="dialog" aria-modal="true" aria-label="カードのステータス">
@@ -1264,6 +1287,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
             <div class="field"><label for="mkHue">カードの色</label><input type="range" id="mkHue" min="0" max="359" value="210"></div>
           </div>
           <div class="field"><label for="mkFlavor">説明文</label><textarea id="mkFlavor" maxlength="60" placeholder="港の風を味方にして街を守る。"></textarea></div>
+          <fieldset class="ab-set" id="mkAb"><legend>バトルの能力（自作カードバトル用）</legend></fieldset>
           <div class="row2">
             <div class="field"><label for="mkPack">入れるガチャ</label><select id="mkPack"></select></div>
             <div class="field" id="mkNewWrap" hidden><label for="mkNewPack">新しいガチャの名前</label><input type="text" id="mkNewPack" maxlength="20" placeholder="YOKOHAMA PACK"></div>
@@ -1416,6 +1440,12 @@ const DEFAULT={gems:3000,pity:0,owned:{},custom:[],packs:[],pityBy:{},banner:"st
 const KEY="cch-gacha";
 const newId=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
 let S=load();
+// battle ability chosen for an original card: type, skill effect + its name, passive effect + its name
+function cleanBt(b){
+  if(!b||typeof b!=="object")return null;
+  const str=(x,n)=>typeof x==="string"?x.slice(0,n):"";
+  return{t:[0,1,2].includes(b.t)?b.t:0,sk:str(b.sk,12),skn:str(b.skn,14),ps:str(b.ps,12),psn:str(b.psn,14)};
+}
 function load(){
   let v=null;
   try{v=JSON.parse(localStorage.getItem(KEY)||"null")}catch(e){}
@@ -1430,7 +1460,7 @@ function load(){
   const isColor=c=>typeof c==="string"&&/^#[0-9a-f]{6}$/i.test(c);
   s.packs=s.packs.filter(p=>p&&typeof p.id==="string").map(p=>({id:p.id,name:String(p.name||"").slice(0,20),color:isColor(p.color)?p.color:PACK_COLORS[0]}));
   s.custom=s.custom.filter(c=>c&&typeof c.id==="string"&&typeof c.img==="string"&&/^data:image\/(jpeg|png|webp|gif);base64,[A-Za-z0-9+/=]+$/.test(c.img)&&ORDER.includes(c.r))
-    .map(c=>({id:c.id,r:c.r,name:String(c.name||"").slice(0,22),kana:String(c.kana||"").slice(0,20),flavor:String(c.flavor||"").slice(0,60),h:Number(c.h)||0,shape:"shield",img:c.img,m:"?",pack:typeof c.pack==="string"?c.pack:""}));
+    .map(c=>({id:c.id,r:c.r,name:String(c.name||"").slice(0,22),kana:String(c.kana||"").slice(0,20),flavor:String(c.flavor||"").slice(0,60),h:Number(c.h)||0,shape:"shield",img:c.img,m:"?",pack:typeof c.pack==="string"?c.pack:"",bt:cleanBt(c.bt)}));
   if(!s.pityBy||typeof s.pityBy!=="object")s.pityBy={};
   // migrate the single "MY PACK" from the previous version
   if(!s.packs.length){
@@ -1451,7 +1481,7 @@ function load(){
   const nc=s.normalClaimed&&typeof s.normalClaimed==="object"?s.normalClaimed:{};s.normalClaimed=Object.fromEntries(Object.entries(nc).map(([k,v])=>[k,!!v]));
   // players who already earned Star Velvet before missions existed
   if(s.owned.r1>0){s.normalClaimed.vcm50=true;s.stats.bestWave=50}
-  if(!s.battle||typeof s.battle!=="object")s.battle={};s.battle={w:num(s.battle.w,0,0,1e7),l:num(s.battle.l,0,0,1e7),d:num(s.battle.d,0,0,1e7),bp:num(s.battle.bp,0,0,1e9),season:typeof s.battle.season==="string"?s.battle.season.slice(0,7):"",last:s.battle.last&&typeof s.battle.last==="object"?{season:String(s.battle.last.season||"").slice(0,7),rank:num(s.battle.last.rank,1,1,1e6),bp:num(s.battle.last.bp,0,0,1e9)}:null};
+  if(!s.battle||typeof s.battle!=="object")s.battle={};s.battle={w:num(s.battle.w,0,0,1e7),l:num(s.battle.l,0,0,1e7),d:num(s.battle.d,0,0,1e7),bp:num(s.battle.bp,0,0,1e9),cw:num(s.battle.cw,0,0,1e7),cl:num(s.battle.cl,0,0,1e7),season:typeof s.battle.season==="string"?s.battle.season.slice(0,7):"",last:s.battle.last&&typeof s.battle.last==="object"?{season:String(s.battle.last.season||"").slice(0,7),rank:num(s.battle.last.rank,1,1,1e6),bp:num(s.battle.last.bp,0,0,1e9)}:null};
   if(!Array.isArray(s.decks))s.decks=[];
   s.decks=[0,1,2].map(k=>Array.isArray(s.decks[k])?s.decks[k].filter(x=>typeof x==="number"||typeof x==="string").map(String).filter((x,i,a)=>a.indexOf(x)===i).slice(0,5):[]);
   s.deckSel=num(s.deckSel,0,0,2);
@@ -2294,12 +2324,14 @@ function drawDetail(){
     <button type="button" class="ghost fav-detail ${isFav(c)?"on":""}" id="dFav">${isFav(c)?"★ お気に入り登録中":"☆ お気に入りに登録"}</button>
     ${detailMode==="cards"?lvFuseHTML(c):""}
     ${btAbilityHTML(c,detailMode!=="cards")}
+    ${c.img&&detailMode==="cards"?`<button type="button" class="ghost" id="dAb">能力を編集（わざ・とくせいの名前と効果）</button>`:""}
     <div class="nav"><button type="button" class="ghost" id="dPrev">← 前のカード</button><span style="align-self:center;font-weight:700;font-variant-numeric:tabular-nums">${detailIdx+1} / ${detailList.length}</span><button type="button" class="ghost" id="dNext">次のカード →</button></div>`;
   const close=document.createElement("button");close.type="button";close.className="close";close.textContent="×";close.setAttribute("aria-label","閉じる");close.onclick=closeDetail;
   box.append(close,cw,t);d.appendChild(box);
   const s1=t.querySelector("#sell1"),sN=t.querySelector("#sellN");
   if(s1)s1.onclick=()=>{sellCards([[c,1]]);drawDetail()};
   if(sN)sN.onclick=()=>{sellCards([[c,S.owned[c.id]-1]]);drawDetail()};
+  const dab=t.querySelector("#dAb");if(dab)dab.onclick=()=>abOpen(c,drawDetail);
   const f1=t.querySelector("#lvFuse1"),fA=t.querySelector("#lvFuseAll");
   if(f1)f1.onclick=()=>{lvFuse(c,1);drawDetail()};
   if(fA)fA.onclick=()=>{lvFuse(c,Infinity);drawDetail()};
@@ -2421,7 +2453,7 @@ function renderCards(){
     s.appendChild(el);
     if(n>1)s.insertAdjacentHTML("beforeend",`<span class="count${k>1?" dup":""}">${k}/${n}</span>`);
     if(isFav(c))s.insertAdjacentHTML("beforeend",`<span class="mc-fav">★</span>`);
-    if(btHasAbility(c))s.insertAdjacentHTML("beforeend",`<span class="lv-tag">Lv${lvOf(c)}</span>`);
+    if(btStdOK(c))s.insertAdjacentHTML("beforeend",`<span class="lv-tag">Lv${lvOf(c)}</span>`);
     g.appendChild(s);
   });
   const pool={};ORDER.forEach(r=>pool[r]=all.filter(c=>c.r===r));
@@ -2564,6 +2596,7 @@ function renderMine(){
           sel.value=c.pack;sel.onchange=()=>{c.pack=sel.value;save();render()};
           tools.appendChild(sel);
         }
+        const ab=document.createElement("button");ab.className="ghost";ab.textContent="能力";ab.type="button";ab.onclick=()=>abOpen(c);tools.appendChild(ab);
         const del=document.createElement("button");del.className="ghost";del.textContent="削除";del.type="button";
         armed(del,"削除","もう一度押すと削除",()=>{S.custom=S.custom.filter(x=>x.id!==c.id);delete S.owned[c.id];save();render()});
         tools.appendChild(del);s.appendChild(tools);g.appendChild(s);
@@ -2700,12 +2733,12 @@ $("mkForm").addEventListener("submit",e=>{
   if(!mkImg||!$("mkName").value.trim())return;
   let packId=$("mkPack").value,made=null;
   if(packId==="__new"){made=createPack($("mkNewPack").value);packId=made.id}
-  const c=draft();c.id=newId("c");c.shape="shield";c.pack=packId;
+  const c=draft();c.id=newId("c");c.shape="shield";c.pack=packId;c.bt=abRead("mk");
   S.custom.push(c);
   if(!save()){S.custom.pop();if(made)S.packs.pop();$("mkMsg").textContent="保存容量がいっぱいです。作ったカードをいくつか削除してから追加してください。";return}
   render();fillPackSelect();$("mkPack").value=packId;syncNewField();$("mkNewPack").value="";
   $("mkMsg").textContent=`「${c.name}」を ${c.r} として ${pname(packOf(packId))} に追加しました！`;
-  mkImg=null;$("mkFile").value="";$("mkName").value="";$("mkKana").value="";$("mkFlavor").value="";
+  mkImg=null;$("mkFile").value="";$("mkName").value="";$("mkKana").value="";$("mkFlavor").value="";$("mkSkn").value="";$("mkPsn").value="";
   $("mkFileName").textContent="JPG / PNG / GIF など。カードの形（縦長）に合わせて自動で切り抜きます";
   updatePreview();
 });
@@ -3309,7 +3342,46 @@ const BT_ABIL={
 };
 function btHash(str){let h=2166136261;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
 // only STAR LIGHT cards have battle abilities; original (custom) cards have none
-function btHasAbility(c){return !!(c&&!c.img&&BT_ABIL[c.name])}
+function btStdOK(c){return !!(c&&!c.img&&BT_ABIL[c.name])}   // STAR LIGHT card with a battle ability
+function btHasAbility(c){return !!c&&(btStdOK(c)||!!c.img)}    // original cards have abilities too (used only in custom battles)
+// effects you can pick for an original card's skill (わざ) and passive (とくせい); the names are up to you
+const CUSTOM_SKILLS={
+ strike:{name:"必殺の一撃",cost:3,desc:"1.7倍ダメージ",fx:[btH(1.7)]},
+ combo:{name:"連続アタック",cost:3,desc:"0.6倍ダメージ×3回",fx:[btH(.6,3)]},
+ pierce:{name:"つらぬく一撃",cost:3,desc:"1.6倍ダメージ（相性を無視）",fx:[btH(1.6,1,{pierce:true})]},
+ heal:{name:"ひと休み",cost:2,desc:"自分のHPを35%回復",fx:[{k:"heal",v:.35}]},
+ teamheal:{name:"みんなで回復",cost:3,desc:"味方全員のHPを20%回復",fx:[{k:"heal",v:.2,team:true}]},
+ guard:{name:"鉄壁ガード",cost:2,desc:"2ターンのあいだ受けるダメージ50%カット",fx:[{k:"guard",v:.5,turns:2}]},
+ power:{name:"気合いため",cost:2,desc:"攻撃力40%アップ（3ターン）＋0.8倍ダメージ",fx:[btH(.8),{k:"buff",v:.4,turns:3}]},
+ stun:{name:"びっくり作戦",cost:3,desc:"1.0倍ダメージ＋60%の確率で敵をしびれさせる",fx:[btH(1),{k:"stun",ch:.6}]},
+ weaken:{name:"よわらせ攻撃",cost:3,desc:"1.2倍ダメージ＋敵の攻撃力30%ダウン（3ターン）",fx:[btH(1.2),{k:"weaken",v:.3,turns:3}]},
+ burn:{name:"ファイアー",cost:3,desc:"1.0倍ダメージ＋やけど（3ターン、毎ターン最大HPの8%）",fx:[btH(1),{k:"dot",v:.08,turns:3}]},
+ counter:{name:"カウンター",cost:3,desc:"3ターンのあいだ、受けたダメージの50%を返す",fx:[{k:"reflect",v:.5,turns:3}]},
+ jam:{name:"チャージ封じ",cost:3,desc:"1.2倍ダメージ＋敵のチャージを0にする",fx:[btH(1.2),{k:"drain"}]},
+};
+const CUSTOM_PASSIVES={
+ tough:{k:"tough",v:.15,name:"タフネス",desc:"受けるダメージがいつも15%少ない"},
+ regen:{k:"regen",v:.05,name:"自然回復",desc:"毎ターン、HPが5%回復する"},
+ dodge:{k:"dodge",v:.15,name:"身のこなし",desc:"15%の確率で攻撃をよける"},
+ rage:{k:"rage",v:.4,name:"火事場の力",desc:"HPが40%以下になると攻撃力40%アップ"},
+ first:{k:"first",name:"先手必勝",desc:"いつも先に行動する"},
+ charge:{k:"charge",name:"チャージ上手",desc:"毎ターン、チャージが1多くたまる"},
+ guts:{k:"guts",name:"ど根性",desc:"倒されそうになっても、1回だけHP1で耐える"},
+ ambush:{k:"ambush",v:1.5,name:"不意打ち",desc:"バトルに出て最初の攻撃は1.5倍"},
+ immune:{k:"immune",name:"へっちゃら",desc:"攻撃力ダウン・しびれ・やけどを受けない"},
+};
+const CUSTOM_PASSIVE_MIN="SR"; // like STAR LIGHT cards, only SR and above get a passive
+const customHasPassive=r=>BT_RANK[r]>=BT_RANK[CUSTOM_PASSIVE_MIN];
+function btCustomAbil(c){
+  const b=c.bt||{},h=btHash(String(c.id)+"|"+c.name);
+  const sks=Object.keys(CUSTOM_SKILLS),pss=Object.keys(CUSTOM_PASSIVES);
+  const t=[0,1,2].includes(b.t)?b.t:h%3;
+  const sk=CUSTOM_SKILLS[b.sk]?b.sk:sks[h%sks.length];
+  const skill=Object.assign({},CUSTOM_SKILLS[sk],{name:(b.skn||"").trim()||CUSTOM_SKILLS[sk].name});
+  let p=null;
+  if(customHasPassive(c.r)){const ps=CUSTOM_PASSIVES[b.ps]?b.ps:pss[(h>>>4)%pss.length];p=Object.assign({},CUSTOM_PASSIVES[ps],{name:(b.psn||"").trim()||CUSTOM_PASSIVES[ps].name})}
+  return{t,s:skill,p};
+}
 /* ---- card levels (STAR LIGHT cards only): Lv 1-100, from battles and fusing duplicates ---- */
 const LV_MAX=100;
 const LV_FUSE={N:20,R:35,SR:60,SSR:120,UR:250}; // XP for each duplicate fused into the same card
@@ -3319,7 +3391,7 @@ const lvMul=lv=>1+(lv-1)*.005;                    // stats grow 0.5% per level (
 function lvEntry(c){return S.lv[String(c.id)]||{lv:1,xp:0}}
 function lvOf(c){return lvEntry(c).lv}
 function lvAdd(c,xp){
-  if(!btHasAbility(c))return 0;
+  if(!btStdOK(c))return 0;
   const k=String(c.id),e=Object.assign({},lvEntry(c)),from=e.lv;
   if(e.lv>=LV_MAX)return 0;
   e.xp+=xp;
@@ -3342,16 +3414,49 @@ function lvFuse(c,n){
   toast(`${c.name} にダブり ${n} 枚を合成！ +${per*n} XP${up?` ・ レベル${up}アップ！ Lv ${lvOf(c)}`:""}`);
 }
 function lvFuseHTML(c){
-  if(!btHasAbility(c))return "";
+  if(!btStdOK(c))return "";
   const e=lvEntry(c),have=(S.owned[c.id]||0)-1,per=LV_FUSE[c.r];
   const useful=Math.ceil(lvXpToMax(c)/per),all=Math.min(have,useful);
   return `<div class="lv-box">${lvBarHTML(c)}
     ${e.lv>=LV_MAX?"":have>0?`<div class="lv-fuse"><span>ダブり ${have} 枚を合成できます（1枚 +${per} XP）</span><button type="button" class="ghost" id="lvFuse1">1枚合成</button>${all>1?`<button type="button" class="ghost" id="lvFuseAll">${all}枚まとめて合成 +${per*all} XP</button>`:""}</div>`:`<div class="lv-fuse"><span>同じカードがダブったら合成してレベルを上げられます。バトルで使っても経験値がたまります。</span></div>`}</div>`;
 }
+/* ---- ability editor for original cards (used in the MAKE form and the edit window) ---- */
+function abBuild(box,pre){
+  box.insertAdjacentHTML("beforeend",`
+    <div class="field"><label for="${pre}T">タイプ</label><select id="${pre}T">${BT_TYPES.map((t,i)=>`<option value="${i}">${t}（${BT_TNAME[i]}）</option>`).join("")}</select></div>
+    <div class="ab-grid">
+      <div class="field"><label for="${pre}Skn">わざの名前（自由に）</label><input type="text" id="${pre}Skn" maxlength="14" placeholder="ヨコハマ・ストライク"></div>
+      <div class="field"><label for="${pre}Sk">わざの効果</label><select id="${pre}Sk">${Object.entries(CUSTOM_SKILLS).map(([k,v])=>`<option value="${k}">${v.desc}（チャージ${v.cost}）</option>`).join("")}</select></div>
+      <div class="field"><label for="${pre}Psn">とくせいの名前（自由に）</label><input type="text" id="${pre}Psn" maxlength="14" placeholder="港の守り神"></div>
+      <div class="field"><label for="${pre}Ps">とくせいの効果</label><select id="${pre}Ps">${Object.entries(CUSTOM_PASSIVES).map(([k,v])=>`<option value="${k}">${v.desc}</option>`).join("")}</select></div>
+    </div>
+    <p class="ab-note" id="${pre}Note"></p>`);
+}
+function abRead(pre){return cleanBt({t:+$(pre+"T").value,sk:$(pre+"Sk").value,skn:$(pre+"Skn").value.trim(),ps:$(pre+"Ps").value,psn:$(pre+"Psn").value.trim()})}
+function abFill(pre,bt,r){
+  const def=bt||{t:0,sk:"strike",skn:"",ps:"tough",psn:""};
+  $(pre+"T").value=String(def.t);$(pre+"Sk").value=CUSTOM_SKILLS[def.sk]?def.sk:"strike";$(pre+"Skn").value=def.skn||"";
+  $(pre+"Ps").value=CUSTOM_PASSIVES[def.ps]?def.ps:"tough";$(pre+"Psn").value=def.psn||"";
+  abRarity(pre,r);
+}
+function abRarity(pre,r){
+  const on=customHasPassive(r);
+  $(pre+"Ps").disabled=!on;$(pre+"Psn").disabled=!on;
+  $(pre+"Note").textContent=on?"わざの名前・とくせいの名前を空けておくと、効果の名前がそのまま使われます。":`とくせいは ${CUSTOM_PASSIVE_MIN} 以上のカードだけに付きます（STAR LIGHT のカードと同じルール）。`;
+}
+let abCard=null,abAfter=null;
+function abOpen(c,after){
+  abCard=c;abAfter=after||null;
+  $("abTitle").textContent=`${c.name}（${c.r}）`;
+  abFill("ab",c.bt||btCustomDefaults(c),c.r);
+  $("abModal").hidden=false;document.body.style.overflow="hidden";
+}
+function btCustomDefaults(c){const a=btCustomAbil(c);const sk=Object.keys(CUSTOM_SKILLS).find(k=>CUSTOM_SKILLS[k].desc===a.s.desc);const ps=a.p?Object.keys(CUSTOM_PASSIVES).find(k=>CUSTOM_PASSIVES[k].k===a.p.k):"tough";return{t:a.t,sk,skn:"",ps,psn:""}}
+function abClose(){$("abModal").hidden=true;if($("detail").hidden)document.body.style.overflow=""}
 function btProfile(c,lv){
   if(!btHasAbility(c))return null;
-  if(lv==null)lv=lvOf(c);
-  const a=BT_ABIL[c.name],key=String(c.id)+"|"+c.name;
+  if(lv==null||!btStdOK(c))lv=btStdOK(c)?(lv==null?lvOf(c):lv):1; // original cards stay at Lv 1
+  const a=btStdOK(c)?BT_ABIL[c.name]:btCustomAbil(c),key=String(c.id)+"|"+c.name;
   const h=btHash(key),h2=btHash(key+"#"),h3=btHash(key+"$");
   const vary=x=>.92+((x%1000)/1000)*.16;
   const type=a.t;
@@ -3371,7 +3476,8 @@ function btAbilityHTML(c,base){
 let BT=null,BT_FAST=false;
 const btWait=ms=>BT_FAST?Promise.resolve():new Promise(r=>setTimeout(r,ms));
 // battles use STAR LIGHT cards only (gacha, shop and mission cards) - original cards are left out
-function btPool(){return CARDS.concat(SHOP_CARDS,REWARD_CARDS).filter(c=>S.owned[c.id]&&btHasAbility(c))}
+function btPool(){return CARDS.concat(SHOP_CARDS,REWARD_CARDS).filter(c=>S.owned[c.id]&&btStdOK(c))}
+function btCustomPool(){return S.custom.filter(c=>S.owned[c.id])} // custom battles: your own cards only
 function btMake(c,side,lv){
   const p=btProfile(c,lv);
   // skills (わざ) do not grow with level: their damage uses the Lv 1 attack
@@ -3645,6 +3751,9 @@ function renderBattle(){
   $("btStart").disabled=n<5;
   $("btNeed").hidden=n>=5;
   dkRender();
+  const nc=btCustomPool().length;
+  $("btStartCustom").disabled=nc<5;
+  $("btNeedCustom").textContent=nc<5?`自作カードが5種類以上必要です（いま ${nc} 種類）。`:"";
   $("btNeed").textContent=`バトルには STAR LIGHT のカードが5種類以上必要です（いま ${n} 種類）。ガチャでカードを集めよう！`;
 }
 /* ---- decks: 5 cards within 15 cost (UR 5 / SSR 4 / SR 3 / R 2 / N 1) ---- */
@@ -3785,22 +3894,24 @@ $("dkAuto").onclick=dkAuto;
 $("dkClear").onclick=()=>{S.decks[dkEditK]=[];save();dkDrawEdit()};
 
 function btStart(mode){
-  mode=mode==="deck"?"deck":"random";
-  const pool=btPool();
+  mode=mode==="deck"?"deck":mode==="custom"?"custom":"random";
+  const pool=mode==="custom"?btCustomPool():btPool();
   let mine;
   if(mode==="deck"){mine=dkCards(S.deckSel);if(!dkValid(mine)){toast("デッキが完成していません");return}mine=mine.slice()}
   else{if(pool.length<5)return;mine=shuffled(pool).slice(0,5)}
-  const foes=CARDS.concat(SHOP_CARDS,REWARD_CARDS);
-  // no card appears twice in the same battle, on either side
-  const used=new Set(mine.map(c=>c.id));
+  // custom battles: the enemy team is also made of your original cards (everything you have made)
+  const foes=mode==="custom"?S.custom.slice():CARDS.concat(SHOP_CARDS,REWARD_CARDS);
+  // no card appears twice in the same battle, on either side (custom battles reuse cards only if there are not enough)
+  const used=new Set(mine.map(c=>c.id)),enemyIds=new Set();
   const enemy=mine.map(m=>{
     let opts=[];
     for(let d=0;d<ORDER.length&&!opts.length;d++)opts=foes.filter(c=>Math.abs(BT_RANK[c.r]-BT_RANK[m.r])===d&&!used.has(c.id));
-    const c=opts[Math.floor(Math.random()*opts.length)];used.add(c.id);return c;
+    if(!opts.length)opts=foes.filter(c=>!enemyIds.has(c.id));
+    const c=opts[Math.floor(Math.random()*opts.length)];used.add(c.id);enemyIds.add(c.id);return c;
   });
   // enemies come in a little below your team's average level
   const avgLv=mine.reduce((a,c)=>a+lvOf(c),0)/mine.length;
-  const eLv=Math.max(1,Math.round(avgLv*.8));
+  const eLv=mode==="custom"?1:Math.max(1,Math.round(avgLv*.8));
   BT={mode,eLv,p:{list:mine.map(c=>btMake(c,"p")),cur:null},e:{list:shuffled(enemy).map(c=>btMake(c,"e",eLv)),cur:0},turn:0,busy:false,mustPick:true,switching:false,over:false,log:[]};
   $("btPAct").dataset.cid="";$("btEAct").dataset.cid="";
   btEnter(BT.e.list[0]);
@@ -3813,23 +3924,25 @@ function btEnd(r){
   const coins=Math.max(BT_REWARD[r],-S.gems); // coins never go below zero
   S.gems+=coins;
   btSeasonCheck();
+  const custom=BT.mode==="custom"; // custom battles: coins only, no BP or card XP
   const bp0=S.battle.bp||0,rk0=btRankOf(bp0);
-  S.battle.bp=Math.max(0,bp0+BT_BP[r]);
+  if(!custom)S.battle.bp=Math.max(0,bp0+BT_BP[r]);
   S.stats.bestRank=Math.max(S.stats.bestRank||1,btRankOf(S.battle.bp));
-  const xp=LV_BT.base+(r==="win"?LV_BT.win:r==="draw"?LV_BT.draw:0);
-  const ups=BT.p.list.map(u=>{const from=lvOf(u.c),n=lvAdd(u.c,xp);return{c:u.c,from,to:lvOf(u.c),n}});
+  const xp=custom?0:LV_BT.base+(r==="win"?LV_BT.win:r==="draw"?LV_BT.draw:0);
+  const ups=custom?[]:BT.p.list.map(u=>{const from=lvOf(u.c),n=lvAdd(u.c,xp);return{c:u.c,from,to:lvOf(u.c),n}});
   const bpGot=S.battle.bp-bp0,rk1=btRankOf(S.battle.bp);
-  if(r==="win")S.battle.w++;else if(r==="lose")S.battle.l++;else S.battle.d++;
+  if(!custom){if(r==="win")S.battle.w++;else if(r==="lose")S.battle.l++;else S.battle.d++}
+  else{S.battle.cw=(S.battle.cw||0)+(r==="win"?1:0);S.battle.cl=(S.battle.cl||0)+(r==="lose"?1:0)}
   save();render();
   const left=side=>btAlive(side).length;
   const box=$("btResBox");box.className="mission bt-res "+r;
   box.innerHTML=`<div class="bt-big">${r==="win"?"YOU WIN!":r==="lose"?"YOU LOSE…":"DRAW!"}</div>
     <p>残り ${left("p")} 体 vs ${left("e")} 体 ・ ${BT.turn} ターン ・ ${coins>=0?`ごほうび ${coins} コイン`:`${-coins} コイン失った…`}</p>
-    <p class="bt-bpgot ${bpGot<0?"neg":""}">バトルポイント ${bpGot>=0?"+":""}${bpGot} BP</p>
+    ${custom?`<p class="bt-bpgot">自作カードバトル（ランクと経験値には入りません）</p>`:`<p class="bt-bpgot ${bpGot<0?"neg":""}">バトルポイント ${bpGot>=0?"+":""}${bpGot} BP</p>`}
     ${rk1>rk0?`<div class="bt-rankup">RANK UP!<small>RANK ${rk1}「${btRankName(rk1)}」になった！</small></div>`:rk1<rk0?`<p class="bt-rankdown">ランクが RANK ${rk1}「${btRankName(rk1)}」に下がった…</p>`:""}
-    ${btRankHTML()}
-    <div class="lv-res"><b>カード経験値 +${xp} XP</b>${ups.map(x=>`<span class="${x.n?"up":""}">${esc(x.c.name)} Lv${x.to}${x.n?` <i>UP!</i>`:x.to>=LV_MAX?" MAX":""}</span>`).join("")}</div>
-    <p>通算 ${S.battle.w}勝 ${S.battle.l}敗 ${S.battle.d}分</p>
+    ${custom?"":btRankHTML()}
+    ${custom?"":`<div class="lv-res"><b>カード経験値 +${xp} XP</b>${ups.map(x=>`<span class="${x.n?"up":""}">${esc(x.c.name)} Lv${x.to}${x.n?` <i>UP!</i>`:x.to>=LV_MAX?" MAX":""}</span>`).join("")}</div>`}
+    <p>${custom?`自作カードバトル 通算 ${S.battle.cw||0}勝 ${S.battle.cl||0}敗`:`通算 ${S.battle.w}勝 ${S.battle.l}敗 ${S.battle.d}分`}</p>
     <div class="bt-btns"><button type="button" class="btn-main" id="btAgain">もう一度！</button><button type="button" class="ghost" id="btHome">ホームへ</button></div>`;
   sfx(rk1>rk0?"rankup":r==="win"?"ur":r==="lose"?"shake":"rare");
   btDraw();
@@ -3844,6 +3957,13 @@ $("btRankListBtn").onclick=btShowRanks;
 $("rkClose").onclick=btHideRanks;
 $("rkModal").addEventListener("click",e=>{if(e.target===$("rkModal"))btHideRanks()});
 $("btStartDeck").onclick=()=>btStart("deck");
+$("btStartCustom").onclick=()=>btStart("custom");
+abBuild($("abEdit"),"ab");
+abBuild($("mkAb"),"mk");abFill("mk",null,$("mkRar").value);
+$("mkRar").addEventListener("change",()=>abRarity("mk",$("mkRar").value));
+$("abClose").onclick=abClose;$("abCancel").onclick=abClose;
+$("abModal").addEventListener("click",e=>{if(e.target===$("abModal"))abClose()});
+$("abSave").onclick=()=>{if(!abCard)return;abCard.bt=abRead("ab");save();sfx("rankup");toast(`${abCard.name} の能力を決めました！`);abClose();render();if(abAfter)abAfter()};
 $("btAtk").onclick=()=>btTurn({k:"atk"});
 $("btSkill").onclick=()=>btTurn({k:"skill"});
 $("btSwitch").onclick=()=>{if(!BT||BT.busy||BT.mustPick)return;BT.switching=!BT.switching;btDraw()};
