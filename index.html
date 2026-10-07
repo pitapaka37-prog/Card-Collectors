@@ -1161,7 +1161,6 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
       <div class="progress"><div id="dexBar" style="width:0"></div></div>
       <div class="resetbar" id="resetbar" hidden><span>この自作ガチャの図鑑（集めた枚数と天井の回数）をリセットできます。カードそのものは消えません。</span><button type="button" class="ghost" id="dexReset">この図鑑をリセット</button></div>
       <div class="sellbar" id="sellbar"><span id="sellInfo"></span><button type="button" class="ghost" id="sellAll">ダブりをまとめて売る</button></div>
-      <div class="ul-sec" id="dexUnlock" hidden></div>
       <div class="dxf" id="dexFilter">
         <div class="dxf-row"><input type="search" id="dxfQ" placeholder="名前でさがす" aria-label="名前でさがす" autocomplete="off"><button type="button" class="dxf-fav" id="dxfFav" aria-pressed="false">★ お気に入りだけ</button><button type="button" class="ghost dxf-reset" id="dxfReset">リセット</button></div>
         <div class="dxf-row"><span class="dxf-lbl">レア</span><span class="dxf-chips" id="dxfR"></span></div>
@@ -1171,6 +1170,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
         <div class="dxf-count" id="dxfCount"></div>
       </div>
       <div id="dexBody"></div>
+      <div class="ul-sec" id="dexUnlock" hidden></div>
     </div>
   </section>
 
@@ -2982,7 +2982,7 @@ render();
 updateIdle();
 /* ---- mini game: VELVET COMET MISSION (invader-style meteor shooter) ---- */
 const VCM=(()=>{
-  const COINS_PER_WAVE=10,MAX_WAVE=50,MAX_REWARD=COINS_PER_WAVE*MAX_WAVE,SHIELD_TIME=300,MAX_LIVES=5; // 300 ticks = 5 s
+  const COINS_PER_WAVE=10,MAX_WAVE=50,MAX_REWARD=COINS_PER_WAVE*MAX_WAVE,SHIELD_TIME=300,MAX_LIVES=3; // 300 ticks = 5 s
   let cv,ctx,W=0,H=0,dpr=1,bg=null,raf=0,last=0,state="title",paused=false;
   let player,bullets,rocks,meteors,stray,powerups,particles,words,form,score,lives,wave,fireT,strayT,rockT,power,shake,flashT,starsTaken,cleared;
   const keys={};let targetX=null;
@@ -3007,15 +3007,15 @@ const VCM=(()=>{
 
   function meteorShape(r){const pts=[];const n=10;for(let i=0;i<n;i++){const a=i/n*Math.PI*2;pts.push([Math.cos(a)*r*rnd(.78,1.08),Math.sin(a)*r*rnd(.78,1.08)])}return pts}
   function newWave(){
-    const cols=Math.max(5,Math.min(8,Math.floor((W-40)/58))),rows=Math.min(5,3+Math.floor((wave-1)/6));
+    const cols=Math.max(5,Math.min(8,Math.floor((W-40)/58))),rows=Math.min(5,3+Math.floor((wave-1)/4));
     const r=Math.min(20,(W-40)/cols/2.6);
     meteors=[];
     for(let row=0;row<rows;row++)for(let c=0;c<cols;c++){
-      const tough=row<Math.min(2,Math.floor(wave/5));
+      const tough=row<Math.min(2,Math.floor(wave/3));
       meteors.push({cx:c*(r*2.6),cy:row*(r*2.4),r,hp:tough?2:1,max:tough?2:1,tough,shape:meteorShape(r),rot:rnd(0,6),vr:rnd(-.02,.02),alive:true});
     }
     const fw=(cols-1)*r*2.6;
-    form={x:(W-fw)/2,y:90,dir:1,speed:Math.min(2.2,.45+wave*.05),w:fw,drop:0};
+    form={x:(W-fw)/2,y:90,dir:1,speed:Math.min(3,.5+wave*.08),w:fw,drop:0};
     words.push({t:wave===MAX_WAVE?"FINAL WAVE!":`WAVE ${wave}!`,x:W/2,y:H*.42,life:90,max:90,size:56,col:"#ffd21f"});
   }
   function reset(){
@@ -3036,7 +3036,7 @@ const VCM=(()=>{
   const hit=(ax,ay,ar,bx,by,br)=>(ax-bx)**2+(ay-by)**2<(ar+br)**2;
   function loseLife(){
     if(player.inv>0||player.shield>0)return;
-    lives--;player.inv=160;shake=18;flashT=10;sfx("thunder");boom(player.x,player.y,"#ff7a5c",30,"OUCH!");hud();
+    lives--;player.inv=140;shake=18;flashT=10;sfx("thunder");boom(player.x,player.y,"#ff7a5c",30,"OUCH!");hud();
     if(lives<=0)end();
   }
 
@@ -3054,7 +3054,7 @@ const VCM=(()=>{
     // auto fire
     fireT-=dt;
     if(fireT<=0){
-      fireT=power>0?10:12;
+      fireT=power>0?10:13;
       const shots=power>0?[-.18,0,.18]:[0];
       shots.forEach(a=>bullets.push({x:player.x,y:player.y-56,vx:Math.sin(a)*9,vy:-10}));
       sfx("pew");
@@ -3062,40 +3062,40 @@ const VCM=(()=>{
     bullets.forEach(b=>{b.x+=b.vx*dt;b.y+=b.vy*dt});bullets=bullets.filter(b=>b.y>-20&&b.x>-20&&b.x<W+20);
     // formation sweep
     const alive=meteors.filter(m=>m.alive);
-    if(!alive.length){if(wave>=MAX_WAVE){cleared=true;end();return}words.push({t:`+${COINS_PER_WAVE} COINS`,x:W/2,y:H*.52,life:80,max:80,size:30,col:"#fff"});if(lives<MAX_LIVES){lives++;words.push({t:"+1 ♥",x:W/2,y:H*.6,life:80,max:80,size:34,col:"#ff5c5c"})}power=0;starsTaken=0;wave++;sfx("rankup");newWave();hud();return}
+    if(!alive.length){if(wave>=MAX_WAVE){cleared=true;end();return}words.push({t:`+${COINS_PER_WAVE} COINS`,x:W/2,y:H*.52,life:80,max:80,size:30,col:"#fff"});if(lives<MAX_LIVES&&wave%3===0){lives++;words.push({t:"+1 ♥",x:W/2,y:H*.6,life:80,max:80,size:34,col:"#ff5c5c"})}power=0;starsTaken=0;wave++;sfx("rankup");newWave();hud();return}
     const minX=Math.min(...alive.map(m=>m.cx)),maxX=Math.max(...alive.map(m=>m.cx)),r=alive[0].r;
-    const speed=form.speed*(1+(1-alive.length/meteors.length)*.9);
+    const speed=form.speed*(1+(1-alive.length/meteors.length)*1.2);
     form.x+=form.dir*speed*dt;
-    if(form.x+maxX+r>W-8){form.x=W-8-r-maxX;form.dir=-1;form.y+=12}
-    if(form.x+minX-r<8){form.x=8+r-minX;form.dir=1;form.y+=12}
+    if(form.x+maxX+r>W-8){form.x=W-8-r-maxX;form.dir=-1;form.y+=15}
+    if(form.x+minX-r<8){form.x=8+r-minX;form.dir=1;form.y+=15}
     for(const m of alive){m.rot+=m.vr*dt;
       const mx=form.x+m.cx,my=form.y+m.cy;
       if(my+m.r>player.y-20){end();return}
       for(const b of bullets){if(!b.dead&&hit(b.x,b.y,4,mx,my,m.r)){b.dead=true;m.hp--;
         if(m.hp<=0){m.alive=false;score+=m.tough?30:10;boom(mx,my,m.tough?"#c9b8ff":"#c98a3a",14,Math.random()<.3?["POW!","BAM!","ZAP!"][Math.floor(Math.random()*3)]:null);sfx("crash");
-          if(Math.random()<.04&&!powerups.length)powerups.push({x:mx,y:my,vy:2.2});}
+          if(Math.random()<.03&&!powerups.length)powerups.push({x:mx,y:my,vy:2.2});}
         else{boom(mx,my,"#fff",5);sfx("tink")}
         hud();}}
     }
     bullets=bullets.filter(b=>!b.dead);
     // meteors drop rocks
     rockT-=dt;
-    if(rockT<=0){rockT=Math.max(48,110-wave*3);
+    if(rockT<=0){rockT=Math.max(36,95-wave*5);
       const shooters=alive.filter(m=>!alive.some(o=>o!==m&&Math.abs(o.cx-m.cx)<1&&o.cy>m.cy));
       const m=shooters[Math.floor(Math.random()*shooters.length)];
-      if(m)rocks.push({x:form.x+m.cx,y:form.y+m.cy+m.r,vy:Math.min(5,2.2+wave*.07),r:6});}
+      if(m)rocks.push({x:form.x+m.cx,y:form.y+m.cy+m.r,vy:Math.min(6,2.4+wave*.14),r:6});}
     rocks.forEach(k=>k.y+=k.vy*dt);
     rocks=rocks.filter(k=>{if(player.shield>0&&hit(k.x,k.y,k.r,player.x,player.y,52)){boom(k.x,k.y,"#7df9ff",6);sfx("tink");return false}
-      if(hit(k.x,k.y,k.r,player.x,player.y,12)){loseLife();return false}return k.y<H+20});
+      if(hit(k.x,k.y,k.r,player.x,player.y,14)){loseLife();return false}return k.y<H+20});
     // stray big meteor
     strayT-=dt;
-    if(strayT<=0){strayT=rnd(380,560)/Math.min(1.5,1+wave*.025);const fromL=Math.random()<.5;
+    if(strayT<=0){strayT=rnd(340,520)/Math.min(1.8,1+wave*.05);const fromL=Math.random()<.5;
       stray.push({x:fromL?-30:W+30,y:rnd(140,H*.45),vx:(fromL?1:-1)*rnd(1.6,2.6),vy:rnd(.8,1.6),r:30,hp:4,shape:meteorShape(30),rot:0})}
     for(const s of stray){s.x+=s.vx*dt;s.y+=s.vy*dt;s.rot+=.03*dt;
       for(const b of bullets){if(!b.dead&&hit(b.x,b.y,4,s.x,s.y,s.r)){b.dead=true;s.hp--;boom(b.x,b.y,"#fff",4);
         if(s.hp<=0){s.dead=true;score+=100;boom(s.x,s.y,"#ffb000",34,"KA-BOOM!");sfx("boom");shake=10;if(Math.random()<.4&&!powerups.length)powerups.push({x:s.x,y:s.y,vy:2.2});hud()}}}
       if(!s.dead&&player.shield>0&&hit(s.x,s.y,s.r,player.x,player.y,52)){s.dead=true;score+=100;boom(s.x,s.y,"#7df9ff",30,"BLOCKED!");sfx("boom");hud()}
-      if(!s.dead&&hit(s.x,s.y,s.r,player.x,player.y,14)){s.dead=true;loseLife()}}
+      if(!s.dead&&hit(s.x,s.y,s.r,player.x,player.y,16)){s.dead=true;loseLife()}}
     bullets=bullets.filter(b=>!b.dead);
     stray=stray.filter(s=>!s.dead&&s.y<H+60&&s.x>-80&&s.x<W+80);
     // power-ups
@@ -3201,7 +3201,7 @@ const VCM=(()=>{
   function showTitle(){
     state="title";
     screen(`<div class="vcm-logo"><span class="v1">VELVET COMET</span><span class="v2">MISSION</span></div>
-      <p class="vcm-desc">ベルベット・コメットの愛機「スター・ヴェルベット号」で、迫りくる隕石の群れを撃ち落とせ！<br>指でなぞって左右に移動、弾は自動で発射。全 50 ウェーブ。ハートは5つ。<br>ウェーブをクリアするとハートが1つ回復。各ウェーブの★1個目はそのウェーブ中ずっと3連射、2個目からは5秒間の無敵シールド（3連射はそのまま）！</p>
+      <p class="vcm-desc">ベルベット・コメットの愛機「スター・ヴェルベット号」で、迫りくる隕石の群れを撃ち落とせ！<br>指でなぞって左右に移動、弾は自動で発射。全 50 ウェーブ。ハートは3つ。<br>3ウェーブクリアするごとにハートが1つ回復。各ウェーブの★1個目はそのウェーブ中ずっと3連射、2個目からは5秒間の無敵シールド（3連射はそのまま）！</p>
       <div class="vcm-best">HIGH SCORE <b>${(S.hiScore||0).toLocaleString()}</b></div>
       <button type="button" class="btn-main" id="vcmGo">LAUNCH!</button>
       <p class="vcm-prize-note">★ 全 50 ウェーブクリアのミッション報酬は SSR「スター・ヴェルベット号」！</p>
