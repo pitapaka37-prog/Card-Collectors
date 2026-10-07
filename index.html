@@ -624,6 +624,19 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
 .ab-modal .mission{width:min(560px,100%);display:flex;flex-direction:column;gap:10px}
 .cb-panel{align-self:stretch;display:flex;flex-direction:column;gap:8px;padding:14px;background:#fff6dc;border:4px solid var(--ink);box-shadow:6px 6px 0 #d6336c}
 .cb-panel .dk-head small{font-size:13px;font-weight:700}
+.on-panel{align-self:stretch;display:flex;flex-direction:column;gap:8px;padding:14px;background:#14123a;color:#fff;border:4px solid var(--ink);box-shadow:6px 6px 0 var(--yellow)}
+.on-panel .dk-head b{color:var(--yellow)}
+.on-panel .dk-head small{font-size:13px;font-weight:700}
+.on-panel .dk-note{color:#e6e6ff}
+.on-panel .ghost{color:var(--ink)}
+.on-room{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;padding:10px;background:#fff;color:var(--ink);border:3px solid var(--ink)}
+.on-room small{font-size:12px;font-weight:700}
+.on-room b{font-family:var(--display);font-weight:400;font-size:40px;letter-spacing:.2em;color:var(--red)}
+.on-room span{font-size:12px;font-weight:700}
+.on-join{display:flex;gap:8px;flex-wrap:wrap}
+.on-join input{font-family:var(--display);font-size:24px;letter-spacing:.2em;text-transform:uppercase;width:9em;padding:2px 10px;border:3px solid var(--ink)}
+.on-panel .fr-msg{color:#ffd21f}
+.bt-net{font-family:var(--jp);font-size:13px;font-weight:700;background:var(--yellow);color:var(--ink);border:2px solid var(--ink);padding:0 8px}
 .fr-panel{align-self:stretch;display:flex;flex-direction:column;gap:8px;padding:14px;background:#e9f3ff;border:4px solid var(--ink);box-shadow:6px 6px 0 var(--blue)}
 .fr-panel .dk-head small{font-size:13px;font-weight:700}
 .fr-row{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700}
@@ -1229,10 +1242,18 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
             <div class="dk-btns"><button type="button" class="btn-main" id="frGo">このコードとバトル！</button><span class="fr-msg" id="frMsg" role="status"></span></div>
           </div>
         </div>
+        <div class="on-panel">
+          <div class="dk-head"><b>ONLINE BATTLE</b><small>リアルタイムでほかの人と対戦</small></div>
+          <p class="dk-note">片方が「部屋を作る」と<b>ルームコード</b>が出るので、相手に伝えよう。相手がそのコードで「参加する」と、同時に対戦が始まります。お互いが自分の番に行動を選び、両方そろうとターンが進みます。名前は上の FRIEND BATTLE の「あなたの名前」が使われます。コイン・BP・経験値は増減しません。</p>
+          <div class="dk-btns"><button type="button" class="btn-main" id="onHostStd">デッキで部屋を作る</button><button type="button" class="ghost" id="onHostCus">自作カードで部屋を作る</button></div>
+          <div class="on-room" id="onRoom" hidden><small>ルームコード</small><b id="onCode">-----</b><span id="onRoomInfo">相手を待っています…</span><button type="button" class="ghost" id="onCancel">やめる</button></div>
+          <div class="on-join"><input type="text" id="onJoinCode" maxlength="5" placeholder="ルームコード" autocomplete="off" autocapitalize="characters" aria-label="ルームコード"><button type="button" class="btn-main" id="onJoin">参加する</button></div>
+          <p class="fr-msg" id="onMsg" role="status"></p>
+        </div>
         <p class="bt-need" id="btNeed" hidden></p>
       </div>
       <div class="bt-arena" id="btArena" hidden>
-        <div class="bt-bar"><b class="bt-turn" id="btTurn">TURN 1</b><span>ENEMY</span><span class="bt-ebench" id="btEBench"></span><button type="button" class="ghost bt-giveup" id="btGiveUp">降参</button></div>
+        <div class="bt-bar"><b class="bt-turn" id="btTurn">TURN 1</b><span>ENEMY</span><span class="bt-net" id="btNet" hidden></span><span class="bt-ebench" id="btEBench"></span><button type="button" class="ghost bt-giveup" id="btGiveUp">降参</button></div>
         <div class="bt-field">
           <div class="bt-act foe" id="btEAct"></div>
           <div class="bt-log" id="btLog" role="status" aria-live="polite"></div>
@@ -1525,7 +1546,7 @@ function load(){
   const nc=s.normalClaimed&&typeof s.normalClaimed==="object"?s.normalClaimed:{};s.normalClaimed=Object.fromEntries(Object.entries(nc).map(([k,v])=>[k,!!v]));
   // players who already earned Star Velvet before missions existed
   if(s.owned.r1>0){s.normalClaimed.vcm50=true;s.stats.bestWave=50}
-  if(!s.battle||typeof s.battle!=="object")s.battle={};s.battle={w:num(s.battle.w,0,0,1e7),l:num(s.battle.l,0,0,1e7),d:num(s.battle.d,0,0,1e7),bp:num(s.battle.bp,0,0,1e9),cw:num(s.battle.cw,0,0,1e7),cl:num(s.battle.cl,0,0,1e7),fw:num(s.battle.fw,0,0,1e7),fl:num(s.battle.fl,0,0,1e7),season:typeof s.battle.season==="string"?s.battle.season.slice(0,7):"",last:s.battle.last&&typeof s.battle.last==="object"?{season:String(s.battle.last.season||"").slice(0,7),rank:num(s.battle.last.rank,1,1,1e6),bp:num(s.battle.last.bp,0,0,1e9)}:null};
+  if(!s.battle||typeof s.battle!=="object")s.battle={};s.battle={w:num(s.battle.w,0,0,1e7),l:num(s.battle.l,0,0,1e7),d:num(s.battle.d,0,0,1e7),bp:num(s.battle.bp,0,0,1e9),cw:num(s.battle.cw,0,0,1e7),cl:num(s.battle.cl,0,0,1e7),fw:num(s.battle.fw,0,0,1e7),fl:num(s.battle.fl,0,0,1e7),ow:num(s.battle.ow,0,0,1e7),ol:num(s.battle.ol,0,0,1e7),season:typeof s.battle.season==="string"?s.battle.season.slice(0,7):"",last:s.battle.last&&typeof s.battle.last==="object"?{season:String(s.battle.last.season||"").slice(0,7),rank:num(s.battle.last.rank,1,1,1e6),bp:num(s.battle.last.bp,0,0,1e9)}:null};
   if(!Array.isArray(s.decks))s.decks=[];
   s.decks=[0,1,2].map(k=>Array.isArray(s.decks[k])?s.decks[k].filter(x=>typeof x==="number"||typeof x==="string").map(String).filter((x,i,a)=>a.indexOf(x)===i).slice(0,5):[]);
   s.deckSel=num(s.deckSel,0,0,2);
@@ -3540,7 +3561,7 @@ const btPk=(u,k)=>u.passive&&u.passive.k===k?u.passive:null;
 const btTeam=side=>side==="p"?BT.p:BT.e;
 const btAct=side=>{const t=btTeam(side);return t.cur==null?null:t.list[t.cur]};
 const btFoeSide=side=>side==="p"?"e":"p";
-function btName(u){return (u.side==="e"?"敵の ":"")+u.c.name}
+function btName(u){if(BT&&BT.online)return `${u.side==="p"?BT.pName:BT.eName}の ${u.c.name}`;return (u.side==="e"?"敵の ":"")+u.c.name}
 function btEnter(u){
   if(u.entered)return;u.entered=true;
   const st=btPk(u,"start");if(st)u.charge=Math.min(u.skill.cost,st.n);
@@ -3647,6 +3668,8 @@ function btEnemyPick(){
 }
 async function btTurn(action){
   if(!BT||BT.busy||BT.over)return;
+  if(BT.online==="guest"){if(BT.mustPick)return;BT.busy=true;BT.switching=false;netSend({t:"act",a:action});btDraw();return}
+  if(BT.online==="host"){if(BT.mustPick)return;BT.myAct=action;BT.busy=true;BT.switching=false;btDraw();netTryRun();return}
   try{await btTurnInner(action)}catch(e){console.error(e);if(BT){BT.busy=false;btDraw()}}
 }
 async function btTurnInner(action){
@@ -3655,8 +3678,14 @@ async function btTurnInner(action){
     const t=BT.p,old=t.list[t.cur];t.cur=action.i;const u=t.list[t.cur];btEnter(u);
     btLog(`${esc(old.c.name)} もどれ！ ゆけ、${esc(u.c.name)}！`);sfx("flip");btDraw();await btWait(500);
   }
-  const pu=btAct("p"),eu=btAct("e"),ea=btAI();
-  const order=action.k==="switch"?[[eu,ea]]:(btFirst(pu,eu)?[[pu,action],[eu,ea]]:[[eu,ea],[pu,action]]);
+  let ea=BT.online?BT.remoteAct:btAI();
+  if(ea&&ea.k==="switch"){ // online opponent switching
+    const t=BT.e,old=t.list[t.cur];t.cur=ea.i;const u=t.list[t.cur];btEnter(u);
+    btLog(`${esc(BT.eName||"相手")}：${esc(old.c.name)} もどれ！ ゆけ、${esc(u.c.name)}！`);sfx("flip");btDraw();await btWait(500);ea=null;
+  }
+  const pu=btAct("p"),eu=btAct("e");
+  const acts=[];if(action.k!=="switch")acts.push([pu,action]);if(ea)acts.push([eu,ea]);
+  const order=acts.length===2&&!btFirst(pu,eu)?[acts[1],acts[0]]:acts;
   for(const [u,a] of order){await btDoAction(u,a);btDraw()}
   // end of turn
   for(const side of ["p","e"]){
@@ -3680,7 +3709,7 @@ async function btTurnInner(action){
     btLog(`${BT_MAX_TURNS}ターン経過！ 残りHPで判定…`);await btWait(700);
     return btEnd(rp>re+.01?"win":re>rp+.01?"lose":"draw");
   }
-  if(eKO)btEnemyPick();
+  if(eKO){if(BT.online){BT.foePick=true}else btEnemyPick()}
   BT.busy=false;
   if(pKO){BT.mustPick=true;btLog("次に出すカードを選んでね！")}
   btDraw();
@@ -3688,7 +3717,8 @@ async function btTurnInner(action){
 function btPick(i){
   if(!BT||BT.over)return;
   const t=BT.p,u=t.list[i];if(!u||u.hp<=0||(i===t.cur&&!BT.mustPick))return;
-  if(BT.mustPick){t.cur=i;btEnter(u);BT.mustPick=false;btLog(`ゆけ、${esc(u.c.name)}！`);sfx("flip");btDraw();return}
+  if(BT.mustPick&&BT.online==="guest"){t.cur=i;BT.mustPick=false;sfx("flip");netSend({t:"pick",i});btDraw();return}
+  if(BT.mustPick){t.cur=i;btEnter(u);BT.mustPick=false;btLog(`ゆけ、${esc(u.c.name)}！`);sfx("flip");btDraw();if(BT.online==="host"){netSnap();netTryRun()}return}
   if(BT.busy||!BT.switching)return;
   btTurn({k:"switch",i});
 }
@@ -3758,9 +3788,11 @@ function btDraw(){
   if(!BT)return;
   const pu=btAct("p"),eu=btAct("e");
   $("btTurn").textContent=`TURN ${Math.min(BT.turn+1,BT_MAX_TURNS)}`;
+  {const n=$("btNet");n.hidden=!BT.online;if(BT.online){const waitMe=BT.online==="host"?!!BT.myAct:BT.busy&&!BT.over;n.textContent=BT.over?"":BT.foePick?"相手がカードを選んでいます…":waitMe?"相手の行動を待っています…":BT.mustPick?"カードを選んでね":"あなたの番！"}}
   $("btEBench").innerHTML=BT.e.list.map((x,i)=>`<span class="bt-dot t${x.type} ${x.hp<=0?"ko":""} ${i===BT.e.cur?"cur":""}" title="${esc(x.c.name)}">${x.hp<=0?"✕":BT_TYPES[x.type]}</span>`).join("");
   for(const [u,id] of [[eu,"btEAct"],[pu,"btPAct"]]){
     const box=$(id);
+    if(!u&&id==="btEAct"){box.dataset.cid="";box.classList.remove("down");box.innerHTML=`<div class="bt-cardwrap"><div class="bt-empty">相手が<br>選んでいます</div></div><div class="bt-infowrap"><div class="bt-info"><div class="bt-nm"><b>${esc(BT.eName||"相手")}</b></div><p class="bt-hint">相手が最初に出すカードを選んでいます…</p></div></div>`;continue}
     if(!u){box.dataset.cid="";box.classList.remove("down");box.innerHTML=`<div class="bt-cardwrap"><div class="bt-empty">カードを<br>えらんでね</div></div><div class="bt-infowrap"><div class="bt-info"><div class="bt-nm"><b>YOU</b></div><p class="bt-hint">下のひかえから、最初に出すカードを選ぼう。敵に「有利!」なカードがおすすめ！</p></div></div>`;continue}
     if(box.dataset.cid!==String(u.c.id)+u.side){box.dataset.cid=String(u.c.id)+u.side;box.innerHTML=`<button type="button" class="bt-cardwrap" aria-label="${esc(u.c.name)} のステータス"></button><div class="bt-infowrap"></div>`;const w=box.querySelector(".bt-cardwrap");w.appendChild(btFace(u.c));w.onclick=()=>btShowInfo(u)}
     box.classList.toggle("down",u.hp<=0);
@@ -3972,11 +4004,12 @@ function btStart(mode){
   btDraw();
 }
 function btEnd(r){
-  BT.over=true;BT.busy=true;
-  const coins=BT.mode==="friend"?0:Math.max(BT_REWARD[r],-S.gems); // coins never go below zero
+  BT.over=true;BT.busy=true;BT.result=r;
+  const coins=(BT.mode==="friend"||BT.mode==="online")?0:Math.max(BT_REWARD[r],-S.gems); // coins never go below zero
   S.gems+=coins;
   btSeasonCheck();
-  const friend=BT.mode==="friend"; // friend battles: nothing but the friend record changes
+  const online=BT.mode==="online";
+  const friend=BT.mode==="friend"||online; // friend / online battles: nothing but their own record changes
   const custom=BT.mode==="custom"||friend; // custom battles: coins only, no BP or card XP
   const bp0=S.battle.bp||0,rk0=btRankOf(bp0);
   if(!custom)S.battle.bp=Math.max(0,bp0+BT_BP[r]);
@@ -3985,6 +4018,7 @@ function btEnd(r){
   const ups=custom?[]:BT.p.list.map(u=>{const from=lvOf(u.c),n=lvAdd(u.c,xp);return{c:u.c,from,to:lvOf(u.c),n}});
   const bpGot=S.battle.bp-bp0,rk1=btRankOf(S.battle.bp);
   if(!custom){if(r==="win")S.battle.w++;else if(r==="lose")S.battle.l++;else S.battle.d++}
+  else if(online){S.battle.ow=(S.battle.ow||0)+(r==="win"?1:0);S.battle.ol=(S.battle.ol||0)+(r==="lose"?1:0)}
   else if(friend){S.battle.fw=(S.battle.fw||0)+(r==="win"?1:0);S.battle.fl=(S.battle.fl||0)+(r==="lose"?1:0)}
   else{S.battle.cw=(S.battle.cw||0)+(r==="win"?1:0);S.battle.cl=(S.battle.cl||0)+(r==="lose"?1:0)}
   save();render();
@@ -3992,17 +4026,19 @@ function btEnd(r){
   const box=$("btResBox");box.className="mission bt-res "+r;
   box.innerHTML=`<div class="bt-big">${r==="win"?"YOU WIN!":r==="lose"?"YOU LOSE…":"DRAW!"}</div>
     <p>残り ${left("p")} 体 vs ${left("e")} 体 ・ ${BT.turn} ターン ${friend?"":` ・ ${coins>=0?`ごほうび ${coins} コイン`:`${-coins} コイン失った…`}`}</p>
-    ${friend?`<p class="bt-bpgot">フレンド戦 vs ${esc(BT.foeName||"フレンド")}</p>`:custom?`<p class="bt-bpgot">自作カードバトル（ランクと経験値には入りません）</p>`:`<p class="bt-bpgot ${bpGot<0?"neg":""}">バトルポイント ${bpGot>=0?"+":""}${bpGot} BP</p>`}
+    ${online?`<p class="bt-bpgot">オンライン対戦 vs ${esc(BT.eName||"相手")}</p>`:friend?`<p class="bt-bpgot">フレンド戦 vs ${esc(BT.foeName||"フレンド")}</p>`:custom?`<p class="bt-bpgot">自作カードバトル（ランクと経験値には入りません）</p>`:`<p class="bt-bpgot ${bpGot<0?"neg":""}">バトルポイント ${bpGot>=0?"+":""}${bpGot} BP</p>`}
     ${rk1>rk0?`<div class="bt-rankup">RANK UP!<small>RANK ${rk1}「${btRankName(rk1)}」になった！</small></div>`:rk1<rk0?`<p class="bt-rankdown">ランクが RANK ${rk1}「${btRankName(rk1)}」に下がった…</p>`:""}
     ${custom?"":btRankHTML()}
     ${custom?"":`<div class="lv-res"><b>カード経験値 +${xp} XP</b>${ups.map(x=>`<span class="${x.n?"up":""}">${esc(x.c.name)} Lv${x.to}${x.n?` <i>UP!</i>`:x.to>=LV_MAX?" MAX":""}</span>`).join("")}</div>`}
-    <p>${friend?`フレンド戦 通算 ${S.battle.fw||0}勝 ${S.battle.fl||0}敗`:custom?`自作カードバトル 通算 ${S.battle.cw||0}勝 ${S.battle.cl||0}敗`:`通算 ${S.battle.w}勝 ${S.battle.l}敗 ${S.battle.d}分`}</p>
+    <p>${online?`オンライン対戦 通算 ${S.battle.ow||0}勝 ${S.battle.ol||0}敗`:friend?`フレンド戦 通算 ${S.battle.fw||0}勝 ${S.battle.fl||0}敗`:custom?`自作カードバトル 通算 ${S.battle.cw||0}勝 ${S.battle.cl||0}敗`:`通算 ${S.battle.w}勝 ${S.battle.l}敗 ${S.battle.d}分`}</p>
     <div class="bt-btns"><button type="button" class="btn-main" id="btAgain">もう一度！</button><button type="button" class="ghost" id="btHome">ホームへ</button></div>`;
   sfx(rk1>rk0?"rankup":r==="win"?"ur":r==="lose"?"shake":"rare");
   btDraw();
   $("btResult").hidden=false;document.body.style.overflow="hidden";
   const close=()=>{$("btResult").hidden=true;document.body.style.overflow=""};
   const again=BT.mode,againCode=BT.friendCode;
+  $("btAgain").hidden=again==="online";
+  if(again==="online"&&BT.online==="host")netSnap();
   $("btAgain").onclick=()=>{close();if(again==="friend")frStart(againCode);else btStart(again)};
   $("btHome").onclick=()=>{close();BT=null;tab("home");window.scrollTo({top:0})};
 }
@@ -4119,6 +4155,156 @@ function frStart(code){
   return true;
 }
 $("frGo").onclick=()=>frStart($("frInput").value);
+/* ---- online battle: real-time, peer to peer (WebRTC through the free PeerJS service) ----
+   The room host runs the battle; the guest sends its moves and receives the state after every turn. */
+const NET_LIB="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.5/peerjs.min.js";
+const NET_PREFIX="starlightcc-";
+const NET_CHARS="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+let NET=null,netLibP=null;
+function netLoadLib(){
+  if(typeof Peer!=="undefined")return Promise.resolve();
+  if(!netLibP)netLibP=new Promise((res,rej)=>{const sc=document.createElement("script");sc.src=NET_LIB;sc.onload=()=>res();sc.onerror=()=>{netLibP=null;rej(new Error("lib"))};document.head.appendChild(sc)});
+  return netLibP;
+}
+function netMsg(t){$("onMsg").textContent=t||""}
+function netSend(o){try{if(NET&&NET.conn&&NET.conn.open)NET.conn.send(o)}catch(e){}}
+function netLeave(showMsg){
+  const n=NET;NET=null;
+  if(n){try{n.conn&&n.conn.close()}catch(e){}try{n.peer&&n.peer.destroy()}catch(e){}}
+  $("onRoom").hidden=true;
+  if(showMsg)netMsg(showMsg);
+}
+// my team as a code (same format as friend codes); custom teams are 5 random original cards
+async function netMyTeam(kind){
+  if(kind==="s"){
+    const list=dkCards(S.deckSel);
+    if(!dkValid(list))return{err:`デッキで対戦するには、DECK ${S.deckSel+1} を完成させてね。`};
+    return{code:frEncode({k:"s",n:frNick(),c:list.map(c=>[String(c.id),lvOf(c)])})};
+  }
+  const pool=btCustomPool();
+  if(pool.length<5)return{err:"自作カードで対戦するには、自作カードが5種類以上必要です。"};
+  const list=shuffled(pool).slice(0,5),cards=[];
+  for(const c of list)cards.push({n:c.name,k:c.kana||"",r:c.r,h:c.h||0,bt:c.bt||btCustomDefaults(c),i:await frThumb(c.img)});
+  return{code:frEncode({k:"c",n:frNick(),c:cards})};
+}
+function netWire(conn){
+  NET.conn=conn;
+  conn.on("data",d=>{try{netOnData(d)}catch(e){console.error(e)}});
+  conn.on("close",()=>{if(!NET)return;const inBattle=BT&&BT.online&&!BT.over;netLeave("相手との通信が切れました。");if(inBattle){toast("相手との通信が切れました");BT=null;renderBattle()}});
+  conn.on("error",()=>{});
+}
+async function netHost(kind){
+  netLeave();netMsg("準備中…");
+  const t=await netMyTeam(kind);if(t.err){netMsg(t.err);return}
+  try{await netLoadLib()}catch(e){netMsg("オンライン対戦の準備ができませんでした。インターネットにつながっているか確かめてね。");return}
+  const code=Array.from({length:5},()=>NET_CHARS[Math.floor(Math.random()*NET_CHARS.length)]).join("");
+  const peer=new Peer(NET_PREFIX+code);
+  NET={role:"host",kind,code,peer,team:t.code};
+  peer.on("open",()=>{if(!NET||NET.peer!==peer)return;$("onRoom").hidden=false;$("onCode").textContent=code;$("onRoomInfo").textContent=`${kind==="s"?"デッキ":"自作カード"}の部屋 ・ 相手を待っています…`;netMsg("")});
+  peer.on("connection",conn=>{
+    if(!NET||NET.conn){try{conn.close()}catch(e){}return} // room is full
+    netWire(conn);
+    conn.on("open",()=>netSend({t:"hello",kind,team:t.code,name:frNick()||"ホスト"}));
+  });
+  peer.on("error",e=>{if(!NET||NET.peer!==peer)return;netLeave(e&&e.type==="unavailable-id"?"もう一度「部屋を作る」を押してね。":"通信エラーが起きました。もう一度ためしてね。")});
+}
+async function netJoin(code){
+  code=String(code||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
+  if(code.length!==5){netMsg("5文字のルームコードを入れてね。");return}
+  netLeave();netMsg("つないでいます…");
+  try{await netLoadLib()}catch(e){netMsg("オンライン対戦の準備ができませんでした。インターネットにつながっているか確かめてね。");return}
+  const peer=new Peer();
+  NET={role:"guest",code,peer};
+  const timer=setTimeout(()=>{if(NET&&NET.peer===peer&&!NET.started)netLeave("部屋が見つかりませんでした。コードを確かめてね。")},15000);
+  peer.on("open",()=>{if(!NET||NET.peer!==peer)return;netWire(peer.connect(NET_PREFIX+code,{reliable:true}))});
+  peer.on("error",e=>{if(!NET||NET.peer!==peer)return;clearTimeout(timer);netLeave(e&&e.type==="peer-unavailable"?"部屋が見つかりませんでした。コードを確かめてね。":"通信エラーが起きました。もう一度ためしてね。")});
+}
+// build the battle; both sides use the same team order so unit i means the same card everywhere
+function netBuild(role,myCode,foeCode,myName,foeName){
+  const me=frParse(myCode),foe=frParse(foeCode);
+  if(me.err||foe.err)return false;
+  BT={mode:"online",online:role,pName:myName,eName:foeName,eLv:1,
+    p:{list:me.team.map(x=>btMake(x.c,"p",x.lv)),cur:null},e:{list:foe.team.map(x=>btMake(x.c,"e",x.lv)),cur:null},
+    turn:0,busy:false,mustPick:true,foePick:true,switching:false,over:false,log:[],myAct:null,remoteAct:null};
+  $("btPAct").dataset.cid="";$("btEAct").dataset.cid="";
+  tab("battle");renderBattle();
+  btLog(`${esc(foeName)} とオンライン対戦！ 最初に出すカードを選んでね。`);
+  btDraw();return true;
+}
+const NET_UNIT=["hp","maxHp","atk","baseAtk","spd","charge","mods","stun","evade","dot","gutsUsed","souls","ambush","ko","entered"];
+function netSnap(){
+  if(!BT||BT.online!=="host")return;
+  const pack=u=>{const o={};NET_UNIT.forEach(k=>o[k]=u[k]);return o};
+  netSend({t:"snap",s:{turn:BT.turn,log:BT.log.slice(0,4),pc:BT.p.cur,ec:BT.e.cur,pPick:!!BT.mustPick,ePick:!!BT.foePick,gWait:!!BT.remoteAct,hWait:!!BT.myAct,
+    over:!!BT.over,result:BT.result||null,u:{p:BT.p.list.map(pack),e:BT.e.list.map(pack)}}});
+}
+function netApply(s){
+  if(!BT||BT.online!=="guest")return;
+  const put=(list,arr)=>list.forEach((u,i)=>{const o=arr[i];if(o)NET_UNIT.forEach(k=>u[k]=o[k])});
+  // the host's "p" is my opponent, the host's "e" is me
+  const hpBefore=BT.p.list.map(u=>u.hp).concat(BT.e.list.map(u=>u.hp));
+  put(BT.p.list,s.u.e);put(BT.e.list,s.u.p);
+  BT.p.cur=s.ec;BT.e.cur=s.pc;BT.mustPick=s.ePick;BT.foePick=s.pPick;BT.turn=s.turn;
+  BT.busy=s.gWait;
+  BT.log=s.log.slice();const el=document.getElementById("btLog");if(el)el.innerHTML=BT.log.map((m,i)=>`<div class="${i?"old":""}">${m}</div>`).join("");
+  btDraw();
+  // small hit / heal pops so the guest sees what happened
+  BT.p.list.concat(BT.e.list).forEach((u,i)=>{const d=u.hp-hpBefore[i];if(d&&(u===btAct("p")||u===btAct("e")))btPop(u,(d>0?"+":"")+d,d<0?"dmg":"heal")});
+  if(s.over&&!BT.over){const r=s.result==="win"?"lose":s.result==="lose"?"win":"draw";btEnd(r);netLeave()}
+}
+async function netTryRun(){
+  if(!BT||BT.online!=="host"||BT.over||BT.running)return;
+  netSnap();
+  if(!BT.myAct||!BT.remoteAct||BT.mustPick||BT.foePick||BT.p.cur==null||BT.e.cur==null)return;
+  const a=BT.myAct;BT.running=true;BT.busy=false;
+  try{await btTurnInner(a)}catch(e){console.error(e)}
+  if(!BT)return;
+  BT.running=false;BT.myAct=null;BT.remoteAct=null;
+  if(!BT.over)BT.busy=false;
+  btDraw();netSnap();
+  if(BT.over)setTimeout(()=>netLeave(),1500);
+}
+function netOnData(d){
+  if(!d||typeof d!=="object"||!NET)return;
+  if(d.t==="hello"&&NET.role==="guest"){
+    NET.started=true;
+    (async()=>{
+      const t=await netMyTeam(d.kind==="c"?"c":"s");
+      if(t.err){netMsg(`この部屋は${d.kind==="c"?"自作カード":"デッキ"}の部屋です。${t.err}`);netSend({t:"bye"});netLeave();return}
+      const name=frNick()||"ゲスト",foeName=String(d.name||"ホスト").slice(0,12);
+      netSend({t:"hello2",team:t.code,name});
+      if(!netBuild("guest",t.code,String(d.team||""),name,foeName)){netMsg("相手のチームが読み取れませんでした。");netLeave();return}
+      netMsg("");
+    })();
+    return;
+  }
+  if(d.t==="hello2"&&NET.role==="host"){
+    const foeName=String(d.name||"ゲスト").slice(0,12);
+    if(!netBuild("host",NET.team,String(d.team||""),frNick()||"ホスト",foeName)){netSend({t:"bye"});netLeave("相手のチームが読み取れませんでした。");return}
+    $("onRoom").hidden=true;netMsg("");sfx("up");netSnap();
+    return;
+  }
+  if(d.t==="bye"){netLeave("相手が部屋を出ました。");return}
+  if(d.t==="giveup"){if(BT&&BT.online&&!BT.over){toast(`${BT.eName} が降参しました！`);BT.result="win";btEnd("win");if(BT&&BT.online==="host")netSnap()}netLeave();return}
+  if(!BT||!BT.online)return;
+  if(d.t==="snap"&&NET.role==="guest"){netApply(d.s);return}
+  if(NET.role!=="host"||BT.over)return;
+  if(d.t==="pick"){
+    const i=Math.floor(d.i),t=BT.e,u=t.list[i];
+    if(BT.foePick&&u&&u.hp>0){t.cur=i;btEnter(u);BT.foePick=false;btLog(`${esc(BT.eName)}：ゆけ、${esc(u.c.name)}！`);btDraw();netTryRun()}
+    return;
+  }
+  if(d.t==="act"&&!BT.remoteAct){
+    const a=d.a||{};let act={k:"atk"};
+    if(a.k==="skill")act={k:"skill"};
+    if(a.k==="switch"){const i=Math.floor(a.i),u=BT.e.list[i];if(u&&u.hp>0&&i!==BT.e.cur)act={k:"switch",i}}
+    BT.remoteAct=act;btDraw();netTryRun();
+  }
+}
+$("onHostStd").onclick=()=>netHost("s");
+$("onHostCus").onclick=()=>netHost("c");
+$("onJoin").onclick=()=>netJoin($("onJoinCode").value);
+$("onCancel").onclick=()=>netLeave("部屋をとじました。");
 abBuild($("abEdit"),"ab");
 abBuild($("mkAb"),"mk");abFill("mk",null,$("mkRar").value);
 $("mkRar").addEventListener("change",()=>abRarity("mk",$("mkRar").value));
@@ -4128,7 +4314,9 @@ $("abSave").onclick=()=>{if(!abCard)return;abCard.bt=abRead("ab");save();sfx("ra
 $("btAtk").onclick=()=>btTurn({k:"atk"});
 $("btSkill").onclick=()=>btTurn({k:"skill"});
 $("btSwitch").onclick=()=>{if(!BT||BT.busy||BT.mustPick)return;BT.switching=!BT.switching;btDraw()};
-$("btGiveUp").onclick=()=>{if(!BT||BT.over||BT.busy)return;if(confirm("降参しますか？（負け扱いになります）"))btEnd("lose")};
+$("btGiveUp").onclick=()=>{if(!BT||BT.over)return;if(BT.busy&&!BT.online)return;if(!confirm("降参しますか？（負け扱いになります）"))return;
+  if(BT.online){netSend({t:"giveup"});netLeave(false);btEnd("lose");return}
+  btEnd("lose")};
 $("playBattle").onclick=()=>{tab("battle");window.scrollTo({top:0,behavior:"smooth"})};
 
 /* ---- home screen ---- */
