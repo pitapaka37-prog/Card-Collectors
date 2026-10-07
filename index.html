@@ -628,6 +628,12 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
 .lv-res span{border:2px solid var(--ink);background:#fff;padding:0 6px}
 .lv-res span.up{background:var(--yellow)}
 .lv-res i{font-style:normal;color:var(--red)}
+.mc-tabs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0 4px}
+.mc-tabs button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:8px 12px;border:4px solid var(--ink);background:#fff;box-shadow:4px 4px 0 var(--ink);text-align:left}
+.mc-tabs button b{font-family:var(--display);font-weight:400;font-size:22px;letter-spacing:.04em}
+.mc-tabs button small{font-size:11px;font-weight:700;opacity:.75}
+.mc-tabs button[aria-selected="true"]{background:var(--red);color:#fff}
+.mc-tabs button[aria-selected="true"] b{color:var(--yellow);-webkit-text-stroke:1px var(--ink);text-shadow:2px 2px 0 var(--ink)}
 .mc-go{display:flex;flex-direction:column;align-items:center;line-height:1;padding:6px 16px;border:4px solid var(--ink);background:var(--red);color:#fff;box-shadow:5px 5px 0 var(--ink)}
 .mc-go b{font-family:var(--display);font-weight:400;font-size:22px;letter-spacing:.06em;color:var(--yellow);-webkit-text-stroke:1px var(--ink);text-shadow:2px 2px 0 var(--ink)}
 .mc-go small{font-size:11px;font-weight:700}
@@ -1103,6 +1109,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
     <div class="panel">
       <div><button class="ghost" id="cardsBack">← ホームへ</button></div>
       <div class="panel-head"><h3>MY CARDS<small>手持ちカード（ダブりも全部）</small></h3><span class="chip" id="cardsTotal"></span></div>
+      <div class="mc-tabs" id="mcTabs" role="tablist"></div>
       <div class="dxf">
         <div class="dxf-row"><span class="dxf-lbl">レア</span><span class="dxf-chips" id="mcR"></span></div>
         <div class="dxf-row"><span class="dxf-lbl">種類</span><span class="dxf-chips" id="mcKind"></span></div>
@@ -2381,16 +2388,23 @@ function renderDex(){
 }
 /* ---- my cards: every owned copy, duplicates included ---- */
 const MC_STEP=60;
-let mcShown=MC_STEP,mcF={r:"ALL",kind:"all",sort:"rare"};
-function mcAll(){return CARDS.concat(SHOP_CARDS,REWARD_CARDS,S.custom).filter(c=>(S.owned[c.id]||0)>0)}
+let mcShown=MC_STEP,mcF={r:"ALL",kind:"all",sort:"rare"},mcBook="std"; // "std" = STAR LIGHT cards, "custom" = your own cards
+function mcAll(book){book=book||mcBook;return (book==="custom"?S.custom:CARDS.concat(SHOP_CARDS,REWARD_CARDS)).filter(c=>(S.owned[c.id]||0)>0)}
 function renderCards(){
   const all=mcAll();
   const total=all.reduce((a,c)=>a+S.owned[c.id],0);
   $("cardsTotal").textContent=`${total} 枚 ・ ${all.length} 種類`;
+  const tabs=$("mcTabs");tabs.innerHTML="";
+  [["std","STAR LIGHT","スタンダードのカード"],["custom","自作カード","自分で作ったカード"]].forEach(([id,title,sub])=>{
+    const n=mcAll(id).reduce((a,c)=>a+S.owned[c.id],0);
+    const b=document.createElement("button");b.type="button";b.setAttribute("role","tab");b.setAttribute("aria-selected",mcBook===id);
+    b.innerHTML=`<b>${title}</b><small>${sub} ・ ${n}枚</small>`;
+    b.onclick=()=>{mcBook=id;mcF.kind="all";mcShown=MC_STEP;renderCards()};tabs.appendChild(b);
+  });
   dxfChips("mcR",[["ALL","ぜんぶ"]].concat(ORDER.map(r=>[r,r,"r-"+r])),mcF.r,v=>{mcF.r=v;mcShown=MC_STEP;renderCards();return false});
-  dxfChips("mcKind",[["all","ぜんぶ"],["std","STAR LIGHT"],["custom","自作"],["fav","★お気に入り"],["dup","ダブりだけ"]],mcF.kind,v=>{mcF.kind=v;mcShown=MC_STEP;renderCards();return false});
+  dxfChips("mcKind",[["all","ぜんぶ"],["fav","★お気に入り"],["dup","ダブりだけ"]],mcF.kind,v=>{mcF.kind=v;mcShown=MC_STEP;renderCards();return false});
   dxfChips("mcSort",[["rare","レア順"],["count","枚数が多い順"],["name","名前順"]],mcF.sort,v=>{mcF.sort=v;renderCards();return false});
-  let list=all.filter(c=>(mcF.r==="ALL"||c.r===mcF.r)&&(mcF.kind==="all"||(mcF.kind==="std"&&!c.img)||(mcF.kind==="custom"&&c.img)||(mcF.kind==="fav"&&isFav(c))||(mcF.kind==="dup"&&S.owned[c.id]>1)));
+  let list=all.filter(c=>(mcF.r==="ALL"||c.r===mcF.r)&&(mcF.kind==="all"||(mcF.kind==="fav"&&isFav(c))||(mcF.kind==="dup"&&S.owned[c.id]>1)));
   const rk=c=>ORDER.indexOf(c.r);
   if(mcF.sort==="rare")list.sort((a,b)=>rk(a)-rk(b)||String(a.name).localeCompare(String(b.name)));
   else if(mcF.sort==="count")list.sort((a,b)=>S.owned[b.id]-S.owned[a.id]||rk(a)-rk(b));
@@ -2399,7 +2413,7 @@ function renderCards(){
   const copies=[];list.forEach(c=>{const n=S.owned[c.id];for(let i=0;i<n;i++)copies.push([c,i+1,n])});
   $("mcCount").textContent=`${copies.length} 枚を表示${copies.length>mcShown?`（いま ${mcShown} 枚まで表示中）`:""}`;
   const g=$("mcGrid");g.innerHTML="";
-  if(!copies.length){g.innerHTML=`<div class="empty">条件に合うカードがありません。</div>`}
+  if(!copies.length){g.innerHTML=`<div class="empty">${all.length?"条件に合うカードがありません。":mcBook==="custom"?"自作カードはまだありません。MAKE でカードを作って、自分のガチャで引いてみよう！":"まだカードを持っていません。ガチャを引いてみよう！"}</div>`}
   copies.slice(0,mcShown).forEach(([c,k,n])=>{
     const s=document.createElement("div");s.className="slot mc-slot";
     const el=cardEl(c,{flipped:true});el.tabIndex=0;el.setAttribute("role","button");el.setAttribute("aria-label",`${c.name}（${k}枚目）`);
