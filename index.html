@@ -1514,6 +1514,11 @@ const REWARD_CARDS=[
   how:"ノーマルミッション「VELVET COMET MISSION を全50ウェーブクリア」の報酬",
   flavor:"ベルベット・コメットが銀河を旅するために乗り回す高速宇宙船。長距離航行から宇宙戦までこなす、彼の大切な相棒。"},
 ];
+// STANDARD dex numbers in the order the cards were made: the first 27 gacha cards, the shop cards, the mission card, then later gacha cards
+// (when a new card is added, put it at the end of this list so existing numbers never change)
+const STD_ORDER=CARDS.slice(0,27).concat(SHOP_CARDS,REWARD_CARDS,CARDS.slice(27));
+function stdNo(c){const i=STD_ORDER.indexOf(c);return i<0?0:i+1}
+const stdNoText=c=>"#"+String(stdNo(c)).padStart(2,"0");
 const rewardByR={};ORDER.forEach(r=>rewardByR[r]=REWARD_CARDS.filter(c=>c.r===r));
 const PITY=80;
 const SFX={SR:"WHAM!",SSR:"KA-POW!!",UR:"KRAKA-BOOM!!!"};
@@ -1633,7 +1638,7 @@ function drawOne(minSR,pool,bid){
 function cardEl(c,{flipped=false,isNew=false,sfx=false}={}){
   const d=document.createElement("div");
   d.className="card"+(flipped?" flipped":"");d.dataset.r=c.r;d.dataset.shape=c.shape;d.style.setProperty("--h",c.h);
-  const tag=c.reward?`<span class="custom-tag msn">MISSION</span>`:c.shop?`<span class="custom-tag ltd">LIMITED</span>`:c.img?`<span class="custom-tag">ORIGINAL</span>`:`<span class="no">#${String(c.id+1).padStart(2,"0")}</span>`;
+  const tag=c.reward?`<span class="custom-tag msn">${stdNoText(c)} MISSION</span>`:c.shop?`<span class="custom-tag ltd">${stdNoText(c)} LIMITED</span>`:c.img?`<span class="custom-tag">ORIGINAL</span>`:`<span class="no">${stdNoText(c)}</span>`;
   const art=(c.img||c.photo)?`<div class="art${c.photo?" photo":""}"></div>`:((c.look||(typeof c.id==="number"&&LOOKS[c.id]))?`<div class="art hero">${heroSVG(c.look||LOOKS[c.id],c.h)}</div>`:`<div class="emblem"><span>${c.m}</span></div>`);
   d.innerHTML=`<div class="inner"><div class="face back"></div><div class="face front"><div class="top"><span class="rar">${c.r}</span>${tag}</div>${art}<div class="name"><b>${esc(c.name||"???")}</b><small>${esc(c.kana||"")}</small></div></div></div>${sfx&&SFX[c.r]?`<span class="sfx">${SFX[c.r]}</span>`:""}${isNew?'<span class="new">NEW!</span>':""}`;
   if(c.img||c.photo)d.querySelector(".art").style.backgroundImage=`url("${c.img||c.photo}")`;
@@ -2434,7 +2439,7 @@ function drawDetail(){
   const card=cardEl(c,{flipped:true});cw.appendChild(card);
   cw.insertAdjacentHTML("beforeend",`<div class="tilt-hint">カードをなぞると傾きます</div>`);
   const where=c.reward?"MISSION REWARD":c.shop?"STAR SHOP":c.pack?pname(packOf(c.pack)):"STAR LIGHT COMICS";
-  const no=c.reward?"MISSION":c.shop?"LIMITED":typeof c.id==="number"?"#"+String(c.id+1).padStart(2,"0"):"ORIGINAL";
+  const no=c.img?"ORIGINAL":stdNo(c)?stdNoText(c):"-";
   const t=document.createElement("div");t.style.minWidth="0";
   t.innerHTML=`<div class="rates" style="margin:0 0 8px"><span><b>${c.r}</b>${esc(where)}</span></div>
     <h4>${esc(c.name)}</h4><div class="jp">${esc(c.kana||"")}</div>
@@ -2639,11 +2644,9 @@ $("dxfFav").onclick=()=>{dexF.fav=!dexF.fav;renderDex()};
 $("dxfReset").onclick=()=>{dexF=Object.assign({},DXF0);renderDex()};
 $("dxfQ").addEventListener("input",e=>{dexF.q=e.target.value.slice(0,40);renderDex();const q=$("dxfQ");q.focus()});
 $("dexBack").onclick=()=>{dexSel=null;renderDex()};
-// card number used for "No." sorting: STAR LIGHT cards by their number, then shop cards, then mission cards; original cards in the order they were made
+// card number used for "No." sorting: STANDARD cards by their dex number; original cards in the order they were made
 function dexNo(c){
-  if(typeof c.id==="number")return c.id;
-  if(c.shop)return 1000+SHOP_CARDS.indexOf(c);
-  if(c.reward)return 2000+REWARD_CARDS.indexOf(c);
+  const n=stdNo(c);if(n)return n;
   return 3000+S.custom.indexOf(c);
 }
 const DEX_SORTS={rare:"レア順",no:"No.順",new:"No.逆順",name:"名前順",type:"タイプ順"};
