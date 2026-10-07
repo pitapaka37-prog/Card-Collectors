@@ -1478,10 +1478,11 @@ const CARDS=[
  ["UR","AP","Atlas Prime","アトラス・プライム","宇宙の核と融合し、重力そのものを武器に戦う超重量級ヒーロー。",205,"burst"],
  ["UR","NM","Nova Mae","ノヴァ・メイ","宇宙の光「ノヴァ・エネルギー」を操り、闇に希望を灯す若きヒーロー。",320,"burst"],
  ["SR","SF","Solar Flare","ソーラー・フレア","惑星クエーセリアを守る精鋭部隊「クエーサーガード」の戦士。スター・ランスの指揮のもと、太陽の炎を宿した大剣と巨体を武器に最前線で戦う豪快な戦士。",28,"shield"],
- ["SR","LM","Luna Mirage","ルナ・ミラージュ","惑星クエーセリアを守る精鋭部隊「クエーサーガード」の魔術師。月や星の力を利用した幻影魔法と強力な攻撃魔法を操り、スター・ランスたちを後方から支える。",235,"shield"]
+ ["SR","LM","Luna Mirage","ルナ・ミラージュ","惑星クエーセリアを守る精鋭部隊「クエーサーガード」の魔術師。月や星の力を利用した幻影魔法と強力な攻撃魔法を操り、スター・ランスたちを後方から支える。",235,"shield"],
+ ["SR","AG","Astra Guard","アストラ・ガード","惑星クエーセリアを守る「クエーサーガード」の重装戦士。巨大な体と頑丈な大盾を武器に仲間たちの前に立ち、どんな攻撃からもチームを守る頼れる防御役。",42,"shield"]
 ].map((c,i)=>({id:i,r:c[0],m:c[1],name:c[2],kana:c[3],flavor:c[4],h:c[5],shape:c[6]}));
 // standard cards that use a picture instead of the drawn portrait
-const PHOTOS={"Rubber Duck":"rubber-duck.jpg","Atlas Prime":"atlas-prime.jpg","Nova Mae":"nova-mae.jpg","Skyline Sentinel":"skyline-sentinel.jpg","Queen Quasar":"queen-quasar.jpg","Thunder Hound":"thunder-hound.jpg","Atomic Bee":"atomic-bee.jpg","Radio Ranger":"radio-ranger.jpg","Mirror Max":"mirror-max.jpg","Velvet Comet":"velvet-comet.jpg","Doctor Fuse":"doctor-fuse.jpg","Neon Noodle":"neon-noodle.jpg","Jukebox Jane":"jukebox-jane.jpg","Skate Saint":"skate-saint.jpg","Diner Dynamo":"diner-dynamo.jpg","Tornado Tess":"tornado-tess.jpg","Captain Cactus":"captain-cactus.jpg","Glitter Gator":"glitter-gator.jpg","Gumball Kid":"gumball-kid.jpg","Traffic Cone":"traffic-cone.jpg","Lunchbox Larry":"lunchbox-larry.jpg","Static Sally":"static-sally.jpg","Paper Boy":"paper-boy.jpg","Night Janitor":"night-janitor.jpg","Hot Dog Man":"hot-dog-man.jpg","Mailbox Mike":"mailbox-mike.jpg","Coin Op":"coin-op.jpg","Solar Flare":"solar-flare.jpg","Luna Mirage":"luna-mirage.jpg"};
+const PHOTOS={"Rubber Duck":"rubber-duck.jpg","Atlas Prime":"atlas-prime.jpg","Nova Mae":"nova-mae.jpg","Skyline Sentinel":"skyline-sentinel.jpg","Queen Quasar":"queen-quasar.jpg","Thunder Hound":"thunder-hound.jpg","Atomic Bee":"atomic-bee.jpg","Radio Ranger":"radio-ranger.jpg","Mirror Max":"mirror-max.jpg","Velvet Comet":"velvet-comet.jpg","Doctor Fuse":"doctor-fuse.jpg","Neon Noodle":"neon-noodle.jpg","Jukebox Jane":"jukebox-jane.jpg","Skate Saint":"skate-saint.jpg","Diner Dynamo":"diner-dynamo.jpg","Tornado Tess":"tornado-tess.jpg","Captain Cactus":"captain-cactus.jpg","Glitter Gator":"glitter-gator.jpg","Gumball Kid":"gumball-kid.jpg","Traffic Cone":"traffic-cone.jpg","Lunchbox Larry":"lunchbox-larry.jpg","Static Sally":"static-sally.jpg","Paper Boy":"paper-boy.jpg","Night Janitor":"night-janitor.jpg","Hot Dog Man":"hot-dog-man.jpg","Mailbox Mike":"mailbox-mike.jpg","Coin Op":"coin-op.jpg","Solar Flare":"solar-flare.jpg","Luna Mirage":"luna-mirage.jpg","Astra Guard":"astra-guard.jpg"};
 const PHOTO_V="3";
 CARDS.forEach(c=>{if(PHOTOS[c.name])c.photo=PHOTOS[c.name]+"?v="+PHOTO_V});
 /* ---- cover cards: random owned cards, or the rarest ones when nothing is owned ---- */
@@ -3513,6 +3514,7 @@ var BT_ABIL={ // var: may be read by early renders on startup
  "Star Lance":{t:0,hp:1.05,s:{name:"クエーサー・ストライク",cost:3,desc:"1.6倍ダメージ＋味方全員の攻撃力20%アップ（2ターン）",fx:[btH(1.6),{k:"buff",v:.2,turns:2,team:true}]},p:{k:"tough",v:.15,name:"クエーサーガードの鎧",desc:"受けるダメージがいつも15%少ない"}},
  "Solar Flare":{t:0,hp:1.2,atk:1.05,spd:.85,s:{name:"ソーラー・ブレイド",cost:3,desc:"1.5倍ダメージ＋敵をやけど状態に（3ターン、毎ターン最大HPの6%ダメージ）",fx:[btH(1.5),{k:"dot",v:.06,turns:3}]},p:{k:"rage",v:.4,name:"燃える闘志",desc:"HPが40%以下になると攻撃力40%アップ"}},
  "Luna Mirage":{t:2,hp:.95,s:{name:"ムーンライト・ミラージュ",cost:3,desc:"1.4倍ダメージ（相性を無視）＋敵の攻撃力25%ダウン（3ターン）",fx:[btH(1.4,1,{pierce:true}),{k:"weaken",v:.25,turns:3}]},p:{k:"dodge",v:.2,name:"月の幻影",desc:"20%の確率で攻撃をよける"}},
+ "Astra Guard":{t:0,hp:1.3,atk:.85,spd:.75,s:{name:"スター・バスティオン",cost:3,desc:"味方全員、2ターンのあいだ受けるダメージ45%カット＋自分は受けたダメージの30%を返す",fx:[{k:"guard",v:.45,turns:2,team:true},{k:"reflect",v:.3,turns:2}]},p:{k:"tough",v:.2,name:"大盾の守り",desc:"受けるダメージがいつも20%少ない"}},
  "Star Velvet":{t:1,spd:1.15,s:{name:"ハイパードライブ砲",cost:4,desc:"2.1倍ダメージ",fx:[btH(2.1)]},p:{k:"buddy",v:.3,name:"最高の相棒",desc:"味方チームにベルベット・コメットがいると攻撃力30%アップ"}},
 };
 function btHash(str){let h=2166136261;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
