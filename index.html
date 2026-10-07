@@ -624,6 +624,22 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
 .ab-modal .mission{width:min(560px,100%);display:flex;flex-direction:column;gap:10px}
 .cb-panel{align-self:stretch;display:flex;flex-direction:column;gap:8px;padding:14px;background:#fff6dc;border:4px solid var(--ink);box-shadow:6px 6px 0 #d6336c}
 .cb-panel .dk-head small{font-size:13px;font-weight:700}
+.fr-panel{align-self:stretch;display:flex;flex-direction:column;gap:8px;padding:14px;background:#e9f3ff;border:4px solid var(--ink);box-shadow:6px 6px 0 var(--blue)}
+.fr-panel .dk-head small{font-size:13px;font-weight:700}
+.fr-row{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700}
+.fr-row input{font:inherit;padding:4px 8px;border:3px solid var(--ink);width:min(220px,100%)}
+.fr-out,.fr-in{display:flex;flex-direction:column;gap:6px}
+.fr-in label{font-size:13px;font-weight:700}
+.fr-panel textarea{width:100%;font:12px/1.4 ui-monospace,Menlo,monospace;padding:6px 8px;border:3px solid var(--ink);background:#fff;resize:vertical;word-break:break-all}
+.fr-out small{font-size:12px;font-weight:700}
+.fr-msg{font-size:12px;font-weight:700;color:var(--red)}
+.fr-modal .mission{width:min(560px,100%);display:flex;flex-direction:column;gap:10px}
+.fr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:10px}
+.fr-pc{display:flex;flex-direction:column;gap:2px;padding:0;border:0;background:none;text-align:left;cursor:pointer;min-width:0}
+.fr-pc span{font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fr-pc small{font-size:10px;font-weight:700;opacity:.7}
+.fr-pc .bt-face{border-width:3px}
+.fr-pc.on .bt-face{outline:4px solid var(--red);outline-offset:1px}
 @media (max-width:640px){.ab-grid{grid-template-columns:1fr}}
 .lv-badge{display:inline-block;font-family:var(--display);font-weight:400;font-size:18px;letter-spacing:.04em;background:var(--ink);color:var(--yellow);padding:0 8px;line-height:1.3}
 .lv-badge.sm{font-size:13px;padding:0 5px}
@@ -1197,6 +1213,22 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
           <p class="dk-note">自分で作ったカードだけで戦うモード。持っている自作カードからランダムに5枚、敵も自作カードから選ばれます。自作カードの能力（タイプ・わざ・とくせいの効果）はカードを作ったときにランダムで決まり、わざととくせいの名前は自分で付けられます。勝ち負けのコインは同じですが、ランクと経験値には入りません。</p>
           <div class="dk-btns"><button type="button" class="btn-main" id="btStartCustom">自作カードでバトル！</button><span class="bt-need" id="btNeedCustom"></span></div>
         </div>
+        <div class="fr-panel">
+          <div class="dk-head"><b>FRIEND BATTLE</b><small>コードでフレンドと対戦</small></div>
+          <p class="dk-note">自分のチームを「バトルコード」にしてフレンドに送ろう。フレンドのコードを入れると、そのチームと対戦できます。相手のカードはコンピューターが動かします（同時に通信して遊ぶ対戦ではありません）。フレンド戦ではコイン・BP・経験値は増減しません。</p>
+          <div class="fr-row"><label for="frNick">あなたの名前</label><input type="text" id="frNick" maxlength="12" placeholder="なまえ"></div>
+          <div class="dk-btns"><button type="button" class="ghost" id="frMakeStd">デッキのコードを作る</button><button type="button" class="ghost" id="frMakeCus">自作カードのコードを作る</button></div>
+          <div class="fr-out" id="frOut" hidden>
+            <small id="frOutInfo"></small>
+            <textarea id="frCode" readonly rows="3" aria-label="あなたのバトルコード"></textarea>
+            <div class="dk-btns"><button type="button" class="ghost" id="frCopy">コピー</button><button type="button" class="ghost" id="frShare">共有する</button></div>
+          </div>
+          <div class="fr-in">
+            <label for="frInput">フレンドのコード</label>
+            <textarea id="frInput" rows="3" placeholder="フレンドからもらったコードをここに貼り付け"></textarea>
+            <div class="dk-btns"><button type="button" class="btn-main" id="frGo">このコードとバトル！</button><span class="fr-msg" id="frMsg" role="status"></span></div>
+          </div>
+        </div>
         <p class="bt-need" id="btNeed" hidden></p>
       </div>
       <div class="bt-arena" id="btArena" hidden>
@@ -1232,6 +1264,15 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
       <p class="ab-note">効果はカードを作ったときにランダムで決まっています。ここでは、わざととくせいの名前を変えられます。</p>
       <fieldset class="ab-set" id="abEdit"><legend>バトルの能力</legend></fieldset>
       <div class="dk-btns"><button type="button" class="btn-main" id="abSave">この能力にする</button><button type="button" class="ghost" id="abCancel">やめる</button></div>
+    </div>
+  </div>
+  <div class="detail ms-modal fr-modal" id="frPick" hidden role="dialog" aria-modal="true" aria-label="コードにする自作カードを選ぶ">
+    <div class="mission">
+      <button type="button" class="close" id="frPickClose" aria-label="閉じる">×</button>
+      <div class="ms-head"><b>MY TEAM</b><span id="frPickN"></span></div>
+      <p class="ab-note">コードにする自作カードを5枚えらんでね。</p>
+      <div class="fr-grid" id="frPickGrid"></div>
+      <div class="dk-btns"><button type="button" class="btn-main" id="frPickGo" disabled>この5枚でコードを作る</button></div>
     </div>
   </div>
   <div class="detail ms-modal bt-iv" id="btInfo" hidden role="dialog" aria-modal="true" aria-label="カードのステータス">
@@ -1484,10 +1525,11 @@ function load(){
   const nc=s.normalClaimed&&typeof s.normalClaimed==="object"?s.normalClaimed:{};s.normalClaimed=Object.fromEntries(Object.entries(nc).map(([k,v])=>[k,!!v]));
   // players who already earned Star Velvet before missions existed
   if(s.owned.r1>0){s.normalClaimed.vcm50=true;s.stats.bestWave=50}
-  if(!s.battle||typeof s.battle!=="object")s.battle={};s.battle={w:num(s.battle.w,0,0,1e7),l:num(s.battle.l,0,0,1e7),d:num(s.battle.d,0,0,1e7),bp:num(s.battle.bp,0,0,1e9),cw:num(s.battle.cw,0,0,1e7),cl:num(s.battle.cl,0,0,1e7),season:typeof s.battle.season==="string"?s.battle.season.slice(0,7):"",last:s.battle.last&&typeof s.battle.last==="object"?{season:String(s.battle.last.season||"").slice(0,7),rank:num(s.battle.last.rank,1,1,1e6),bp:num(s.battle.last.bp,0,0,1e9)}:null};
+  if(!s.battle||typeof s.battle!=="object")s.battle={};s.battle={w:num(s.battle.w,0,0,1e7),l:num(s.battle.l,0,0,1e7),d:num(s.battle.d,0,0,1e7),bp:num(s.battle.bp,0,0,1e9),cw:num(s.battle.cw,0,0,1e7),cl:num(s.battle.cl,0,0,1e7),fw:num(s.battle.fw,0,0,1e7),fl:num(s.battle.fl,0,0,1e7),season:typeof s.battle.season==="string"?s.battle.season.slice(0,7):"",last:s.battle.last&&typeof s.battle.last==="object"?{season:String(s.battle.last.season||"").slice(0,7),rank:num(s.battle.last.rank,1,1,1e6),bp:num(s.battle.last.bp,0,0,1e9)}:null};
   if(!Array.isArray(s.decks))s.decks=[];
   s.decks=[0,1,2].map(k=>Array.isArray(s.decks[k])?s.decks[k].filter(x=>typeof x==="number"||typeof x==="string").map(String).filter((x,i,a)=>a.indexOf(x)===i).slice(0,5):[]);
   s.deckSel=num(s.deckSel,0,0,2);
+  s.nick=typeof s.nick==="string"?s.nick.slice(0,12):"";
   {const L=s.lv&&typeof s.lv==="object"&&!Array.isArray(s.lv)?s.lv:{};s.lv={};Object.keys(L).slice(0,500).forEach(k=>{const e=L[k];if(e&&typeof e==="object")s.lv[String(k).slice(0,60)]={lv:num(e.lv,1,1,100),xp:num(e.xp,0,0,1e6)}})}
   {const f=s.fav&&typeof s.fav==="object"&&!Array.isArray(s.fav)?s.fav:{};s.fav={};Object.keys(f).slice(0,2000).forEach(k=>{if(f[k]===true)s.fav[String(k).slice(0,60)]=true})}
   s.hiScore=Math.max(0,Math.floor(Number(s.hiScore)||0));s.sound=s.sound!==false;s.bgm=s.bgm!==false;s.gems=num(s.gems,3000,0,1e9);s.points=num(s.points,0,0,1e9);s.pity=num(s.pity,0,0,PITY);s.streak=num(s.streak,0,0,1e6);
@@ -3931,10 +3973,11 @@ function btStart(mode){
 }
 function btEnd(r){
   BT.over=true;BT.busy=true;
-  const coins=Math.max(BT_REWARD[r],-S.gems); // coins never go below zero
+  const coins=BT.mode==="friend"?0:Math.max(BT_REWARD[r],-S.gems); // coins never go below zero
   S.gems+=coins;
   btSeasonCheck();
-  const custom=BT.mode==="custom"; // custom battles: coins only, no BP or card XP
+  const friend=BT.mode==="friend"; // friend battles: nothing but the friend record changes
+  const custom=BT.mode==="custom"||friend; // custom battles: coins only, no BP or card XP
   const bp0=S.battle.bp||0,rk0=btRankOf(bp0);
   if(!custom)S.battle.bp=Math.max(0,bp0+BT_BP[r]);
   S.stats.bestRank=Math.max(S.stats.bestRank||1,btRankOf(S.battle.bp));
@@ -3942,24 +3985,25 @@ function btEnd(r){
   const ups=custom?[]:BT.p.list.map(u=>{const from=lvOf(u.c),n=lvAdd(u.c,xp);return{c:u.c,from,to:lvOf(u.c),n}});
   const bpGot=S.battle.bp-bp0,rk1=btRankOf(S.battle.bp);
   if(!custom){if(r==="win")S.battle.w++;else if(r==="lose")S.battle.l++;else S.battle.d++}
+  else if(friend){S.battle.fw=(S.battle.fw||0)+(r==="win"?1:0);S.battle.fl=(S.battle.fl||0)+(r==="lose"?1:0)}
   else{S.battle.cw=(S.battle.cw||0)+(r==="win"?1:0);S.battle.cl=(S.battle.cl||0)+(r==="lose"?1:0)}
   save();render();
   const left=side=>btAlive(side).length;
   const box=$("btResBox");box.className="mission bt-res "+r;
   box.innerHTML=`<div class="bt-big">${r==="win"?"YOU WIN!":r==="lose"?"YOU LOSE…":"DRAW!"}</div>
-    <p>残り ${left("p")} 体 vs ${left("e")} 体 ・ ${BT.turn} ターン ・ ${coins>=0?`ごほうび ${coins} コイン`:`${-coins} コイン失った…`}</p>
-    ${custom?`<p class="bt-bpgot">自作カードバトル（ランクと経験値には入りません）</p>`:`<p class="bt-bpgot ${bpGot<0?"neg":""}">バトルポイント ${bpGot>=0?"+":""}${bpGot} BP</p>`}
+    <p>残り ${left("p")} 体 vs ${left("e")} 体 ・ ${BT.turn} ターン ${friend?"":` ・ ${coins>=0?`ごほうび ${coins} コイン`:`${-coins} コイン失った…`}`}</p>
+    ${friend?`<p class="bt-bpgot">フレンド戦 vs ${esc(BT.foeName||"フレンド")}</p>`:custom?`<p class="bt-bpgot">自作カードバトル（ランクと経験値には入りません）</p>`:`<p class="bt-bpgot ${bpGot<0?"neg":""}">バトルポイント ${bpGot>=0?"+":""}${bpGot} BP</p>`}
     ${rk1>rk0?`<div class="bt-rankup">RANK UP!<small>RANK ${rk1}「${btRankName(rk1)}」になった！</small></div>`:rk1<rk0?`<p class="bt-rankdown">ランクが RANK ${rk1}「${btRankName(rk1)}」に下がった…</p>`:""}
     ${custom?"":btRankHTML()}
     ${custom?"":`<div class="lv-res"><b>カード経験値 +${xp} XP</b>${ups.map(x=>`<span class="${x.n?"up":""}">${esc(x.c.name)} Lv${x.to}${x.n?` <i>UP!</i>`:x.to>=LV_MAX?" MAX":""}</span>`).join("")}</div>`}
-    <p>${custom?`自作カードバトル 通算 ${S.battle.cw||0}勝 ${S.battle.cl||0}敗`:`通算 ${S.battle.w}勝 ${S.battle.l}敗 ${S.battle.d}分`}</p>
+    <p>${friend?`フレンド戦 通算 ${S.battle.fw||0}勝 ${S.battle.fl||0}敗`:custom?`自作カードバトル 通算 ${S.battle.cw||0}勝 ${S.battle.cl||0}敗`:`通算 ${S.battle.w}勝 ${S.battle.l}敗 ${S.battle.d}分`}</p>
     <div class="bt-btns"><button type="button" class="btn-main" id="btAgain">もう一度！</button><button type="button" class="ghost" id="btHome">ホームへ</button></div>`;
   sfx(rk1>rk0?"rankup":r==="win"?"ur":r==="lose"?"shake":"rare");
   btDraw();
   $("btResult").hidden=false;document.body.style.overflow="hidden";
   const close=()=>{$("btResult").hidden=true;document.body.style.overflow=""};
-  const again=BT.mode;
-  $("btAgain").onclick=()=>{close();btStart(again)};
+  const again=BT.mode,againCode=BT.friendCode;
+  $("btAgain").onclick=()=>{close();if(again==="friend")frStart(againCode);else btStart(again)};
   $("btHome").onclick=()=>{close();BT=null;tab("home");window.scrollTo({top:0})};
 }
 $("btStart").onclick=()=>btStart("random");
@@ -3968,6 +4012,113 @@ $("rkClose").onclick=btHideRanks;
 $("rkModal").addEventListener("click",e=>{if(e.target===$("rkModal"))btHideRanks()});
 $("btStartDeck").onclick=()=>btStart("deck");
 $("btStartCustom").onclick=()=>btStart("custom");
+/* ---- friend battles: a team is shared as a "battle code" and fought against the computer ---- */
+const FR_PREFIX="SLB1-";
+const FR_BLANK="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==";
+function frEncode(o){return FR_PREFIX+btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"")}
+function frDecode(code){
+  code=String(code||"").replace(/\s+/g,"");
+  if(!code.startsWith(FR_PREFIX))throw new Error("prefix");
+  let b=code.slice(FR_PREFIX.length).replace(/-/g,"+").replace(/_/g,"/");while(b.length%4)b+="=";
+  return JSON.parse(decodeURIComponent(escape(atob(b))));
+}
+// tiny picture so a custom card still shows its face on the friend's side
+function frThumb(src){
+  return new Promise(res=>{
+    if(!src||typeof Image==="undefined"){res(FR_BLANK);return}
+    const im=new Image();let done=false;const fin=v=>{if(!done){done=true;res(v)}};
+    setTimeout(()=>fin(FR_BLANK),3000);
+    im.onload=()=>{try{const cv=document.createElement("canvas");cv.width=60;cv.height=70;const x=cv.getContext("2d");x.drawImage(im,0,0,60,70);fin(cv.toDataURL("image/jpeg",.6))}catch(e){fin(FR_BLANK)}};
+    im.onerror=()=>fin(FR_BLANK);im.src=src;
+  });
+}
+function frShow(code,info){$("frOut").hidden=false;$("frCode").value=code;$("frOutInfo").textContent=info;}
+function frNick(){return ($("frNick").value||"").trim().slice(0,12)}
+$("frNick").value=S.nick||"";
+$("frNick").addEventListener("input",()=>{S.nick=frNick();save()});
+$("frMakeStd").onclick=()=>{
+  const list=dkCards(S.deckSel);
+  if(!dkValid(list)){toast(`DECK ${S.deckSel+1} が完成していません。先にデッキを作ってね`);return}
+  const code=frEncode({k:"s",n:frNick(),c:list.map(c=>[String(c.id),lvOf(c)])});
+  frShow(code,`DECK ${S.deckSel+1} のバトルコード（${list.map(c=>c.name).join("・")}）`);sfx("rare");
+};
+let frSel=[];
+function frPickDraw(){
+  const g=$("frPickGrid");g.innerHTML="";
+  btCustomPool().forEach(c=>{
+    const on=frSel.includes(c.id);
+    const b=document.createElement("button");b.type="button";b.className="fr-pc"+(on?" on":"");
+    b.appendChild(btFace(c));b.insertAdjacentHTML("beforeend",`<span>${esc(c.name)}</span><small>${c.r}</small>`);
+    b.onclick=()=>{if(on)frSel=frSel.filter(x=>x!==c.id);else if(frSel.length<5)frSel.push(c.id);else{toast("5枚までです");return}frPickDraw()};
+    g.appendChild(b);
+  });
+  $("frPickN").textContent=`${frSel.length} / 5`;
+  $("frPickGo").disabled=frSel.length!==5;
+}
+$("frMakeCus").onclick=()=>{
+  if(btCustomPool().length<5){toast("自作カードが5種類以上必要です");return}
+  frSel=frSel.filter(id=>btCustomPool().some(c=>c.id===id));
+  $("frPick").hidden=false;document.body.style.overflow="hidden";frPickDraw();
+};
+const frPickClose=()=>{$("frPick").hidden=true;document.body.style.overflow=""};
+$("frPickClose").onclick=frPickClose;
+$("frPick").addEventListener("click",e=>{if(e.target===$("frPick"))frPickClose()});
+$("frPickGo").onclick=async()=>{
+  const list=frSel.map(id=>S.custom.find(c=>c.id===id)).filter(Boolean);if(list.length!==5)return;
+  $("frPickGo").disabled=true;
+  const cards=[];
+  for(const c of list){const b=c.bt||btCustomDefaults(c);cards.push({n:c.name,k:c.kana||"",r:c.r,h:c.h||0,bt:b,i:await frThumb(c.img)})}
+  frPickClose();
+  frShow(frEncode({k:"c",n:frNick(),c:cards}),`自作カードのバトルコード（${list.map(c=>c.name).join("・")}）`);sfx("rare");
+};
+$("frCopy").onclick=async()=>{const t=$("frCode");try{await navigator.clipboard.writeText(t.value);toast("コードをコピーしました！")}catch(e){t.select();try{document.execCommand("copy");toast("コードをコピーしました！")}catch(_){toast("コードを長押ししてコピーしてね")}}};
+$("frShare").onclick=async()=>{const text=`STAR LIGHT COMICS CARD のバトルコード！アプリの BATTLE → FRIEND BATTLE に貼り付けて対戦してね\n${$("frCode").value}`;
+  if(navigator.share){try{await navigator.share({text})}catch(e){}}else $("frCopy").onclick()};
+// turn a code into the opponent team, checking every value
+function frParse(code){
+  let o;try{o=frDecode(code)}catch(e){return{err:"コードが読み取れません。最初から最後まで、まるごと貼り付けてね。"}}
+  if(!o||!Array.isArray(o.c)||o.c.length!==5)return{err:"コードの中身が正しくありません。"};
+  const name=typeof o.n==="string"&&o.n.trim()?o.n.trim().slice(0,12):"フレンド";
+  if(o.k==="s"){
+    const team=[];
+    for(const e of o.c){if(!Array.isArray(e))return{err:"コードの中身が正しくありません。"};const c=dkCard(e[0]);if(!c||!btStdOK(c))return{err:"コードに知らないカードが入っています。"};team.push({c,lv:Math.max(1,Math.min(LV_MAX,Math.floor(+e[1])||1))})}
+    if(new Set(team.map(x=>x.c.id)).size!==5)return{err:"コードの中身が正しくありません。"};
+    return{kind:"std",name,team};
+  }
+  if(o.k==="c"){
+    const team=o.c.map((e,i)=>{
+      const r=ORDER.includes(e&&e.r)?e.r:"N";
+      const img=typeof e.i==="string"&&/^data:image\/(jpeg|png|gif|webp);base64,[A-Za-z0-9+/=]+$/.test(e.i)&&e.i.length<40000?e.i:FR_BLANK;
+      const nm=String(e.n||"???").slice(0,22);
+      return{c:{id:"friend-"+i,r,name:nm,kana:String(e.k||"").slice(0,20),flavor:"",h:Number(e.h)||0,shape:"shield",img,m:nm.slice(0,2),bt:cleanBt(e.bt)||{t:0,sk:"strike",skn:"",ps:"tough",psn:""},friend:true},lv:1};
+    });
+    return{kind:"custom",name,team};
+  }
+  return{err:"コードの中身が正しくありません。"};
+}
+function frStart(code){
+  const f=frParse(code);
+  if(f.err){$("frMsg").textContent=f.err;return false}
+  let mine;
+  if(f.kind==="std"){
+    mine=dkCards(S.deckSel);
+    if(!dkValid(mine)){$("frMsg").textContent=`STAR LIGHT のコードには、あなたのデッキ（DECK ${S.deckSel+1}）で戦います。先にデッキを完成させてね。`;return false}
+    mine=mine.slice();
+  }else{
+    const pool=btCustomPool();
+    if(pool.length<5){$("frMsg").textContent="自作カードのコードには、あなたの自作カード（ランダム5枚）で戦います。自作カードが5種類以上必要です。";return false}
+    mine=shuffled(pool).slice(0,5);
+  }
+  $("frMsg").textContent="";
+  BT={mode:"friend",friendCode:code,foeName:f.name,eLv:1,p:{list:mine.map(c=>btMake(c,"p")),cur:null},e:{list:shuffled(f.team).map(x=>btMake(x.c,"e",x.lv)),cur:0},turn:0,busy:false,mustPick:true,switching:false,over:false,log:[]};
+  $("btPAct").dataset.cid="";$("btEAct").dataset.cid="";
+  btEnter(BT.e.list[0]);
+  sfx("up");renderBattle();
+  btLog(`${esc(f.name)} のチームとフレンド戦！ 先鋒は ${esc(BT.e.list[0].c.name)}。最初に出すカードを選んでね。`);
+  btDraw();
+  return true;
+}
+$("frGo").onclick=()=>frStart($("frInput").value);
 abBuild($("abEdit"),"ab");
 abBuild($("mkAb"),"mk");abFill("mk",null,$("mkRar").value);
 $("mkRar").addEventListener("change",()=>abRarity("mk",$("mkRar").value));
