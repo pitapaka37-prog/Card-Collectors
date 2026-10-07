@@ -2321,12 +2321,7 @@ document.addEventListener("keydown",e=>{
   if(e.key==="ArrowLeft")$("dPrev")&&$("dPrev").click();
   if(e.key==="ArrowRight")$("dNext")&&$("dNext").click();
 });
-// swipe left / right on phones
-(()=>{let sx=null;const d=$("detail");
-  d.addEventListener("touchstart",e=>{sx=e.touches[0].clientX},{passive:true});
-  d.addEventListener("touchend",e=>{if(sx===null)return;const dx=e.changedTouches[0].clientX-sx;sx=null;
-    if(Math.abs(dx)>60)(dx<0?$("dNext"):$("dPrev"))?.click()},{passive:true});
-})();
+// moving between cards in the detail view is buttons only (no swipe), so tilting the card never flips to the next one
 let dexSel=null; // null = selection screen, otherwise "std" or a pack id
 function dexStats(pool){
   const list=ORDER.flatMap(r=>pool[r]);
