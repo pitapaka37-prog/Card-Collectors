@@ -613,6 +613,18 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
 .fav-btn.on{background:var(--yellow);color:var(--red)}
 .fav-detail{margin:6px 0}
 .fav-detail.on{background:var(--yellow)}
+.mc-go{display:flex;flex-direction:column;align-items:center;line-height:1;padding:6px 16px;border:4px solid var(--ink);background:var(--red);color:#fff;box-shadow:5px 5px 0 var(--ink)}
+.mc-go b{font-family:var(--display);font-weight:400;font-size:22px;letter-spacing:.06em;color:var(--yellow);-webkit-text-stroke:1px var(--ink);text-shadow:2px 2px 0 var(--ink)}
+.mc-go small{font-size:11px;font-weight:700}
+.mc-go:active{transform:translate(3px,3px);box-shadow:2px 2px 0 var(--ink)}
+.mc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:16px 12px}
+.mc-slot{position:relative}
+.mc-slot .card{cursor:pointer}
+.mc-slot .count{position:absolute;right:-6px;bottom:-8px;z-index:4;font-family:var(--display);font-size:15px;background:#fff;border:2px solid var(--ink);padding:0 6px;box-shadow:2px 2px 0 var(--ink)}
+.mc-slot .count.dup{background:var(--yellow)}
+.mc-fav{position:absolute;top:-8px;left:-6px;z-index:4;font-size:20px;color:var(--red);-webkit-text-stroke:1px var(--ink)}
+.mc-more{display:flex;justify-content:center;margin-top:16px}
+@media (max-width:640px){.mc-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 8px}}
 .dk-panel{align-self:stretch;display:flex;flex-direction:column;gap:10px;padding:14px;background:#fff;border:4px solid var(--ink);box-shadow:6px 6px 0 var(--ink)}
 .dk-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px}
 .dk-head>b{font-family:var(--display);font-weight:400;font-size:28px;letter-spacing:.04em}
@@ -1040,7 +1052,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
 
   <section id="view-dex" hidden>
     <div class="panel" id="dexPick">
-      <div class="panel-head"><h3>HERO FILES<small>図鑑をえらぶ</small></h3></div>
+      <div class="panel-head"><h3>HERO FILES<small>図鑑をえらぶ</small></h3><button type="button" class="mc-go" id="cardsGo"><b>MY CARDS</b><small>手持ちカード <span id="cardsGoN"></span></small></button></div>
       <div class="binders" id="binders"></div>
       <div class="backup">
         <div class="backup-text"><b>データの保存</b><span>カードやガチャはこの端末にだけ保存されています。機種変更やデータ削除に備えて、ときどき書き出しておくと安心です。</span></div>
@@ -1058,7 +1070,6 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
       <div class="progress"><div id="dexBar" style="width:0"></div></div>
       <div class="resetbar" id="resetbar" hidden><span>この自作ガチャの図鑑（集めた枚数と天井の回数）をリセットできます。カードそのものは消えません。</span><button type="button" class="ghost" id="dexReset">この図鑑をリセット</button></div>
       <div class="sellbar" id="sellbar"><span id="sellInfo"></span><button type="button" class="ghost" id="sellAll">ダブりをまとめて売る</button></div>
-      <div class="detail" id="detail" hidden></div>
       <div class="dxf" id="dexFilter">
         <div class="dxf-row"><input type="search" id="dxfQ" placeholder="名前でさがす" aria-label="名前でさがす" autocomplete="off"><button type="button" class="dxf-fav" id="dxfFav" aria-pressed="false">★ お気に入りだけ</button><button type="button" class="ghost dxf-reset" id="dxfReset">リセット</button></div>
         <div class="dxf-row"><span class="dxf-lbl">レア</span><span class="dxf-chips" id="dxfR"></span></div>
@@ -1069,6 +1080,22 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
       <div id="dexBody"></div>
     </div>
   </section>
+
+  <section id="view-cards" hidden>
+    <div class="panel">
+      <div><button class="ghost" id="cardsBack">← 図鑑へ</button></div>
+      <div class="panel-head"><h3>MY CARDS<small>手持ちカード（ダブりも全部）</small></h3><span class="chip" id="cardsTotal"></span></div>
+      <div class="dxf">
+        <div class="dxf-row"><span class="dxf-lbl">レア</span><span class="dxf-chips" id="mcR"></span></div>
+        <div class="dxf-row"><span class="dxf-lbl">種類</span><span class="dxf-chips" id="mcKind"></span></div>
+        <div class="dxf-row"><span class="dxf-lbl">並び</span><span class="dxf-chips" id="mcSort"></span></div>
+        <div class="dxf-count" id="mcCount"></div>
+      </div>
+      <div class="mc-grid" id="mcGrid"></div>
+      <div class="mc-more"><button type="button" class="ghost" id="mcMore" hidden>もっと見る</button></div>
+    </div>
+  </section>
+  <div class="detail" id="detail" hidden></div>
 
   <section id="view-games" hidden>
     <div class="panel">
@@ -2332,6 +2359,47 @@ function renderDex(){
   if(!shown){body.innerHTML=`<div class="empty">条件に合うカードがありません。${dexF.fav?"カードの詳しい画面で ☆ を押すとお気に入りに登録できます。":""}</div>`;return}
   dexGroup(body,pool,dxfActive());
 }
+/* ---- my cards: every owned copy, duplicates included ---- */
+const MC_STEP=60;
+let mcShown=MC_STEP,mcF={r:"ALL",kind:"all",sort:"rare"};
+function mcAll(){return CARDS.concat(SHOP_CARDS,REWARD_CARDS,S.custom).filter(c=>(S.owned[c.id]||0)>0)}
+function renderCards(){
+  const all=mcAll();
+  const total=all.reduce((a,c)=>a+S.owned[c.id],0);
+  $("cardsTotal").textContent=`${total} 枚 ・ ${all.length} 種類`;
+  dxfChips("mcR",[["ALL","ぜんぶ"]].concat(ORDER.map(r=>[r,r,"r-"+r])),mcF.r,v=>{mcF.r=v;mcShown=MC_STEP;renderCards();return false});
+  dxfChips("mcKind",[["all","ぜんぶ"],["std","STAR LIGHT"],["custom","自作"],["fav","★お気に入り"],["dup","ダブりだけ"]],mcF.kind,v=>{mcF.kind=v;mcShown=MC_STEP;renderCards();return false});
+  dxfChips("mcSort",[["rare","レア順"],["count","枚数が多い順"],["name","名前順"]],mcF.sort,v=>{mcF.sort=v;renderCards();return false});
+  let list=all.filter(c=>(mcF.r==="ALL"||c.r===mcF.r)&&(mcF.kind==="all"||(mcF.kind==="std"&&!c.img)||(mcF.kind==="custom"&&c.img)||(mcF.kind==="fav"&&isFav(c))||(mcF.kind==="dup"&&S.owned[c.id]>1)));
+  const rk=c=>ORDER.indexOf(c.r);
+  if(mcF.sort==="rare")list.sort((a,b)=>rk(a)-rk(b)||String(a.name).localeCompare(String(b.name)));
+  else if(mcF.sort==="count")list.sort((a,b)=>S.owned[b.id]-S.owned[a.id]||rk(a)-rk(b));
+  else list.sort((a,b)=>String(a.name).localeCompare(String(b.name)));
+  // one entry per copy
+  const copies=[];list.forEach(c=>{const n=S.owned[c.id];for(let i=0;i<n;i++)copies.push([c,i+1,n])});
+  $("mcCount").textContent=`${copies.length} 枚を表示${copies.length>mcShown?`（いま ${mcShown} 枚まで表示中）`:""}`;
+  const g=$("mcGrid");g.innerHTML="";
+  if(!copies.length){g.innerHTML=`<div class="empty">条件に合うカードがありません。</div>`}
+  copies.slice(0,mcShown).forEach(([c,k,n])=>{
+    const s=document.createElement("div");s.className="slot mc-slot";
+    const el=cardEl(c,{flipped:true});el.tabIndex=0;el.setAttribute("role","button");el.setAttribute("aria-label",`${c.name}（${k}枚目）`);
+    el.onclick=()=>mcDetail(c,el);el.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();el.onclick()}};
+    s.appendChild(el);
+    if(n>1)s.insertAdjacentHTML("beforeend",`<span class="count${k>1?" dup":""}">${k}/${n}</span>`);
+    if(isFav(c))s.insertAdjacentHTML("beforeend",`<span class="mc-fav">★</span>`);
+    g.appendChild(s);
+  });
+  const more=$("mcMore");more.hidden=copies.length<=mcShown;more.textContent=`もっと見る（あと ${copies.length-mcShown} 枚）`;
+}
+function mcDetail(c,el){
+  detailReturn=el;
+  detailList=mcAll().sort((a,b)=>ORDER.indexOf(a.r)-ORDER.indexOf(b.r));
+  detailIdx=Math.max(0,detailList.findIndex(x=>x.id===c.id));
+  drawDetail();
+}
+$("mcMore").onclick=()=>{mcShown+=MC_STEP;renderCards()};
+$("cardsGo").onclick=()=>{tab("cards");window.scrollTo({top:0,behavior:"smooth"})};
+$("cardsBack").onclick=()=>{tab("dex");window.scrollTo({top:0,behavior:"smooth"})};
 /* ---- dex filters and favourites ---- */
 const isFav=c=>!!S.fav[String(c.id)];
 function toggleFav(c){const k=String(c.id);if(S.fav[k])delete S.fav[k];else S.fav[k]=true;save();sfx(S.fav[k]?"rare":"tink");return !!S.fav[k]}
@@ -2357,7 +2425,7 @@ function dxfMatch(c){
 }
 function dxfChips(id,opts,cur,set){
   const box=$(id);box.innerHTML="";
-  opts.forEach(([v,label,cls])=>{const b=document.createElement("button");b.type="button";b.className="dxf-chip"+(cls?" "+cls:"");b.setAttribute("aria-pressed",cur===v);b.innerHTML=label;b.onclick=()=>{set(v);renderDex()};box.appendChild(b)});
+  opts.forEach(([v,label,cls])=>{const b=document.createElement("button");b.type="button";b.className="dxf-chip"+(cls?" "+cls:"");b.setAttribute("aria-pressed",cur===v);b.innerHTML=label;b.onclick=()=>{if(set(v)!==false)renderDex()};box.appendChild(b)});
 }
 function dxfDraw(){
   dxfChips("dxfR",[["ALL","ぜんぶ"]].concat(ORDER.map(r=>[r,r,"r-"+r])),dexF.r,v=>dexF.r=v);
@@ -2482,12 +2550,14 @@ function render(){
   if(!$("view-shop").hidden){renderShop();shopStale=false}else shopStale=true;if(typeof updateIdle==="function"&&$("idleAmt"))updateIdle();
   if(!$("view-dex").hidden){renderDex();dexStale=false}else dexStale=true;
   if(!$("view-make").hidden){renderMine();mineStale=false}else mineStale=true;
+  if(!$("view-cards").hidden&&typeof renderCards==="function")renderCards();
+  const cg=document.getElementById("cardsGoN");if(cg)cg.textContent=Object.values(S.owned).reduce((a,n)=>a+(n>0?n:0),0)+"枚";
 }
 function tab(which){
   currentScreen=which;screenMusic();
   if(which==="home")setTimeout(renderHome,0);
-  ["home","gacha","dex","make","shop","games","battle","deck"].forEach(t=>{
-    const on=t===which;const tb=document.getElementById("tab-"+t);if(tb)tb.setAttribute("aria-selected",on||(t==="games"&&(which==="battle"||which==="deck")));$("view-"+t).hidden=!on;
+  ["home","gacha","dex","make","shop","games","battle","deck","cards"].forEach(t=>{
+    const on=t===which;const tb=document.getElementById("tab-"+t);if(tb)tb.setAttribute("aria-selected",on||(t==="games"&&(which==="battle"||which==="deck"))||(t==="dex"&&which==="cards"));$("view-"+t).hidden=!on;
     if(on&&t==="make")$("view-make").style.display="flex";
     if(on&&t==="gacha")$("view-gacha").style.display="flex";
   });
@@ -2497,6 +2567,7 @@ function tab(which){
   if(which==="shop"&&shopStale){renderShop();shopStale=false}
   if(which==="battle"&&typeof renderBattle==="function")renderBattle();
   if(which==="deck"&&typeof dkDrawEdit==="function")dkDrawEdit();
+  if(which==="cards"&&typeof renderCards==="function"){mcShown=MC_STEP;renderCards()}
 }
 function renderShop(){
   $("shopPts").textContent=S.points.toLocaleString();
