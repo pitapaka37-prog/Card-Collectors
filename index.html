@@ -1145,6 +1145,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
         <div class="dxf-row"><input type="search" id="dxfQ" placeholder="名前でさがす" aria-label="名前でさがす" autocomplete="off"><button type="button" class="dxf-fav" id="dxfFav" aria-pressed="false">★ お気に入りだけ</button><button type="button" class="ghost dxf-reset" id="dxfReset">リセット</button></div>
         <div class="dxf-row"><span class="dxf-lbl">レア</span><span class="dxf-chips" id="dxfR"></span></div>
         <div class="dxf-row"><span class="dxf-lbl">登録</span><span class="dxf-chips" id="dxfOwn"></span></div>
+        <div class="dxf-row"><span class="dxf-lbl">並び</span><span class="dxf-chips" id="dxfSort"></span></div>
         <div class="dxf-row" id="dxfStdRow"><span class="dxf-lbl">タイプ</span><span class="dxf-chips" id="dxfType"></span><span class="dxf-lbl">入手</span><span class="dxf-chips" id="dxfKind"></span></div>
         <div class="dxf-count" id="dxfCount"></div>
       </div>
@@ -2420,7 +2421,7 @@ function showDetail(c,fromEl){
   detailMode="dex";
   // owned cards of the open dex, in dex order, for prev / next
   const pool=dexPoolOf(dexSel||"std");
-  detailList=ORDER.flatMap(r=>pool[r]).filter(x=>S.owned[x.id]);
+  detailList=((dexF.sort||"rare")==="rare"?ORDER.flatMap(r=>dexSortList(pool[r])):dexSortList(ORDER.flatMap(r=>pool[r]))).filter(x=>S.owned[x.id]);
   detailIdx=Math.max(0,detailList.findIndex(x=>x.id===c.id));
   drawDetail();
 }
@@ -2598,7 +2599,7 @@ $("cardsBack").onclick=()=>{tab("home");window.scrollTo({top:0,behavior:"smooth"
 /* ---- dex filters and favourites ---- */
 const isFav=c=>!!S.fav[String(c.id)];
 function toggleFav(c){const k=String(c.id);if(S.fav[k])delete S.fav[k];else S.fav[k]=true;save();sfx(S.fav[k]?"rare":"tink");return !!S.fav[k]}
-const DXF0={r:"ALL",own:"all",fav:false,type:-1,kind:"all",q:""};
+const DXF0={r:"ALL",own:"all",fav:false,type:-1,kind:"all",q:"",sort:"rare"};
 let dexF=Object.assign({},DXF0);
 function dxfActive(){return dexF.r!=="ALL"||dexF.own!=="all"||dexF.fav||dexF.type>=0||dexF.kind!=="all"||!!dexF.q.trim()}
 function dxfMatch(c){
@@ -2624,6 +2625,7 @@ function dxfChips(id,opts,cur,set){
 }
 function dxfDraw(){
   dxfChips("dxfR",[["ALL","ぜんぶ"]].concat(ORDER.map(r=>[r,r,"r-"+r])),dexF.r,v=>dexF.r=v);
+  dxfChips("dxfSort",Object.entries(DEX_SORTS).filter(([k])=>k!=="type"||dexSel==="std"),dexF.sort||"rare",v=>dexF.sort=v);
   dxfChips("dxfOwn",[["all","ぜんぶ"],["have","登録済み"],["miss","未登録"]],dexF.own,v=>dexF.own=v);
   const std=dexSel==="std";$("dxfStdRow").hidden=!std;
   if(std){
@@ -2637,14 +2639,45 @@ $("dxfFav").onclick=()=>{dexF.fav=!dexF.fav;renderDex()};
 $("dxfReset").onclick=()=>{dexF=Object.assign({},DXF0);renderDex()};
 $("dxfQ").addEventListener("input",e=>{dexF.q=e.target.value.slice(0,40);renderDex();const q=$("dxfQ");q.focus()});
 $("dexBack").onclick=()=>{dexSel=null;renderDex()};
+// card number used for "No." sorting: STAR LIGHT cards by their number, then shop cards, then mission cards; original cards in the order they were made
+function dexNo(c){
+  if(typeof c.id==="number")return c.id;
+  if(c.shop)return 1000+SHOP_CARDS.indexOf(c);
+  if(c.reward)return 2000+REWARD_CARDS.indexOf(c);
+  return 3000+S.custom.indexOf(c);
+}
+const DEX_SORTS={rare:"レア順",no:"No.順",new:"No.逆順",name:"名前順",type:"タイプ順"};
+function dexSortList(list){
+  const rk=c=>ORDER.indexOf(c.r),by=dexF.sort||"rare";
+  const cmp={
+    rare:(a,b)=>rk(a)-rk(b)||dexNo(a)-dexNo(b),
+    no:(a,b)=>dexNo(a)-dexNo(b),
+    new:(a,b)=>dexNo(b)-dexNo(a),
+    name:(a,b)=>String(a.name).localeCompare(String(b.name)),
+    type:(a,b)=>{const pa=btProfile(a),pb=btProfile(b);return (pa?pa.type:9)-(pb?pb.type:9)||rk(a)-rk(b)||dexNo(a)-dexNo(b)},
+  }[by]||((a,b)=>0);
+  return list.slice().sort(cmp);
+}
 function dexGroup(body,pool,filtered){
+  if((dexF.sort||"rare")!=="rare"){ // one flat list in the chosen order
+    const list=dexSortList(ORDER.flatMap(r=>pool[r]));
+    const sec=document.createElement("div");sec.className="dex-section";
+    sec.innerHTML=`<h4>${DEX_SORTS[dexF.sort]} ・ ${list.filter(c=>S.owned[c.id]).length}/${list.length}</h4>`;
+    const g=document.createElement("div");g.className="dex";
+    list.forEach(c=>g.appendChild(dexSlot(c)));
+    sec.appendChild(g);body.appendChild(sec);return;
+  }
   ORDER.forEach(r=>{
     if(!pool[r].length)return;
     const sec=document.createElement("div");sec.className="dex-section";
     const hv=pool[r].filter(c=>S.owned[c.id]).length;
     sec.innerHTML=`<h4>${r} ・ ${hv}/${pool[r].length}</h4>`;
     const g=document.createElement("div");g.className="dex";
-    pool[r].forEach(c=>{
+    dexSortList(pool[r]).forEach(c=>g.appendChild(dexSlot(c)));
+    sec.appendChild(g);body.appendChild(sec);
+  });
+}
+function dexSlot(c){
       const s=document.createElement("div");s.className="slot";
       if(S.owned[c.id]){
         const el=cardEl(c,{flipped:true});el.tabIndex=0;el.setAttribute("role","button");el.setAttribute("aria-label",c.name);
@@ -2660,10 +2693,7 @@ function dexGroup(body,pool,filtered){
         b.innerHTML=`<span class="q">?</span><span class="nm">${esc(c.name)}</span><span class="kn">${esc(c.kana||"")}</span>`;
         s.appendChild(b);
       }
-      g.appendChild(s);
-    });
-    sec.appendChild(g);body.appendChild(sec);
-  });
+      return s;
 }
 
 /* ---- pack manager ---- */
