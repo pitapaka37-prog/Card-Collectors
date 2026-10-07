@@ -613,6 +613,21 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
 .fav-btn.on{background:var(--yellow);color:var(--red)}
 .fav-detail{margin:6px 0}
 .fav-detail.on{background:var(--yellow)}
+.lv-badge{display:inline-block;font-family:var(--display);font-weight:400;font-size:18px;letter-spacing:.04em;background:var(--ink);color:var(--yellow);padding:0 8px;line-height:1.3}
+.lv-badge.sm{font-size:13px;padding:0 5px}
+.lv-box{display:flex;flex-direction:column;gap:6px;margin:8px 0;padding:10px;background:#fff;border:3px solid var(--ink);box-shadow:4px 4px 0 var(--ink)}
+.lv-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
+.lv-bar{flex:1;min-width:100px;height:12px;border:2px solid var(--ink);background:#eee;overflow:hidden}
+.lv-bar span{display:block;height:100%;background:linear-gradient(90deg,#21b5e0,#7a3cff)}
+.lv-row small{font-size:12px;font-weight:700}
+.lv-fuse{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;font-size:12px;font-weight:700}
+.lv-fuse button{font-size:13px;padding:2px 10px}
+.lv-tag{position:absolute;left:-6px;bottom:-8px;z-index:4;font-family:var(--display);font-size:14px;background:var(--ink);color:var(--yellow);border:2px solid var(--ink);padding:0 5px;box-shadow:2px 2px 0 rgba(0,0,0,.3)}
+.lv-res{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 8px;margin:6px 0;font-size:12px;font-weight:700}
+.lv-res b{flex-basis:100%;font-size:14px}
+.lv-res span{border:2px solid var(--ink);background:#fff;padding:0 6px}
+.lv-res span.up{background:var(--yellow)}
+.lv-res i{font-style:normal;color:var(--red)}
 .mc-go{display:flex;flex-direction:column;align-items:center;line-height:1;padding:6px 16px;border:4px solid var(--ink);background:var(--red);color:#fff;box-shadow:5px 5px 0 var(--ink)}
 .mc-go b{font-family:var(--display);font-weight:400;font-size:22px;letter-spacing:.06em;color:var(--yellow);-webkit-text-stroke:1px var(--ink);text-shadow:2px 2px 0 var(--ink)}
 .mc-go small{font-size:11px;font-weight:700}
@@ -1386,7 +1401,7 @@ const SFX={SR:"WHAM!",SSR:"KA-POW!!",UR:"KRAKA-BOOM!!!"};
 const PACK_COLORS=["#e2231a","#1d9e5a","#ff7a00","#7a3cff","#e0218a","#0f8f8f","#3d3d3d"];
 const STD_TEXT="十連なら最後の1枚は SR 以上が確定。80 回 SSR が出なければ、次の1枚は SSR 以上になります。";
 
-const DEFAULT={gems:3000,pity:0,owned:{},custom:[],packs:[],pityBy:{},banner:"std",loginLast:"",streak:0,idleAt:0,points:0,sound:true,bgm:true,hiScore:0,mission:null,stats:{pulls:0,bestWave:0,sold:0,games:0,bestRank:1,dailyAll:0,loginDays:0,bestStreak:0},normalClaimed:{},battle:{w:0,l:0,d:0,bp:0},decks:[[],[],[]],deckSel:0,fav:{}};
+const DEFAULT={gems:3000,pity:0,owned:{},custom:[],packs:[],pityBy:{},banner:"std",loginLast:"",streak:0,idleAt:0,points:0,sound:true,bgm:true,hiScore:0,mission:null,stats:{pulls:0,bestWave:0,sold:0,games:0,bestRank:1,dailyAll:0,loginDays:0,bestStreak:0},normalClaimed:{},battle:{w:0,l:0,d:0,bp:0},decks:[[],[],[]],deckSel:0,fav:{},lv:{}};
 const KEY="cch-gacha";
 const newId=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
 let S=load();
@@ -1429,6 +1444,7 @@ function load(){
   if(!Array.isArray(s.decks))s.decks=[];
   s.decks=[0,1,2].map(k=>Array.isArray(s.decks[k])?s.decks[k].filter(x=>typeof x==="number"||typeof x==="string").map(String).filter((x,i,a)=>a.indexOf(x)===i).slice(0,5):[]);
   s.deckSel=num(s.deckSel,0,0,2);
+  {const L=s.lv&&typeof s.lv==="object"&&!Array.isArray(s.lv)?s.lv:{};s.lv={};Object.keys(L).slice(0,500).forEach(k=>{const e=L[k];if(e&&typeof e==="object")s.lv[String(k).slice(0,60)]={lv:num(e.lv,1,1,100),xp:num(e.xp,0,0,1e6)}})}
   {const f=s.fav&&typeof s.fav==="object"&&!Array.isArray(s.fav)?s.fav:{};s.fav={};Object.keys(f).slice(0,2000).forEach(k=>{if(f[k]===true)s.fav[String(k).slice(0,60)]=true})}
   s.hiScore=Math.max(0,Math.floor(Number(s.hiScore)||0));s.sound=s.sound!==false;s.bgm=s.bgm!==false;s.gems=num(s.gems,3000,0,1e9);s.points=num(s.points,0,0,1e9);s.pity=num(s.pity,0,0,PITY);s.streak=num(s.streak,0,0,1e6);
   s.idleAt=num(s.idleAt,0,0,Date.now());
@@ -2264,6 +2280,7 @@ function drawDetail(){
     ${S.owned[c.id]>1?`<div class="sell"><button type="button" class="ghost" id="sell1">1枚売る <b>${valueText(c)}</b></button>${S.owned[c.id]>2?`<button type="button" class="ghost" id="sellN">ダブり ${S.owned[c.id]-1} 枚を全部売る <b>${valueText(c,S.owned[c.id]-1)}</b></button>`:""}</div>`:""}
     ${c.flavor?`<p>${esc(c.flavor)}</p>`:""}
     <button type="button" class="ghost fav-detail ${isFav(c)?"on":""}" id="dFav">${isFav(c)?"★ お気に入り登録中":"☆ お気に入りに登録"}</button>
+    ${lvFuseHTML(c)}
     ${btAbilityHTML(c)}
     <div class="nav"><button type="button" class="ghost" id="dPrev">← 前のカード</button><span style="align-self:center;font-weight:700;font-variant-numeric:tabular-nums">${detailIdx+1} / ${detailList.length}</span><button type="button" class="ghost" id="dNext">次のカード →</button></div>`;
   const close=document.createElement("button");close.type="button";close.className="close";close.textContent="×";close.setAttribute("aria-label","閉じる");close.onclick=closeDetail;
@@ -2271,6 +2288,9 @@ function drawDetail(){
   const s1=t.querySelector("#sell1"),sN=t.querySelector("#sellN");
   if(s1)s1.onclick=()=>{sellCards([[c,1]]);drawDetail()};
   if(sN)sN.onclick=()=>{sellCards([[c,S.owned[c.id]-1]]);drawDetail()};
+  const f1=t.querySelector("#lvFuse1"),fA=t.querySelector("#lvFuseAll");
+  if(f1)f1.onclick=()=>{lvFuse(c,1);drawDetail()};
+  if(fA)fA.onclick=()=>{lvFuse(c,Infinity);drawDetail()};
   const fb=t.querySelector("#dFav");
   if(fb)fb.onclick=()=>{const on=toggleFav(c);fb.classList.toggle("on",on);fb.textContent=on?"★ お気に入り登録中":"☆ お気に入りに登録";dexStale=true};
   const prev=t.querySelector("#dPrev"),next=t.querySelector("#dNext");
@@ -2387,6 +2407,7 @@ function renderCards(){
     s.appendChild(el);
     if(n>1)s.insertAdjacentHTML("beforeend",`<span class="count${k>1?" dup":""}">${k}/${n}</span>`);
     if(isFav(c))s.insertAdjacentHTML("beforeend",`<span class="mc-fav">★</span>`);
+    if(btHasAbility(c))s.insertAdjacentHTML("beforeend",`<span class="lv-tag">Lv${lvOf(c)}</span>`);
     g.appendChild(s);
   });
   const more=$("mcMore");more.hidden=copies.length<=mcShown;more.textContent=`もっと見る（あと ${copies.length-mcShown} 枚）`;
@@ -2454,7 +2475,7 @@ function dexGroup(body,pool,filtered){
       if(S.owned[c.id]){
         const el=cardEl(c,{flipped:true});el.tabIndex=0;el.setAttribute("role","button");el.setAttribute("aria-label",c.name);
         el.onclick=()=>showDetail(c,el);el.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();el.onclick()}};
-        s.appendChild(el);s.insertAdjacentHTML("beforeend",`<span class="count">×${S.owned[c.id]}</span>`);
+        s.appendChild(el);s.insertAdjacentHTML("beforeend",`<span class="count">×${S.owned[c.id]}</span>${btHasAbility(c)?`<span class="lv-tag">Lv${lvOf(c)}</span>`:""}`);
         const fv=document.createElement("button");fv.type="button";fv.className="fav-btn"+(isFav(c)?" on":"");fv.textContent=isFav(c)?"★":"☆";
         fv.setAttribute("aria-label",`${c.name} をお気に入り${isFav(c)?"から外す":"に登録"}`);
         fv.onclick=e=>{e.stopPropagation();const on=toggleFav(c);fv.classList.toggle("on",on);fv.textContent=on?"★":"☆";if(dexF.fav&&!on)renderDex();else dxfDraw()};
@@ -3267,21 +3288,60 @@ const BT_ABIL={
 function btHash(str){let h=2166136261;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
 // only STAR LIGHT cards have battle abilities; original (custom) cards have none
 function btHasAbility(c){return !!(c&&!c.img&&BT_ABIL[c.name])}
-function btProfile(c){
+/* ---- card levels (STAR LIGHT cards only): Lv 1-100, from battles and fusing duplicates ---- */
+const LV_MAX=100;
+const LV_FUSE={N:60,R:100,SR:200,SSR:400,UR:800}; // XP for each duplicate fused into the same card
+const LV_BT={base:20,win:20,draw:10};            // XP for each card that took part in a battle
+const lvNeed=lv=>10+lv*2;                         // XP from lv to lv+1
+const lvMul=lv=>1+(lv-1)*.005;                    // stats grow 0.5% per level (Lv100 = about +50%)
+function lvEntry(c){return S.lv[String(c.id)]||{lv:1,xp:0}}
+function lvOf(c){return lvEntry(c).lv}
+function lvAdd(c,xp){
+  if(!btHasAbility(c))return 0;
+  const k=String(c.id),e=Object.assign({},lvEntry(c)),from=e.lv;
+  if(e.lv>=LV_MAX)return 0;
+  e.xp+=xp;
+  while(e.lv<LV_MAX&&e.xp>=lvNeed(e.lv)){e.xp-=lvNeed(e.lv);e.lv++}
+  if(e.lv>=LV_MAX)e.xp=0;
+  S.lv[k]=e;return e.lv-from;
+}
+function lvXpToMax(c){const e=lvEntry(c);if(e.lv>=LV_MAX)return 0;let t=-e.xp;for(let l=e.lv;l<LV_MAX;l++)t+=lvNeed(l);return t}
+function lvBarHTML(c){
+  const e=lvEntry(c),need=lvNeed(e.lv),max=e.lv>=LV_MAX;
+  return `<div class="lv-row"><b class="lv-badge">Lv ${e.lv}</b><span class="lv-bar"><span style="width:${max?100:e.xp/need*100}%"></span></span><small>${max?"MAX LEVEL!":`次のレベルまで ${need-e.xp} XP`}</small></div>`;
+}
+function lvFuse(c,n){
+  const have=(S.owned[c.id]||0)-1;
+  const per=LV_FUSE[c.r],useful=Math.ceil(lvXpToMax(c)/per);
+  n=Math.min(n,have,useful);if(n<=0)return;
+  S.owned[c.id]-=n;
+  const up=lvAdd(c,per*n);
+  save();render();sfx(up?"rankup":"up");
+  toast(`${c.name} にダブり ${n} 枚を合成！ +${per*n} XP${up?` ・ レベル${up}アップ！ Lv ${lvOf(c)}`:""}`);
+}
+function lvFuseHTML(c){
+  if(!btHasAbility(c))return "";
+  const e=lvEntry(c),have=(S.owned[c.id]||0)-1,per=LV_FUSE[c.r];
+  const useful=Math.ceil(lvXpToMax(c)/per),all=Math.min(have,useful);
+  return `<div class="lv-box">${lvBarHTML(c)}
+    ${e.lv>=LV_MAX?"":have>0?`<div class="lv-fuse"><span>ダブり ${have} 枚を合成できます（1枚 +${per} XP）</span><button type="button" class="ghost" id="lvFuse1">1枚合成</button>${all>1?`<button type="button" class="ghost" id="lvFuseAll">${all}枚まとめて合成 +${per*all} XP</button>`:""}</div>`:`<div class="lv-fuse"><span>同じカードがダブったら合成してレベルを上げられます。バトルで使っても経験値がたまります。</span></div>`}</div>`;
+}
+function btProfile(c,lv){
   if(!btHasAbility(c))return null;
+  if(lv==null)lv=lvOf(c);
   const a=BT_ABIL[c.name],key=String(c.id)+"|"+c.name;
   const h=btHash(key),h2=btHash(key+"#"),h3=btHash(key+"$");
   const vary=x=>.92+((x%1000)/1000)*.16;
   const type=a.t;
-  const hp=Math.round(BT_HP[c.r]*vary(h2)*(a.hp||1));
-  const atk=Math.round(BT_ATK[c.r]*vary(h3)*(a.atk||1));
+  const hp=Math.round(BT_HP[c.r]*vary(h2)*(a.hp||1)*lvMul(lv));
+  const atk=Math.round(BT_ATK[c.r]*vary(h3)*(a.atk||1)*lvMul(lv));
   const spd=Math.round(([45,70,55][type]+BT_RANK[c.r]*4+(h%17))*(a.spd||1));
-  return{type,hp,atk,spd,skill:a.s,passive:a.p||null};
+  return{type,hp,atk,spd,skill:a.s,passive:a.p||null,lv};
 }
 const btBeats=(a,b)=>(a===0&&b===2)||(a===2&&b===1)||(a===1&&b===0);
 function btAbilityHTML(c){
   const p=btProfile(c);if(!p)return "";
-  return `<div class="bt-abil"><div class="bt-abil-row"><span class="bt-type t${p.type}">${BT_TYPES[p.type]}</span><b>${BT_TNAME[p.type]}</b><span>HP ${p.hp}</span><span>ATK ${p.atk}</span><span>SPD ${p.spd}</span></div>
+  return `<div class="bt-abil"><div class="bt-abil-row"><b class="lv-badge">Lv ${p.lv}</b><span class="bt-type t${p.type}">${BT_TYPES[p.type]}</span><b>${BT_TNAME[p.type]}</b><span>HP ${p.hp}</span><span>ATK ${p.atk}</span><span>SPD ${p.spd}</span></div>
     <div class="bt-abil-sk"><small>わざ ・ チャージ${p.skill.cost}</small><b>${esc(p.skill.name)}</b><span>${esc(p.skill.desc)}</span></div>
     ${p.passive?`<div class="bt-abil-sk ps"><small>とくせい</small><b>${esc(p.passive.name)}</b><span>${esc(p.passive.desc)}</span></div>`:""}</div>`;
 }
@@ -3290,9 +3350,9 @@ let BT=null,BT_FAST=false;
 const btWait=ms=>BT_FAST?Promise.resolve():new Promise(r=>setTimeout(r,ms));
 // battles use STAR LIGHT cards only (gacha, shop and mission cards) - original cards are left out
 function btPool(){return CARDS.concat(SHOP_CARDS,REWARD_CARDS).filter(c=>S.owned[c.id]&&btHasAbility(c))}
-function btMake(c,side){
-  const p=btProfile(c);
-  return{c,side,type:p.type,maxHp:p.hp,hp:p.hp,atk:p.atk,spd:p.spd,skill:p.skill,passive:p.passive,
+function btMake(c,side,lv){
+  const p=btProfile(c,lv);
+  return{c,side,lv:p.lv,type:p.type,maxHp:p.hp,hp:p.hp,atk:p.atk,spd:p.spd,skill:p.skill,passive:p.passive,
     charge:0,mods:[],stun:false,evade:0,dot:null,gutsUsed:false,souls:0,ambush:false,ko:false,entered:false};
 }
 const btPk=(u,k)=>u.passive&&u.passive.k===k?u.passive:null;
@@ -3474,7 +3534,7 @@ function btShowInfo(u){
   const close=document.createElement("button");close.type="button";close.className="close";close.textContent="×";close.setAttribute("aria-label","閉じる");
   const top=document.createElement("div");top.className="bt-iv-top";
   const face=btFace(u.c);face.classList.add("big");top.appendChild(face);
-  top.insertAdjacentHTML("beforeend",`<div class="bt-iv-head"><small>${mine?"YOUR TEAM":"ENEMY"} ・ ${u.c.r}</small><b>${esc(u.c.name)}</b><span>${esc(u.c.kana||"")}</span>
+  top.insertAdjacentHTML("beforeend",`<div class="bt-iv-head"><small>${mine?"YOUR TEAM":"ENEMY"} ・ ${u.c.r} ・ Lv ${u.lv}</small><b>${esc(u.c.name)}</b><span>${esc(u.c.kana||"")}</span>
     <div class="bt-nm"><span class="bt-type t${u.type}">${BT_TYPES[u.type]}</span>${BT_TNAME[u.type]}</div>${match}</div>`);
   box.append(close,top);
   box.insertAdjacentHTML("beforeend",`${btBar(u)}<div class="bt-iv-stats"><div><small>HP</small><b>${u.hp}<i>/${u.maxHp}</i></b></div><div><small>ATK</small><b>${Math.round(u.atk*btAtkMul(u))}</b></div><div><small>SPD</small><b>${u.spd}</b></div></div>
@@ -3508,7 +3568,7 @@ function btChips(u){
 function btActiveHTML(u){
   const pips=Array.from({length:u.skill.cost},(_,i)=>`<i class="${i<u.charge?"on":""}"></i>`).join("");
   return `<div class="bt-info">
-    <div class="bt-nm"><span class="bt-type t${u.type}">${BT_TYPES[u.type]}</span><b>${esc(u.c.name)}</b><small>${u.c.r}</small></div>
+    <div class="bt-nm"><span class="bt-type t${u.type}">${BT_TYPES[u.type]}</span><b>${esc(u.c.name)}</b><small>Lv${u.lv}</small><small>${u.c.r}</small></div>
     ${btBar(u)}<div class="bt-hpn">HP ${u.hp} / ${u.maxHp} ・ ATK ${Math.round(u.atk*btAtkMul(u))}</div>
     <div class="bt-ch" title="チャージ">${pips}<span>${u.charge>=u.skill.cost?"わざOK!":"チャージ"}</span></div>
     <div class="bt-chips">${btChips(u)}</div></div>`;
@@ -3638,7 +3698,7 @@ function dkDrawEdit(){
       b.appendChild(cardEl(c,{flipped:true}));
       b.insertAdjacentHTML("beforeend",`<span class="dk-cc big">${DK_COST[c.r]}</span><span class="dk-out">外す</span>`);
       b.onclick=()=>dkToggle(c);w.appendChild(b);
-      w.insertAdjacentHTML("beforeend",`<div class="dk-st"><span class="bt-type t${p.type}">${BT_TYPES[p.type]}</span><span>HP <b>${p.hp}</b></span><span>ATK <b>${p.atk}</b></span><span>SPD <b>${p.spd}</b></span></div>`);
+      w.insertAdjacentHTML("beforeend",`<div class="dk-st"><b class="lv-badge sm">Lv${p.lv}</b><span class="bt-type t${p.type}">${BT_TYPES[p.type]}</span><span>HP <b>${p.hp}</b></span><span>ATK <b>${p.atk}</b></span><span>SPD <b>${p.spd}</b></span></div>`);
     }else w.innerHTML=`<div class="dk-emptycard"><span>${i+1}</span><small>カードを<br>えらんでね</small></div>`;
     row.appendChild(w);
   }
@@ -3666,7 +3726,7 @@ function dkDrawEdit(){
     b.insertAdjacentHTML("beforeend",`<span class="dk-cc big">${DK_COST[c.r]}</span>`);
     b.onclick=()=>dkToggle(c);
     w.appendChild(b);
-    w.insertAdjacentHTML("beforeend",`<div class="dk-st"><span class="bt-type t${p.type}">${BT_TYPES[p.type]}</span><span>HP <b>${p.hp}</b></span><span>ATK <b>${p.atk}</b></span><span>SPD <b>${p.spd}</b></span></div>`);
+    w.insertAdjacentHTML("beforeend",`<div class="dk-st"><b class="lv-badge sm">Lv${p.lv}</b><span class="bt-type t${p.type}">${BT_TYPES[p.type]}</span><span>HP <b>${p.hp}</b></span><span>ATK <b>${p.atk}</b></span><span>SPD <b>${p.spd}</b></span></div>`);
     const more=document.createElement("button");more.type="button";more.className="dk-more";more.textContent="詳しく";more.onclick=()=>dkInfo(c);
     w.appendChild(more);
     g.appendChild(w);
@@ -3715,7 +3775,10 @@ function btStart(mode){
     for(let d=0;d<ORDER.length&&!opts.length;d++)opts=foes.filter(c=>Math.abs(BT_RANK[c.r]-BT_RANK[m.r])===d&&!used.has(c.id));
     const c=opts[Math.floor(Math.random()*opts.length)];used.add(c.id);return c;
   });
-  BT={mode,p:{list:mine.map(c=>btMake(c,"p")),cur:null},e:{list:shuffled(enemy).map(c=>btMake(c,"e")),cur:0},turn:0,busy:false,mustPick:true,switching:false,over:false,log:[]};
+  // enemies come in a little below your team's average level
+  const avgLv=mine.reduce((a,c)=>a+lvOf(c),0)/mine.length;
+  const eLv=Math.max(1,Math.round(avgLv*.8));
+  BT={mode,eLv,p:{list:mine.map(c=>btMake(c,"p")),cur:null},e:{list:shuffled(enemy).map(c=>btMake(c,"e",eLv)),cur:0},turn:0,busy:false,mustPick:true,switching:false,over:false,log:[]};
   $("btPAct").dataset.cid="";$("btEAct").dataset.cid="";
   btEnter(BT.e.list[0]);
   sfx("up");renderBattle();
@@ -3730,6 +3793,8 @@ function btEnd(r){
   const bp0=S.battle.bp||0,rk0=btRankOf(bp0);
   S.battle.bp=Math.max(0,bp0+BT_BP[r]);
   S.stats.bestRank=Math.max(S.stats.bestRank||1,btRankOf(S.battle.bp));
+  const xp=LV_BT.base+(r==="win"?LV_BT.win:r==="draw"?LV_BT.draw:0);
+  const ups=BT.p.list.map(u=>{const from=lvOf(u.c),n=lvAdd(u.c,xp);return{c:u.c,from,to:lvOf(u.c),n}});
   const bpGot=S.battle.bp-bp0,rk1=btRankOf(S.battle.bp);
   if(r==="win")S.battle.w++;else if(r==="lose")S.battle.l++;else S.battle.d++;
   save();render();
@@ -3740,6 +3805,7 @@ function btEnd(r){
     <p class="bt-bpgot ${bpGot<0?"neg":""}">バトルポイント ${bpGot>=0?"+":""}${bpGot} BP</p>
     ${rk1>rk0?`<div class="bt-rankup">RANK UP!<small>RANK ${rk1}「${btRankName(rk1)}」になった！</small></div>`:rk1<rk0?`<p class="bt-rankdown">ランクが RANK ${rk1}「${btRankName(rk1)}」に下がった…</p>`:""}
     ${btRankHTML()}
+    <div class="lv-res"><b>カード経験値 +${xp} XP</b>${ups.map(x=>`<span class="${x.n?"up":""}">${esc(x.c.name)} Lv${x.to}${x.n?` <i>UP!</i>`:x.to>=LV_MAX?" MAX":""}</span>`).join("")}</div>
     <p>通算 ${S.battle.w}勝 ${S.battle.l}敗 ${S.battle.d}分</p>
     <div class="bt-btns"><button type="button" class="btn-main" id="btAgain">もう一度！</button><button type="button" class="ghost" id="btHome">ホームへ</button></div>`;
   sfx(rk1>rk0?"rankup":r==="win"?"ur":r==="lose"?"shake":"rare");
