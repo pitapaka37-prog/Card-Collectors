@@ -613,6 +613,26 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
 .fav-btn.on{background:var(--yellow);color:var(--red)}
 .fav-detail{margin:6px 0}
 .fav-detail.on{background:var(--yellow)}
+.ul-sec{display:flex;flex-direction:column;gap:10px;margin:12px 0;padding:12px;background:linear-gradient(135deg,#1b1640,#3a2a6a);color:#fff;border:4px solid var(--ink);box-shadow:6px 6px 0 var(--yellow)}
+.ul-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px}
+.ul-head b{font-family:var(--display);font-weight:400;font-size:28px;letter-spacing:.06em;color:var(--yellow)}
+.ul-head small{font-size:12px;font-weight:700}
+.ul-row{display:grid;grid-template-columns:96px 1fr auto;gap:12px;align-items:center;padding:10px;background:#fff;color:var(--ink);border:3px solid var(--ink)}
+.ul-row.ready{outline:4px solid var(--yellow);animation:pu-pulse 1.4s ease-in-out infinite}
+.ul-row.got{background:#fff6dc}
+.ul-face .bt-face{border-width:3px}
+.ul-lock{aspect-ratio:6/7;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#141414;color:#fff;border:3px solid var(--ink);font-family:var(--display)}
+.ul-lock span{font-size:44px;line-height:1}
+.ul-lock small{font-size:16px;color:var(--yellow)}
+.ul-t{display:flex;flex-direction:column;gap:4px;min-width:0}
+.ul-t>b{font-family:var(--display);font-weight:400;font-size:22px;line-height:1.05}
+.ul-t>small{font-size:12px;font-weight:700}
+.ul-need{display:flex;flex-wrap:wrap;gap:4px}
+.ul-need span{font-size:11px;font-weight:700;border:2px solid var(--ink);padding:0 6px;background:#eee}
+.ul-need span.ok{background:#d9f7df}
+.ul-bar{height:10px;border:2px solid var(--ink);background:#eee;overflow:hidden}
+.ul-bar span{display:block;height:100%;background:linear-gradient(90deg,var(--yellow),#ff7a00)}
+@media (max-width:640px){.ul-row{grid-template-columns:80px 1fr}.ul-row .btn-main{grid-column:1/-1}}
 .ab-set{display:flex;flex-direction:column;gap:8px;margin:4px 0;padding:10px 12px;border:3px solid var(--ink);background:#fff}
 .ab-set legend{font-weight:700;font-size:13px;padding:0 6px;background:var(--yellow);border:2px solid var(--ink)}
 .ab-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px}
@@ -1141,6 +1161,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
       <div class="progress"><div id="dexBar" style="width:0"></div></div>
       <div class="resetbar" id="resetbar" hidden><span>この自作ガチャの図鑑（集めた枚数と天井の回数）をリセットできます。カードそのものは消えません。</span><button type="button" class="ghost" id="dexReset">この図鑑をリセット</button></div>
       <div class="sellbar" id="sellbar"><span id="sellInfo"></span><button type="button" class="ghost" id="sellAll">ダブりをまとめて売る</button></div>
+      <div class="ul-sec" id="dexUnlock" hidden></div>
       <div class="dxf" id="dexFilter">
         <div class="dxf-row"><input type="search" id="dxfQ" placeholder="名前でさがす" aria-label="名前でさがす" autocomplete="off"><button type="button" class="dxf-fav" id="dxfFav" aria-pressed="false">★ お気に入りだけ</button><button type="button" class="ghost dxf-reset" id="dxfReset">リセット</button></div>
         <div class="dxf-row"><span class="dxf-lbl">レア</span><span class="dxf-chips" id="dxfR"></span></div>
@@ -1518,10 +1539,15 @@ const REWARD_CARDS=[
  {id:"r1",r:"SSR",name:"Star Velvet",kana:"スター・ヴェルベット号",h:350,photo:"star-velvet.jpg?v=1",reward:true,shape:"burst",m:"SV",
   how:"ノーマルミッション「VELVET COMET MISSION を全50ウェーブクリア」の報酬",
   flavor:"ベルベット・コメットが銀河を旅するために乗り回す高速宇宙船。長距離航行から宇宙戦までこなす、彼の大切な相棒。"},
+ // unlock cards: given when you own every card in "need" (claimed from the UNLOCK section of the STANDARD dex)
+ {id:"u1",r:"UR",name:"King Astrion Quasar",kana:"キング・アストリオン・クエーサー",h:45,photo:"king-astrion.jpg?v=1",reward:true,unlock:true,shape:"burst",m:"KA",
+  need:["Queen Quasar","Solar Flare","Luna Mirage","Astra Guard","Nebula Bolt"],
+  how:"クイーン・クエーサー、ソーラー・フレア、ルナ・ミラージュ、アストラ・ガード、ネビュラ・ボルトを全部手に入れると開放",
+  flavor:"惑星クエーセリアを治めていた国王であり、クイーン・クエーサーの父。長きにわたり王国を守ってきた威厳ある老王。"},
 ];
 // STANDARD dex numbers in the order the cards were made: the first 27 gacha cards, the shop cards, the mission card, then later gacha cards
 // (when a new card is added, put it at the end of this list so existing numbers never change)
-const STD_ORDER=CARDS.slice(0,27).concat(SHOP_CARDS.slice(0,6),REWARD_CARDS,SHOP_CARDS.slice(6),CARDS.slice(27));
+const STD_ORDER=CARDS.slice(0,27).concat(SHOP_CARDS.slice(0,6),REWARD_CARDS.slice(0,1),SHOP_CARDS.slice(6,7),CARDS.slice(27,31),REWARD_CARDS.slice(1,2),SHOP_CARDS.slice(7),CARDS.slice(31),REWARD_CARDS.slice(2));
 function stdNo(c){const i=STD_ORDER.indexOf(c);return i<0?0:i+1}
 const stdNoText=c=>"#"+String(stdNo(c)).padStart(2,"0");
 const rewardByR={};ORDER.forEach(r=>rewardByR[r]=REWARD_CARDS.filter(c=>c.r===r));
@@ -1652,7 +1678,7 @@ function drawOne(minSR,pool,bid){
 function cardEl(c,{flipped=false,isNew=false,sfx=false}={}){
   const d=document.createElement("div");
   d.className="card"+(flipped?" flipped":"");d.dataset.r=c.r;d.dataset.shape=c.shape;d.style.setProperty("--h",c.h);
-  const tag=c.reward?`<span class="custom-tag msn">${stdNoText(c)} MISSION</span>`:c.shop?`<span class="custom-tag ltd">${stdNoText(c)} LIMITED</span>`:c.img?`<span class="custom-tag">ORIGINAL</span>`:`<span class="no">${stdNoText(c)}</span>`;
+  const tag=c.unlock?`<span class="custom-tag msn">${stdNoText(c)} UNLOCK</span>`:c.reward?`<span class="custom-tag msn">${stdNoText(c)} MISSION</span>`:c.shop?`<span class="custom-tag ltd">${stdNoText(c)} LIMITED</span>`:c.img?`<span class="custom-tag">ORIGINAL</span>`:`<span class="no">${stdNoText(c)}</span>`;
   const art=(c.img||c.photo)?`<div class="art${c.photo?" photo":""}"></div>`:((c.look||(typeof c.id==="number"&&LOOKS[c.id]))?`<div class="art hero">${heroSVG(c.look||LOOKS[c.id],c.h)}</div>`:`<div class="emblem"><span>${c.m}</span></div>`);
   d.innerHTML=`<div class="inner"><div class="face back"></div><div class="face front"><div class="top"><span class="rar">${c.r}</span>${tag}</div>${art}<div class="name"><b>${esc(c.name||"???")}</b><small>${esc(c.kana||"")}</small></div></div></div>${sfx&&SFX[c.r]?`<span class="sfx">${SFX[c.r]}</span>`:""}${isNew?'<span class="new">NEW!</span>':""}`;
   if(c.img||c.photo)d.querySelector(".art").style.backgroundImage=`url("${c.img||c.photo}")`;
@@ -1878,6 +1904,7 @@ async function pull(n){
   const fresh=got.map(c=>!S.owned[c.id]);
   got.forEach(c=>{S.owned[c.id]=(S.owned[c.id]||0)+1});
   missionAdd("pull",got.length);S.stats.pulls+=got.length;
+  if(typeof UNLOCK_CARDS!=="undefined")setTimeout(()=>UNLOCK_CARDS.filter(ulReady).forEach(c=>toast(`開放カード「${c.kana}」が開放できるようになった！ 図鑑の UNLOCK へ`)),2500);
   save();
   pulling=true;
   let shown=false;
@@ -2452,7 +2479,7 @@ function drawDetail(){
   const cw=document.createElement("div");cw.className="detail-card";
   const card=cardEl(c,{flipped:true});cw.appendChild(card);
   cw.insertAdjacentHTML("beforeend",`<div class="tilt-hint">カードをなぞると傾きます</div>`);
-  const where=c.reward?"MISSION REWARD":c.shop?"STAR SHOP":c.pack?pname(packOf(c.pack)):"STAR LIGHT COMICS";
+  const where=c.unlock?"UNLOCK":c.reward?"MISSION REWARD":c.shop?"STAR SHOP":c.pack?pname(packOf(c.pack)):"STAR LIGHT COMICS";
   const no=c.img?"ORIGINAL":stdNo(c)?stdNoText(c):"-";
   const t=document.createElement("div");t.style.minWidth="0";
   t.innerHTML=`<div class="rates" style="margin:0 0 8px"><span><b>${c.r}</b>${esc(where)}</span></div>
@@ -2550,6 +2577,7 @@ function renderDex(){
     $("sellAll").textContent=`ダブりをまとめて売る ${dl}`;
   }
   const body=$("dexBody");body.innerHTML="";
+  ulDraw();
   dxfDraw();
   const full=dexPoolOf(dexSel),pool={};let shown=0,all=0;
   ORDER.forEach(r=>{all+=full[r].length;pool[r]=full[r].filter(dxfMatch);shown+=pool[r].length});
@@ -2615,6 +2643,33 @@ function mcDetail(c,el){
 }
 $("mcMore").onclick=()=>{mcShown+=MC_STEP;renderCards()};
 $("cardsBack").onclick=()=>{tab("home");window.scrollTo({top:0,behavior:"smooth"})};
+/* ---- unlock cards: own every card in the list to unlock a special card ---- */
+const UNLOCK_CARDS=REWARD_CARDS.filter(c=>c.unlock);
+const ulNeed=c=>c.need.map(n=>CARDS.concat(SHOP_CARDS).find(x=>x.name===n)).filter(Boolean);
+const ulReady=c=>!S.owned[c.id]&&ulNeed(c).every(x=>S.owned[x.id]);
+function ulDraw(){
+  const box=$("dexUnlock");
+  box.hidden=dexSel!=="std"||!UNLOCK_CARDS.length;if(box.hidden)return;
+  box.innerHTML=`<div class="ul-head"><b>UNLOCK</b><small>開放カード ・ 決められたカードを全部集めると手に入る</small></div>`;
+  UNLOCK_CARDS.forEach(c=>{
+    const need=ulNeed(c),have=need.filter(x=>S.owned[x.id]).length,got=!!S.owned[c.id];
+    const row=document.createElement("div");row.className="ul-row"+(got?" got":ulReady(c)?" ready":"");
+    const face=document.createElement("div");face.className="ul-face";
+    if(got)face.appendChild(btFace(c));else face.innerHTML=`<div class="ul-lock"><span>?</span><small>${c.r}</small></div>`;
+    row.appendChild(face);
+    const t=document.createElement("div");t.className="ul-t";
+    t.innerHTML=`<b>${got?esc(c.name):esc(c.name)}</b><small>${esc(c.kana)} ・ ${c.r}</small>
+      <div class="ul-need">${need.map(x=>`<span class="${S.owned[x.id]?"ok":""}">${S.owned[x.id]?"✓":"・"} ${esc(x.kana||x.name)}</span>`).join("")}</div>
+      <div class="ul-bar"><span style="width:${have/need.length*100}%"></span></div><small>${got?"開放ずみ！":`${have} / ${need.length} 枚`}</small>`;
+    row.appendChild(t);
+    if(!got){
+      const b=document.createElement("button");b.type="button";b.className="btn-main";b.textContent="開放する！";b.disabled=!ulReady(c);
+      b.onclick=()=>{if(!ulReady(c))return;S.owned[c.id]=1;save();sfx("ur");toast(`${c.r}「${c.kana}」を開放した！`);render();renderDex()};
+      row.appendChild(b);
+    }
+    box.appendChild(row);
+  });
+}
 /* ---- dex filters and favourites ---- */
 const isFav=c=>!!S.fav[String(c.id)];
 function toggleFav(c){const k=String(c.id);if(S.fav[k])delete S.fav[k];else S.fav[k]=true;save();sfx(S.fav[k]?"rare":"tink");return !!S.fav[k]}
@@ -2632,7 +2687,8 @@ function dxfMatch(c){
     if(dexF.type>=0){const p=btProfile(c);if(!p||p.type!==dexF.type)return false}
     if(dexF.kind==="gacha"&&(c.shop||c.reward))return false;
     if(dexF.kind==="shop"&&!c.shop)return false;
-    if(dexF.kind==="mission"&&!c.reward)return false;
+    if(dexF.kind==="mission"&&(!c.reward||c.unlock))return false;
+    if(dexF.kind==="unlock"&&!c.unlock)return false;
   }
   const q=dexF.q.trim().toLowerCase();
   if(q&&!((c.name||"").toLowerCase().includes(q)||(c.kana||"").includes(q)))return false;
@@ -2649,7 +2705,7 @@ function dxfDraw(){
   const std=dexSel==="std";$("dxfStdRow").hidden=!std;
   if(std){
     dxfChips("dxfType",[[-1,"ぜんぶ"]].concat(BT_TYPES.map((t,i)=>[i,`<span class="bt-type t${i}">${t}</span>`])),dexF.type,v=>dexF.type=v);
-    dxfChips("dxfKind",[["all","ぜんぶ"],["gacha","ガチャ"],["shop","ショップ"],["mission","ミッション"]],dexF.kind,v=>dexF.kind=v);
+    dxfChips("dxfKind",[["all","ぜんぶ"],["gacha","ガチャ"],["shop","ショップ"],["mission","ミッション"],["unlock","開放"]],dexF.kind,v=>dexF.kind=v);
   }
   const fb=$("dxfFav");fb.setAttribute("aria-pressed",dexF.fav);fb.textContent=`★ お気に入りだけ（${Object.keys(S.fav).length}）`;
   const q=$("dxfQ");if(q.value!==dexF.q)q.value=dexF.q;
@@ -3517,6 +3573,7 @@ var BT_ABIL={ // var: may be read by early renders on startup
  "Luna Mirage":{t:2,hp:.95,s:{name:"ムーンライト・ミラージュ",cost:3,desc:"1.4倍ダメージ（相性を無視）＋敵の攻撃力25%ダウン（3ターン）",fx:[btH(1.4,1,{pierce:true}),{k:"weaken",v:.25,turns:3}]},p:{k:"dodge",v:.2,name:"月の幻影",desc:"20%の確率で攻撃をよける"}},
  "Astra Guard":{t:0,hp:1.3,atk:.85,spd:.75,s:{name:"スター・バスティオン",cost:3,desc:"味方全員、2ターンのあいだ受けるダメージ45%カット＋自分は受けたダメージの30%を返す",fx:[{k:"guard",v:.45,turns:2,team:true},{k:"reflect",v:.3,turns:2}]},p:{k:"tough",v:.2,name:"大盾の守り",desc:"受けるダメージがいつも20%少ない"}},
  "Nebula Bolt":{t:1,hp:.9,atk:1.1,spd:1.2,s:{name:"ネビュラ・サンダー",cost:3,desc:"0.75倍ダメージ×2回＋50%の確率で敵をしびれさせる",fx:[btH(.75,2),{k:"stun",ch:.5}]},p:{k:"first",name:"電光石火",desc:"いつも先に行動する"}},
+ "King Astrion Quasar":{t:2,hp:1.05,s:{name:"ロイヤル・コンステレーション",cost:4,desc:"1.6倍ダメージ＋味方全員のHPを20%回復＋味方全員の攻撃力20%アップ（3ターン）",fx:[btH(1.6),{k:"heal",v:.2,team:true},{k:"buff",v:.2,turns:3,team:true}]},p:{k:"buddy",v:.3,with:"Queen Quasar",name:"王家の絆",desc:"味方チームにクイーン・クエーサーがいると攻撃力30%アップ"}},
  "Star Velvet":{t:1,spd:1.15,s:{name:"ハイパードライブ砲",cost:4,desc:"2.1倍ダメージ",fx:[btH(2.1)]},p:{k:"buddy",v:.3,name:"最高の相棒",desc:"味方チームにベルベット・コメットがいると攻撃力30%アップ"}},
 };
 function btHash(str){let h=2166136261;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
@@ -3684,7 +3741,7 @@ function btAtkMul(u){
   let m=1;u.mods.forEach(x=>{if(x.k==="buff")m+=x.v;if(x.k==="weaken")m-=x.v});
   const r=btPk(u,"rage");if(r&&u.hp<=u.maxHp*.4)m+=r.v;
   const s=btPk(u,"soul");if(s)m+=s.v*u.souls;
-  const b=btPk(u,"buddy");if(b&&btTeam(u.side).list.some(x=>x.c.name==="Velvet Comet"&&!x.c.img))m+=b.v;
+  const b=btPk(u,"buddy");if(b&&btTeam(u.side).list.some(x=>x.c.name===(b.with||"Velvet Comet")&&!x.c.img))m+=b.v;
   return Math.max(.3,m);
 }
 function btGuard(u){let g=0;u.mods.forEach(x=>{if(x.k==="guard")g+=x.v});const t=btPk(u,"tough");if(t)g+=t.v;return Math.min(.8,g)}
