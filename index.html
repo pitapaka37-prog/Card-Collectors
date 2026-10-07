@@ -914,6 +914,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
 .hp-shop{background-color:#7a3cff}
 .hp-games{background-color:#0b1240}
 .hp-make{background-color:#1d9e5a}
+.hp-cards{background-color:#d6336c;grid-column:span 2}
 .hp b{position:relative;font-family:var(--display);font-weight:400;font-size:clamp(34px,7vw,56px);line-height:.9;letter-spacing:.04em;color:var(--yellow);-webkit-text-stroke:1.5px var(--ink);text-shadow:4px 4px 0 var(--ink)}
 .hp-pull b{font-size:clamp(48px,11vw,84px)}
 .hp i{position:relative;font-style:normal;font-family:var(--jp);font-size:13px;text-shadow:1px 1px 0 var(--ink)}
@@ -922,6 +923,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
 @media (max-width:640px){
   .home-hero{grid-template-columns:110px 1fr;gap:14px;padding:16px}
   .home-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+  .hp-cards{grid-column:span 1}
   .hp{min-height:130px;padding:12px}
   .hh-stats b{font-size:19px}
 }
@@ -1032,6 +1034,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
         <button type="button" class="hp hp-shop" data-go="shop"><span class="hp-sfx">KA-CHING!</span><b>SHOP</b><i>スター交換所</i><small id="hpShop"></small></button>
         <button type="button" class="hp hp-games" data-go="games"><span class="hp-sfx">ZOOOM!</span><b>GAMES</b><i>ミニゲーム</i><small id="hpGames"></small></button>
         <button type="button" class="hp hp-make" data-go="make"><span class="hp-sfx">SKETCH!</span><b>MAKE</b><i>カードを作る</i><small id="hpMake"></small></button>
+        <button type="button" class="hp hp-cards" data-go="cards"><span class="hp-sfx">WOW!</span><b>MY CARDS</b><i>手持ちカード（レベル上げ・合成・売却）</i><small id="hpCards"></small></button>
         <button type="button" class="hp hp-battle" data-go="battle"><span class="hp-sfx">BAM!</span><b>BATTLE</b><i>カードバトル</i><small id="hpBattle"></small></button>
       </div>
     </div>
@@ -1067,7 +1070,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
 
   <section id="view-dex" hidden>
     <div class="panel" id="dexPick">
-      <div class="panel-head"><h3>HERO FILES<small>図鑑をえらぶ</small></h3><button type="button" class="mc-go" id="cardsGo"><b>MY CARDS</b><small>手持ちカード <span id="cardsGoN"></span></small></button></div>
+      <div class="panel-head"><h3>HERO FILES<small>図鑑をえらぶ</small></h3></div>
       <div class="binders" id="binders"></div>
       <div class="backup">
         <div class="backup-text"><b>データの保存</b><span>カードやガチャはこの端末にだけ保存されています。機種変更やデータ削除に備えて、ときどき書き出しておくと安心です。</span></div>
@@ -1098,7 +1101,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
 
   <section id="view-cards" hidden>
     <div class="panel">
-      <div><button class="ghost" id="cardsBack">← 図鑑へ</button></div>
+      <div><button class="ghost" id="cardsBack">← ホームへ</button></div>
       <div class="panel-head"><h3>MY CARDS<small>手持ちカード（ダブりも全部）</small></h3><span class="chip" id="cardsTotal"></span></div>
       <div class="dxf">
         <div class="dxf-row"><span class="dxf-lbl">レア</span><span class="dxf-chips" id="mcR"></span></div>
@@ -2426,8 +2429,7 @@ function mcDetail(c,el){
   drawDetail();
 }
 $("mcMore").onclick=()=>{mcShown+=MC_STEP;renderCards()};
-$("cardsGo").onclick=()=>{tab("cards");window.scrollTo({top:0,behavior:"smooth"})};
-$("cardsBack").onclick=()=>{tab("dex");window.scrollTo({top:0,behavior:"smooth"})};
+$("cardsBack").onclick=()=>{tab("home");window.scrollTo({top:0,behavior:"smooth"})};
 /* ---- dex filters and favourites ---- */
 const isFav=c=>!!S.fav[String(c.id)];
 function toggleFav(c){const k=String(c.id);if(S.fav[k])delete S.fav[k];else S.fav[k]=true;save();sfx(S.fav[k]?"rare":"tink");return !!S.fav[k]}
@@ -2579,13 +2581,12 @@ function render(){
   if(!$("view-dex").hidden){renderDex();dexStale=false}else dexStale=true;
   if(!$("view-make").hidden){renderMine();mineStale=false}else mineStale=true;
   if(!$("view-cards").hidden&&typeof renderCards==="function")renderCards();
-  const cg=document.getElementById("cardsGoN");if(cg)cg.textContent=Object.values(S.owned).reduce((a,n)=>a+(n>0?n:0),0)+"枚";
 }
 function tab(which){
   currentScreen=which;screenMusic();
   if(which==="home")setTimeout(renderHome,0);
   ["home","gacha","dex","make","shop","games","battle","deck","cards"].forEach(t=>{
-    const on=t===which;const tb=document.getElementById("tab-"+t);if(tb)tb.setAttribute("aria-selected",on||(t==="games"&&(which==="battle"||which==="deck"))||(t==="dex"&&which==="cards"));$("view-"+t).hidden=!on;
+    const on=t===which;const tb=document.getElementById("tab-"+t);if(tb)tb.setAttribute("aria-selected",on||(t==="games"&&(which==="battle"||which==="deck"))||(t==="home"&&which==="cards"));$("view-"+t).hidden=!on;
     if(on&&t==="make")$("view-make").style.display="flex";
     if(on&&t==="gacha")$("view-gacha").style.display="flex";
   });
@@ -3858,6 +3859,7 @@ function renderHome(){
   $("hpShop").textContent=`★${S.points.toLocaleString()} ・ 交換できるカード ${open} 枚`;
   $("hpGames").textContent=`HIGH SCORE ${(S.hiScore||0).toLocaleString()}`;
   btSeasonCheck();
+  {const mine=CARDS.concat(SHOP_CARDS,REWARD_CARDS,S.custom).filter(c=>(S.owned[c.id]||0)>0);$("hpCards").textContent=`${mine.reduce((a,c)=>a+S.owned[c.id],0)}枚 ・ ${mine.length}種類`}
   $("hpBattle").textContent=`RANK ${btRankOf(S.battle.bp)} ・ BP ${S.battle.bp||0}`;
   $("hpMake").textContent=`自作 ${S.custom.length} 枚 ・ ガチャ ${S.packs.length} 個`;
 }
