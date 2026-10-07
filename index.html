@@ -1088,7 +1088,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
       <div class="dxf" id="dexFilter">
         <div class="dxf-row"><input type="search" id="dxfQ" placeholder="名前でさがす" aria-label="名前でさがす" autocomplete="off"><button type="button" class="dxf-fav" id="dxfFav" aria-pressed="false">★ お気に入りだけ</button><button type="button" class="ghost dxf-reset" id="dxfReset">リセット</button></div>
         <div class="dxf-row"><span class="dxf-lbl">レア</span><span class="dxf-chips" id="dxfR"></span></div>
-        <div class="dxf-row"><span class="dxf-lbl">所持</span><span class="dxf-chips" id="dxfOwn"></span></div>
+        <div class="dxf-row"><span class="dxf-lbl">登録</span><span class="dxf-chips" id="dxfOwn"></span></div>
         <div class="dxf-row" id="dxfStdRow"><span class="dxf-lbl">タイプ</span><span class="dxf-chips" id="dxfType"></span><span class="dxf-lbl">入手</span><span class="dxf-chips" id="dxfKind"></span></div>
         <div class="dxf-count" id="dxfCount"></div>
       </div>
@@ -1106,6 +1106,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
         <div class="dxf-row"><span class="dxf-lbl">並び</span><span class="dxf-chips" id="mcSort"></span></div>
         <div class="dxf-count" id="mcCount"></div>
       </div>
+      <div class="sellbar" id="mcSellbar" hidden><span id="mcSellInfo"></span><button type="button" class="ghost" id="mcSellAll">ダブりをまとめて売る</button></div>
       <div class="mc-grid" id="mcGrid"></div>
       <div class="mc-more"><button type="button" class="ghost" id="mcMore" hidden>もっと見る</button></div>
     </div>
@@ -2254,9 +2255,10 @@ function setBanner(id){
 }
 
 /* ---- dex ---- */
-let detailList=[],detailIdx=0,detailReturn=null;
+let detailList=[],detailIdx=0,detailReturn=null,detailMode="dex"; // "dex" = registry only, "cards" = owned copies
 function showDetail(c,fromEl){
   if(fromEl)detailReturn=fromEl;
+  detailMode="dex";
   // owned cards of the open dex, in dex order, for prev / next
   const pool=dexPoolOf(dexSel||"std");
   detailList=ORDER.flatMap(r=>pool[r]).filter(x=>S.owned[x.id]);
@@ -2276,12 +2278,12 @@ function drawDetail(){
   const t=document.createElement("div");t.style.minWidth="0";
   t.innerHTML=`<div class="rates" style="margin:0 0 8px"><span><b>${c.r}</b>${esc(where)}</span></div>
     <h4>${esc(c.name)}</h4><div class="jp">${esc(c.kana||"")}</div>
-    <div class="stats"><div><small>レアリティ</small><b>${c.r}</b></div><div><small>所持数</small><b>×${S.owned[c.id]}</b></div><div><small>No.</small><b>${no}</b></div></div>
-    ${S.owned[c.id]>1?`<div class="sell"><button type="button" class="ghost" id="sell1">1枚売る <b>${valueText(c)}</b></button>${S.owned[c.id]>2?`<button type="button" class="ghost" id="sellN">ダブり ${S.owned[c.id]-1} 枚を全部売る <b>${valueText(c,S.owned[c.id]-1)}</b></button>`:""}</div>`:""}
+    <div class="stats"><div><small>レアリティ</small><b>${c.r}</b></div>${detailMode==="cards"?`<div><small>所持数</small><b>×${S.owned[c.id]}</b></div>`:""}<div><small>No.</small><b>${no}</b></div></div>
+    ${detailMode==="cards"&&S.owned[c.id]>1?`<div class="sell"><button type="button" class="ghost" id="sell1">1枚売る <b>${valueText(c)}</b></button>${S.owned[c.id]>2?`<button type="button" class="ghost" id="sellN">ダブり ${S.owned[c.id]-1} 枚を全部売る <b>${valueText(c,S.owned[c.id]-1)}</b></button>`:""}</div>`:""}
     ${c.flavor?`<p>${esc(c.flavor)}</p>`:""}
     <button type="button" class="ghost fav-detail ${isFav(c)?"on":""}" id="dFav">${isFav(c)?"★ お気に入り登録中":"☆ お気に入りに登録"}</button>
-    ${lvFuseHTML(c)}
-    ${btAbilityHTML(c)}
+    ${detailMode==="cards"?lvFuseHTML(c):""}
+    ${btAbilityHTML(c,detailMode!=="cards")}
     <div class="nav"><button type="button" class="ghost" id="dPrev">← 前のカード</button><span style="align-self:center;font-weight:700;font-variant-numeric:tabular-nums">${detailIdx+1} / ${detailList.length}</span><button type="button" class="ghost" id="dNext">次のカード →</button></div>`;
   const close=document.createElement("button");close.type="button";close.className="close";close.textContent="×";close.setAttribute("aria-label","閉じる");close.onclick=closeDetail;
   box.append(close,cw,t);d.appendChild(box);
@@ -2362,7 +2364,7 @@ function renderDex(){
   const dupes=dupesIn(dexPoolOf(dexSel));
   const dn=dupes.reduce((a,[,k])=>a+k,0),ds=dupes.reduce((a,[c,k])=>a+k*sellValue(c).stars,0),dc=dupes.reduce((a,[c,k])=>a+k*sellValue(c).coins,0);
   const dl=[ds?`★${ds.toLocaleString()}`:"",dc?`＋${dc.toLocaleString()} コイン`:""].filter(Boolean).join("・");
-  $("sellbar").hidden=!dn;
+  $("sellbar").hidden=true; // selling lives in MY CARDS now; the dex only records which cards you have met
   const own=dexSel!=="std"&&!!packOf(dexSel);
   $("resetbar").hidden=!own;
   if(own){const id=dexSel;armed($("dexReset"),"この図鑑をリセット","もう一度押すとリセットします",()=>resetPackDex(id));$("dexReset").textContent="この図鑑をリセット"}
@@ -2410,10 +2412,20 @@ function renderCards(){
     if(btHasAbility(c))s.insertAdjacentHTML("beforeend",`<span class="lv-tag">Lv${lvOf(c)}</span>`);
     g.appendChild(s);
   });
+  const pool={};ORDER.forEach(r=>pool[r]=all.filter(c=>c.r===r));
+  const dupes=dupesIn(pool),dn=dupes.reduce((a,[,k])=>a+k,0);
+  $("mcSellbar").hidden=!dn;
+  if(dn){
+    const ds=dupes.reduce((a,[c,k])=>a+k*sellValue(c).stars,0),dc=dupes.reduce((a,[c,k])=>a+k*sellValue(c).coins,0);
+    const dl=[ds?`★${ds.toLocaleString()}`:"",dc?`＋${dc.toLocaleString()} コイン`:""].filter(Boolean).join("・");
+    $("mcSellInfo").textContent=`ダブっているカード ${dn} 枚（各1枚は残します）。売る前に合成でレベルを上げるのもおすすめ！`;
+    armed($("mcSellAll"),`ダブりをまとめて売る ${dl}`,`もう一度押すと ${dn} 枚売ります`,()=>{const p={};ORDER.forEach(r=>p[r]=mcAll().filter(c=>c.r===r));sellCards(dupesIn(p))});
+    $("mcSellAll").textContent=`ダブりをまとめて売る ${dl}`;
+  }
   const more=$("mcMore");more.hidden=copies.length<=mcShown;more.textContent=`もっと見る（あと ${copies.length-mcShown} 枚）`;
 }
 function mcDetail(c,el){
-  detailReturn=el;
+  detailReturn=el;detailMode="cards";
   detailList=mcAll().sort((a,b)=>ORDER.indexOf(a.r)-ORDER.indexOf(b.r));
   detailIdx=Math.max(0,detailList.findIndex(x=>x.id===c.id));
   drawDetail();
@@ -2450,7 +2462,7 @@ function dxfChips(id,opts,cur,set){
 }
 function dxfDraw(){
   dxfChips("dxfR",[["ALL","ぜんぶ"]].concat(ORDER.map(r=>[r,r,"r-"+r])),dexF.r,v=>dexF.r=v);
-  dxfChips("dxfOwn",[["all","ぜんぶ"],["have","持っている"],["miss","持っていない"],["dup","ダブり"]],dexF.own,v=>dexF.own=v);
+  dxfChips("dxfOwn",[["all","ぜんぶ"],["have","登録済み"],["miss","未登録"]],dexF.own,v=>dexF.own=v);
   const std=dexSel==="std";$("dxfStdRow").hidden=!std;
   if(std){
     dxfChips("dxfType",[[-1,"ぜんぶ"]].concat(BT_TYPES.map((t,i)=>[i,`<span class="bt-type t${i}">${t}</span>`])),dexF.type,v=>dexF.type=v);
@@ -2475,7 +2487,7 @@ function dexGroup(body,pool,filtered){
       if(S.owned[c.id]){
         const el=cardEl(c,{flipped:true});el.tabIndex=0;el.setAttribute("role","button");el.setAttribute("aria-label",c.name);
         el.onclick=()=>showDetail(c,el);el.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();el.onclick()}};
-        s.appendChild(el);s.insertAdjacentHTML("beforeend",`<span class="count">×${S.owned[c.id]}</span>${btHasAbility(c)?`<span class="lv-tag">Lv${lvOf(c)}</span>`:""}`);
+        s.appendChild(el);
         const fv=document.createElement("button");fv.type="button";fv.className="fav-btn"+(isFav(c)?" on":"");fv.textContent=isFav(c)?"★":"☆";
         fv.setAttribute("aria-label",`${c.name} をお気に入り${isFav(c)?"から外す":"に登録"}`);
         fv.onclick=e=>{e.stopPropagation();const on=toggleFav(c);fv.classList.toggle("on",on);fv.textContent=on?"★":"☆";if(dexF.fav&&!on)renderDex();else dxfDraw()};
@@ -3339,9 +3351,9 @@ function btProfile(c,lv){
   return{type,hp,atk,spd,skill:a.s,passive:a.p||null,lv};
 }
 const btBeats=(a,b)=>(a===0&&b===2)||(a===2&&b===1)||(a===1&&b===0);
-function btAbilityHTML(c){
-  const p=btProfile(c);if(!p)return "";
-  return `<div class="bt-abil"><div class="bt-abil-row"><b class="lv-badge">Lv ${p.lv}</b><span class="bt-type t${p.type}">${BT_TYPES[p.type]}</span><b>${BT_TNAME[p.type]}</b><span>HP ${p.hp}</span><span>ATK ${p.atk}</span><span>SPD ${p.spd}</span></div>
+function btAbilityHTML(c,base){
+  const p=btProfile(c,base?1:undefined);if(!p)return "";
+  return `<div class="bt-abil"><div class="bt-abil-row">${base?"":`<b class="lv-badge">Lv ${p.lv}</b>`}<span class="bt-type t${p.type}">${BT_TYPES[p.type]}</span><b>${BT_TNAME[p.type]}</b><span>HP ${p.hp}</span><span>ATK ${p.atk}</span><span>SPD ${p.spd}</span></div>
     <div class="bt-abil-sk"><small>わざ ・ チャージ${p.skill.cost}</small><b>${esc(p.skill.name)}</b><span>${esc(p.skill.desc)}</span></div>
     ${p.passive?`<div class="bt-abil-sk ps"><small>とくせい</small><b>${esc(p.passive.name)}</b><span>${esc(p.passive.desc)}</span></div>`:""}</div>`;
 }
