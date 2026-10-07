@@ -618,6 +618,8 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
 .ab-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px}
 .ab-set select,.ab-set input{width:100%;min-width:0}
 .ab-set select:disabled,.ab-set input:disabled{opacity:.45}
+.ab-info{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:700;padding:8px 10px;background:#fff6dc;border:2px dashed var(--ink)}
+.ab-info small{font-size:11px;color:#7a3cff;margin-right:4px}
 .ab-note{margin:0;font-size:12px;font-weight:700;opacity:.8}
 .ab-modal .mission{width:min(560px,100%);display:flex;flex-direction:column;gap:10px}
 .cb-panel{align-self:stretch;display:flex;flex-direction:column;gap:8px;padding:14px;background:#fff6dc;border:4px solid var(--ink);box-shadow:6px 6px 0 #d6336c}
@@ -1192,7 +1194,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
         </div>
         <div class="cb-panel">
           <div class="dk-head"><b>ORIGINAL BATTLE</b><small>自作カードバトル</small></div>
-          <p class="dk-note">自分で作ったカードだけで戦うモード。持っている自作カードからランダムに5枚、敵も自作カードから選ばれます。自作カードの能力（わざ・とくせい）は、手持ちカードの詳しい画面や MAKE で自分で決められます。勝ち負けのコインは同じですが、ランクと経験値には入りません。</p>
+          <p class="dk-note">自分で作ったカードだけで戦うモード。持っている自作カードからランダムに5枚、敵も自作カードから選ばれます。自作カードの能力（タイプ・わざ・とくせいの効果）はカードを作ったときにランダムで決まり、わざととくせいの名前は自分で付けられます。勝ち負けのコインは同じですが、ランクと経験値には入りません。</p>
           <div class="dk-btns"><button type="button" class="btn-main" id="btStartCustom">自作カードでバトル！</button><span class="bt-need" id="btNeedCustom"></span></div>
         </div>
         <p class="bt-need" id="btNeed" hidden></p>
@@ -1227,6 +1229,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
     <div class="mission">
       <button type="button" class="close" id="abClose" aria-label="閉じる">×</button>
       <div class="ms-head"><b>ABILITY</b><span id="abTitle"></span></div>
+      <p class="ab-note">効果はカードを作ったときにランダムで決まっています。ここでは、わざととくせいの名前を変えられます。</p>
       <fieldset class="ab-set" id="abEdit"><legend>バトルの能力</legend></fieldset>
       <div class="dk-btns"><button type="button" class="btn-main" id="abSave">この能力にする</button><button type="button" class="ghost" id="abCancel">やめる</button></div>
     </div>
@@ -1287,7 +1290,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
             <div class="field"><label for="mkHue">カードの色</label><input type="range" id="mkHue" min="0" max="359" value="210"></div>
           </div>
           <div class="field"><label for="mkFlavor">説明文</label><textarea id="mkFlavor" maxlength="60" placeholder="港の風を味方にして街を守る。"></textarea></div>
-          <fieldset class="ab-set" id="mkAb"><legend>バトルの能力（自作カードバトル用）</legend></fieldset>
+          <fieldset class="ab-set" id="mkAb"><legend>バトルの能力（自作カードバトル用・効果はランダム）</legend></fieldset>
           <div class="row2">
             <div class="field"><label for="mkPack">入れるガチャ</label><select id="mkPack"></select></div>
             <div class="field" id="mkNewWrap" hidden><label for="mkNewPack">新しいガチャの名前</label><input type="text" id="mkNewPack" maxlength="20" placeholder="YOKOHAMA PACK"></div>
@@ -2324,7 +2327,7 @@ function drawDetail(){
     <button type="button" class="ghost fav-detail ${isFav(c)?"on":""}" id="dFav">${isFav(c)?"★ お気に入り登録中":"☆ お気に入りに登録"}</button>
     ${detailMode==="cards"?lvFuseHTML(c):""}
     ${btAbilityHTML(c,detailMode!=="cards")}
-    ${c.img&&detailMode==="cards"?`<button type="button" class="ghost" id="dAb">能力を編集（わざ・とくせいの名前と効果）</button>`:""}
+    ${c.img&&detailMode==="cards"?`<button type="button" class="ghost" id="dAb">わざ・とくせいの名前を変える</button>`:""}
     <div class="nav"><button type="button" class="ghost" id="dPrev">← 前のカード</button><span style="align-self:center;font-weight:700;font-variant-numeric:tabular-nums">${detailIdx+1} / ${detailList.length}</span><button type="button" class="ghost" id="dNext">次のカード →</button></div>`;
   const close=document.createElement("button");close.type="button";close.className="close";close.textContent="×";close.setAttribute("aria-label","閉じる");close.onclick=closeDetail;
   box.append(close,cw,t);d.appendChild(box);
@@ -2733,7 +2736,7 @@ $("mkForm").addEventListener("submit",e=>{
   if(!mkImg||!$("mkName").value.trim())return;
   let packId=$("mkPack").value,made=null;
   if(packId==="__new"){made=createPack($("mkNewPack").value);packId=made.id}
-  const c=draft();c.id=newId("c");c.shape="shield";c.pack=packId;c.bt=abRead("mk");
+  const c=draft();c.id=newId("c");c.shape="shield";c.pack=packId;c.bt=Object.assign(btRandomBt(),{skn:$("mkSkn").value.trim().slice(0,14),psn:$("mkPsn").value.trim().slice(0,14)});
   S.custom.push(c);
   if(!save()){S.custom.pop();if(made)S.packs.pop();$("mkMsg").textContent="保存容量がいっぱいです。作ったカードをいくつか削除してから追加してください。";return}
   render();fillPackSelect();$("mkPack").value=packId;syncNewField();$("mkNewPack").value="";
@@ -3421,28 +3424,35 @@ function lvFuseHTML(c){
     ${e.lv>=LV_MAX?"":have>0?`<div class="lv-fuse"><span>ダブり ${have} 枚を合成できます（1枚 +${per} XP）</span><button type="button" class="ghost" id="lvFuse1">1枚合成</button>${all>1?`<button type="button" class="ghost" id="lvFuseAll">${all}枚まとめて合成 +${per*all} XP</button>`:""}</div>`:`<div class="lv-fuse"><span>同じカードがダブったら合成してレベルを上げられます。バトルで使っても経験値がたまります。</span></div>`}</div>`;
 }
 /* ---- ability editor for original cards (used in the MAKE form and the edit window) ---- */
+// the effects (type, skill, passive) are rolled at random when the card is made; you only name the skill and the passive
+function btRandomBt(){const sks=Object.keys(CUSTOM_SKILLS),pss=Object.keys(CUSTOM_PASSIVES),rnd=a=>a[Math.floor(Math.random()*a.length)];return{t:Math.floor(Math.random()*3),sk:rnd(sks),skn:"",ps:rnd(pss),psn:""}}
 function abBuild(box,pre){
   box.insertAdjacentHTML("beforeend",`
-    <div class="field"><label for="${pre}T">タイプ</label><select id="${pre}T">${BT_TYPES.map((t,i)=>`<option value="${i}">${t}（${BT_TNAME[i]}）</option>`).join("")}</select></div>
+    <div class="ab-info" id="${pre}Info"></div>
     <div class="ab-grid">
       <div class="field"><label for="${pre}Skn">わざの名前（自由に）</label><input type="text" id="${pre}Skn" maxlength="14" placeholder="ヨコハマ・ストライク"></div>
-      <div class="field"><label for="${pre}Sk">わざの効果</label><select id="${pre}Sk">${Object.entries(CUSTOM_SKILLS).map(([k,v])=>`<option value="${k}">${v.desc}（チャージ${v.cost}）</option>`).join("")}</select></div>
       <div class="field"><label for="${pre}Psn">とくせいの名前（自由に）</label><input type="text" id="${pre}Psn" maxlength="14" placeholder="港の守り神"></div>
-      <div class="field"><label for="${pre}Ps">とくせいの効果</label><select id="${pre}Ps">${Object.entries(CUSTOM_PASSIVES).map(([k,v])=>`<option value="${k}">${v.desc}</option>`).join("")}</select></div>
     </div>
     <p class="ab-note" id="${pre}Note"></p>`);
 }
-function abRead(pre){return cleanBt({t:+$(pre+"T").value,sk:$(pre+"Sk").value,skn:$(pre+"Skn").value.trim(),ps:$(pre+"Ps").value,psn:$(pre+"Psn").value.trim()})}
+const abBase={};
+function abRead(pre){const b=abBase[pre]||btRandomBt();return cleanBt(Object.assign({},b,{skn:$(pre+"Skn").value.trim(),psn:$(pre+"Psn").value.trim()}))}
 function abFill(pre,bt,r){
-  const def=bt||{t:0,sk:"strike",skn:"",ps:"tough",psn:""};
-  $(pre+"T").value=String(def.t);$(pre+"Sk").value=CUSTOM_SKILLS[def.sk]?def.sk:"strike";$(pre+"Skn").value=def.skn||"";
-  $(pre+"Ps").value=CUSTOM_PASSIVES[def.ps]?def.ps:"tough";$(pre+"Psn").value=def.psn||"";
+  abBase[pre]=bt||null;
+  $(pre+"Skn").value=bt&&bt.skn||"";$(pre+"Psn").value=bt&&bt.psn||"";
   abRarity(pre,r);
 }
 function abRarity(pre,r){
-  const on=customHasPassive(r);
-  $(pre+"Ps").disabled=!on;$(pre+"Psn").disabled=!on;
-  $(pre+"Note").textContent=on?"わざの名前・とくせいの名前を空けておくと、効果の名前がそのまま使われます。":`とくせいは ${CUSTOM_PASSIVE_MIN} 以上のカードだけに付きます（STAR LIGHT のカードと同じルール）。`;
+  const on=customHasPassive(r),b=abBase[pre];
+  $(pre+"Psn").disabled=!on;
+  if(!b){$(pre+"Info").innerHTML=`<b>能力はランダム！</b> タイプ・わざの効果・とくせいの効果は、カードを追加したときにランダムで決まります。名前だけ自由に付けられます。`}
+  else{
+    const sk=CUSTOM_SKILLS[b.sk],ps=CUSTOM_PASSIVES[b.ps];
+    $(pre+"Info").innerHTML=`<div class="bt-abil-row"><span class="bt-type t${b.t}">${BT_TYPES[b.t]}</span><b>${BT_TNAME[b.t]}</b></div>
+      <div><small>わざの効果</small> ${sk?`${sk.desc}（チャージ${sk.cost}）`:"-"}</div>
+      ${on?`<div><small>とくせいの効果</small> ${ps?ps.desc:"-"}</div>`:""}`;
+  }
+  $(pre+"Note").textContent=(on?"":`とくせいは ${CUSTOM_PASSIVE_MIN} 以上のカードだけに付きます。 `)+"名前を空けておくと、効果の名前がそのまま使われます。";
 }
 let abCard=null,abAfter=null;
 function abOpen(c,after){
