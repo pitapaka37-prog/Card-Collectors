@@ -3297,7 +3297,7 @@ function btHash(str){let h=2166136261;for(let i=0;i<str.length;i++){h^=str.charC
 function btHasAbility(c){return !!(c&&!c.img&&BT_ABIL[c.name])}
 /* ---- card levels (STAR LIGHT cards only): Lv 1-100, from battles and fusing duplicates ---- */
 const LV_MAX=100;
-const LV_FUSE={N:60,R:100,SR:200,SSR:400,UR:800}; // XP for each duplicate fused into the same card
+const LV_FUSE={N:20,R:35,SR:60,SSR:120,UR:250}; // XP for each duplicate fused into the same card
 const LV_BT={base:20,win:20,draw:10};            // XP for each card that took part in a battle
 const lvNeed=lv=>10+lv*2;                         // XP from lv to lv+1
 const lvMul=lv=>1+(lv-1)*.005;                    // stats grow 0.5% per level (Lv100 = about +50%)
