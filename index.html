@@ -4295,9 +4295,9 @@ $("onJoin").onclick=()=>netJoin($("onJoinCode").value);
 $("onCancel").onclick=()=>netLeave("部屋をとじました。");
 /* ---- friend gacha: share one of your packs with a short code (sent peer to peer while the share window is open) ---- */
 /* ---- cloud (Firebase): shared gachas live online so friends get updates even when the maker's app is closed ---- */
-const FB={apiKey:"AIzaSyAl7Hg-vfG62KCLIYlIiOp9GVnk0s2uM5g",projectId:"star-light-comics"};
-const FS_BASE=`https://firestore.googleapis.com/v1/projects/${FB.projectId}/databases/(default)/documents`;
-let cloudAuthP=null;
+var FB={apiKey:"AIzaSyAl7Hg-vfG62KCLIYlIiOp9GVnk0s2uM5g",projectId:"star-light-comics"};
+var FS_BASE=`https://firestore.googleapis.com/v1/projects/${FB.projectId}/databases/(default)/documents`;
+var cloudAuthP=null;
 // anonymous sign-in (no account needed); the id stays on this device so only the maker can change their gacha
 async function cloudToken(){
   const a=S.cloudAuth;
@@ -4341,7 +4341,7 @@ function packMeta(p,ver){
   return{fields:{owner:fsStr(S.cloudAuth.uid),uid:fsStr(p.shareUid),name:fsStr(pname(p)),color:fsStr(p.color),from:fsStr(frNick()||"フレンド"),ver:{integerValue:String(ver)},count:{integerValue:String(cardsIn(p.id).length)}}};
 }
 // upload what changed in one of my shared packs
-let cloudBusy=false,cloudAgain=false,cloudTimer=0;
+var cloudBusy=false,cloudAgain=false,cloudTimer=0; // var: render() can run before this block on startup
 async function cloudSyncPack(p){
   await cloudToken();
   const code=p.cloud.code,list=cardsIn(p.id),old=p.cloud.sig||{},now={};
@@ -4454,7 +4454,7 @@ async function gfReceive(){
 }
 $("gfGo").onclick=gfReceive;
 // friends' gachas: check for updates when the app opens / the gacha screen is shown
-let cloudCheckAt=0;
+var cloudCheckAt=0;
 async function cloudCheckFriends(force){
   if(!force&&Date.now()-cloudCheckAt<60000)return;
   cloudCheckAt=Date.now();
