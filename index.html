@@ -1476,11 +1476,10 @@ const CARDS=[
  ["SSR","QQ","Queen Quasar","クイーン・クエーサー","ノヴァ・エネルギーを自在に操り、銀河の平和を守る気高き宇宙の女王戦士。",270,"burst"],
  ["SSR","TH","Thunder Hound","サンダー・ハウンド","雷を浴びて超人的な力を得た猟犬戦士。稲妻の速さと鋭い嗅覚を武器に街の悪を追い詰める。",58,"burst"],
  ["UR","AP","Atlas Prime","アトラス・プライム","宇宙の核と融合し、重力そのものを武器に戦う超重量級ヒーロー。",205,"burst"],
- ["UR","NM","Nova Mae","ノヴァ・メイ","宇宙の光「ノヴァ・エネルギー」を操り、闇に希望を灯す若きヒーロー。",320,"burst"],
- ["SR","SL","Star Lance","スター・ランス","惑星クエーセリアを守護する精鋭戦士部隊「クエーサーガード」のリーダー。巨大な星槍を武器に、数々の宇宙戦争を生き抜いてきた歴戦の戦士。",222,"shield"]
+ ["UR","NM","Nova Mae","ノヴァ・メイ","宇宙の光「ノヴァ・エネルギー」を操り、闇に希望を灯す若きヒーロー。",320,"burst"]
 ].map((c,i)=>({id:i,r:c[0],m:c[1],name:c[2],kana:c[3],flavor:c[4],h:c[5],shape:c[6]}));
 // standard cards that use a picture instead of the drawn portrait
-const PHOTOS={"Rubber Duck":"rubber-duck.jpg","Atlas Prime":"atlas-prime.jpg","Nova Mae":"nova-mae.jpg","Skyline Sentinel":"skyline-sentinel.jpg","Queen Quasar":"queen-quasar.jpg","Thunder Hound":"thunder-hound.jpg","Atomic Bee":"atomic-bee.jpg","Radio Ranger":"radio-ranger.jpg","Mirror Max":"mirror-max.jpg","Velvet Comet":"velvet-comet.jpg","Doctor Fuse":"doctor-fuse.jpg","Neon Noodle":"neon-noodle.jpg","Jukebox Jane":"jukebox-jane.jpg","Skate Saint":"skate-saint.jpg","Diner Dynamo":"diner-dynamo.jpg","Tornado Tess":"tornado-tess.jpg","Captain Cactus":"captain-cactus.jpg","Glitter Gator":"glitter-gator.jpg","Gumball Kid":"gumball-kid.jpg","Traffic Cone":"traffic-cone.jpg","Lunchbox Larry":"lunchbox-larry.jpg","Static Sally":"static-sally.jpg","Paper Boy":"paper-boy.jpg","Night Janitor":"night-janitor.jpg","Hot Dog Man":"hot-dog-man.jpg","Mailbox Mike":"mailbox-mike.jpg","Coin Op":"coin-op.jpg","Star Lance":"star-lance.jpg"};
+const PHOTOS={"Rubber Duck":"rubber-duck.jpg","Atlas Prime":"atlas-prime.jpg","Nova Mae":"nova-mae.jpg","Skyline Sentinel":"skyline-sentinel.jpg","Queen Quasar":"queen-quasar.jpg","Thunder Hound":"thunder-hound.jpg","Atomic Bee":"atomic-bee.jpg","Radio Ranger":"radio-ranger.jpg","Mirror Max":"mirror-max.jpg","Velvet Comet":"velvet-comet.jpg","Doctor Fuse":"doctor-fuse.jpg","Neon Noodle":"neon-noodle.jpg","Jukebox Jane":"jukebox-jane.jpg","Skate Saint":"skate-saint.jpg","Diner Dynamo":"diner-dynamo.jpg","Tornado Tess":"tornado-tess.jpg","Captain Cactus":"captain-cactus.jpg","Glitter Gator":"glitter-gator.jpg","Gumball Kid":"gumball-kid.jpg","Traffic Cone":"traffic-cone.jpg","Lunchbox Larry":"lunchbox-larry.jpg","Static Sally":"static-sally.jpg","Paper Boy":"paper-boy.jpg","Night Janitor":"night-janitor.jpg","Hot Dog Man":"hot-dog-man.jpg","Mailbox Mike":"mailbox-mike.jpg","Coin Op":"coin-op.jpg"};
 const PHOTO_V="3";
 CARDS.forEach(c=>{if(PHOTOS[c.name])c.photo=PHOTOS[c.name]+"?v="+PHOTO_V});
 /* ---- cover cards: random owned cards, or the rarest ones when nothing is owned ---- */
@@ -1506,6 +1505,8 @@ const SHOP_CARDS=[
   look:{skin:"#c48a62",hair:["pomp","#ff7a00"],cape:"#ff7a00",suit:"#ffd21f",suit2:"#e2231a",mouth:"grin",halo:true,fx:["rays","sparks"],emb:"S"}},
  {id:"s6",r:"UR",name:"Omega Paragon",kana:"オメガ・パラゴン",flavor:"1000年以上を生きる伝説の大魔術師。あらゆる魔術を極めた圧倒的な力と知識を持ち、老齢とは思えないほど自ら前線に立って戦い続ける最強クラスのヴィラン。",h:270,price:1500,photo:"omega-paragon.jpg?v=1",
   look:{skin:"#8d5a3b",mask:["helmet","#2b1b5a","#c9b8ff"],cape:"#5a3db0",suit:"#1b1b2f",suit2:"#c9b8ff",mouth:"flat",fx:["galaxy","nova"],emb:"Ω"}},
+ {id:"s7",r:"SR",name:"Star Lance",kana:"スター・ランス",flavor:"惑星クエーセリアを守護する精鋭戦士部隊「クエーサーガード」のリーダー。巨大な星槍を武器に、数々の宇宙戦争を生き抜いてきた歴戦の戦士。",h:222,price:150,photo:"star-lance.jpg?v=1",
+  look:{skin:"#b07a55",hair:["short","#4a3020"],beard:"#4a3020",cape:"#1b2a5a",suit:"#e8dcc0",suit2:"#c9a227",mouth:"grin",fx:["stars"],emb:"SL"}},
 ].map(c=>Object.assign(c,{shop:true,shape:"burst",m:c.look.emb}));
 const shopByR={};ORDER.forEach(r=>shopByR[r]=SHOP_CARDS.filter(c=>c.r===r));
 /* ---- mission rewards: cards earned only by clearing a mini game ---- */
@@ -1516,7 +1517,7 @@ const REWARD_CARDS=[
 ];
 // STANDARD dex numbers in the order the cards were made: the first 27 gacha cards, the shop cards, the mission card, then later gacha cards
 // (when a new card is added, put it at the end of this list so existing numbers never change)
-const STD_ORDER=CARDS.slice(0,27).concat(SHOP_CARDS,REWARD_CARDS,CARDS.slice(27));
+const STD_ORDER=CARDS.slice(0,27).concat(SHOP_CARDS.slice(0,6),REWARD_CARDS,SHOP_CARDS.slice(6),CARDS.slice(27));
 function stdNo(c){const i=STD_ORDER.indexOf(c);return i<0?0:i+1}
 const stdNoText=c=>"#"+String(stdNo(c)).padStart(2,"0");
 const rewardByR={};ORDER.forEach(r=>rewardByR[r]=REWARD_CARDS.filter(c=>c.r===r));
@@ -1572,6 +1573,13 @@ function load(){
   const st=s.stats&&typeof s.stats==="object"?s.stats:{};s.stats={pulls:num(st.pulls,0,0,1e9),bestWave:num(st.bestWave,0,0,50),sold:num(st.sold,0,0,1e9),games:num(st.games,0,0,1e9),bestRank:num(st.bestRank,1,1,1e6),dailyAll:num(st.dailyAll,0,0,1e7),loginDays:num(st.loginDays,0,0,1e7),bestStreak:num(st.bestStreak,0,0,1e7)};
   const nc=s.normalClaimed&&typeof s.normalClaimed==="object"?s.normalClaimed:{};s.normalClaimed=Object.fromEntries(Object.entries(nc).map(([k,v])=>[k,!!v]));
   // players who already earned Star Velvet before missions existed
+  // Star Lance moved from the gacha (id 27) to the shop (id s7): carry everything over
+  if(!CARDS[27]){
+    const mv=(o)=>{if(o&&o["27"]!=null){if(typeof o["27"]==="number"&&typeof o.s7==="number")o.s7+=o["27"];else if(o.s7==null)o.s7=o["27"];delete o["27"]}};
+    mv(s.owned);mv(s.lv);mv(s.fav);
+    (s.decks||[]).forEach(d=>{const k=d.indexOf("27");if(k>=0)d[k]="s7"});
+    if(s.homeCard==="27")s.homeCard="s7";
+  }
   if(s.owned.r1>0){s.normalClaimed.vcm50=true;s.stats.bestWave=50}
   if(!s.battle||typeof s.battle!=="object")s.battle={};s.battle={w:num(s.battle.w,0,0,1e7),l:num(s.battle.l,0,0,1e7),d:num(s.battle.d,0,0,1e7),bp:num(s.battle.bp,0,0,1e9),cw:num(s.battle.cw,0,0,1e7),cl:num(s.battle.cl,0,0,1e7),fw:num(s.battle.fw,0,0,1e7),fl:num(s.battle.fl,0,0,1e7),ow:num(s.battle.ow,0,0,1e7),ol:num(s.battle.ol,0,0,1e7),season:typeof s.battle.season==="string"?s.battle.season.slice(0,7):"",last:s.battle.last&&typeof s.battle.last==="object"?{season:String(s.battle.last.season||"").slice(0,7),rank:num(s.battle.last.rank,1,1,1e6),bp:num(s.battle.last.bp,0,0,1e9)}:null};
   if(!Array.isArray(s.decks))s.decks=[];
@@ -3463,7 +3471,8 @@ const BT_HP={N:70,R:85,SR:100,SSR:120,UR:140},BT_ATK={N:20,R:24,SR:29,SSR:34,UR:
 const BT_MAX_TURNS=40;
 const btH=(m,n,o)=>Object.assign({k:"hit",m,n:n||1},o||{});
 // t: type (0 力 / 1 速 / 2 技), hp / atk / spd: stat tweaks, s: skill (cost = charge needed), p: passive
-const BT_ABIL={
+var BT_ABIL={ // var: may be read by early renders on startup
+
  "Gumball Kid":{t:1,hp:.9,s:{name:"ガムボール・ショット",cost:2,desc:"1.3倍ダメージ＋敵の攻撃力20%ダウン（3ターン）",fx:[btH(1.3),{k:"weaken",v:.2,turns:3}]}},
  "Traffic Cone":{t:0,hp:1.25,atk:.8,s:{name:"通行止め",cost:2,desc:"2ターンのあいだ受けるダメージ50%カット",fx:[{k:"guard",v:.5,turns:2}]}},
  "Lunchbox Larry":{t:2,s:{name:"ランチタイム",cost:2,desc:"自分のHPを35%回復",fx:[{k:"heal",v:.35}]}},
@@ -3502,7 +3511,7 @@ const BT_ABIL={
 };
 function btHash(str){let h=2166136261;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
 // only STAR LIGHT cards have battle abilities; original (custom) cards have none
-function btStdOK(c){return !!(c&&!c.img&&BT_ABIL[c.name])}   // STAR LIGHT card with a battle ability
+function btStdOK(c){return !!(c&&!c.img&&BT_ABIL&&BT_ABIL[c.name])}   // STAR LIGHT card with a battle ability
 function btHasAbility(c){return !!c&&(btStdOK(c)||!!c.img)}    // original cards have abilities too (used only in custom battles)
 // effects you can pick for an original card's skill (わざ) and passive (とくせい); the names are up to you
 const CUSTOM_SKILLS={
