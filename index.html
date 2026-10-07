@@ -681,6 +681,10 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
 .dk-tabs button{font-family:var(--display);font-size:16px;letter-spacing:.04em;border:3px solid var(--ink);background:#fff;padding:0 10px;box-shadow:2px 2px 0 var(--ink)}
 .dk-tabs button[aria-selected="true"]{background:var(--red);color:#fff}
 .dk-book button{font-size:18px;padding:2px 14px}
+.gs-modal .mission{width:min(480px,100%);display:flex;flex-direction:column;gap:10px}
+.gs-modal .on-room b{font-size:36px}
+.bswitch .add.friend{background:#e9f3ff}
+.gf-del{font-size:13px;padding:2px 10px;margin:6px 0}
 .dk-book button[aria-selected="true"]{background:var(--ink);color:var(--yellow)}
 .dk-row{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
 .dk-slot{display:flex;flex-direction:column;gap:3px;padding:0;border:0;background:none;color:inherit;text-align:left;cursor:pointer;min-width:0}
@@ -1089,6 +1093,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
           <button class="pull one" id="pull1"><b>SINGLE</b><small>単発 ・ コイン 100</small></button>
           <button class="pull ten" id="pull10"><b>10-PACK!</b><small>十連 ・ コイン 1,000 ・ SR以上確定</small></button>
         </div>
+        <button type="button" class="ghost gf-del" id="gfDel" hidden>このフレンドガチャを消す</button>
         <button type="button" class="lineup-btn" id="lineupBtn">LINEUP ・ 出るカード一覧</button>
         <div class="msg" id="msg" role="status"></div>
       </div>
@@ -1264,6 +1269,23 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
       <p class="ab-note">効果はカードを作ったときにランダムで決まっています。ここでは、わざととくせいの名前を変えられます。</p>
       <fieldset class="ab-set" id="abEdit"><legend>バトルの能力</legend></fieldset>
       <div class="dk-btns"><button type="button" class="btn-main" id="abSave">この能力にする</button><button type="button" class="ghost" id="abCancel">やめる</button></div>
+    </div>
+  </div>
+  <div class="detail ms-modal gs-modal" id="gsModal" hidden role="dialog" aria-modal="true" aria-label="ガチャのコード">
+    <div class="mission">
+      <button type="button" class="close" id="gsClose" aria-label="閉じる">×</button>
+      <div class="ms-head"><b>SHARE</b><span id="gsName"></span></div>
+      <p class="ab-note">このコードをフレンドに伝えてね。フレンドがガチャ画面の「+ FRIEND」でコードを入れると、このガチャがフレンドガチャ枠に追加されます。<b>フレンドが受け取るまで、この画面を開いたままにしてね</b>（通信でガチャを送ります）。</p>
+      <div class="on-room"><small>ガチャコード</small><b id="gsCode">------</b><span id="gsInfo">準備中…</span></div>
+    </div>
+  </div>
+  <div class="detail ms-modal gs-modal" id="gfModal" hidden role="dialog" aria-modal="true" aria-label="フレンドガチャを追加">
+    <div class="mission">
+      <button type="button" class="close" id="gfClose" aria-label="閉じる">×</button>
+      <div class="ms-head"><b>FRIEND GACHA</b></div>
+      <p class="ab-note">フレンドから聞いた「ガチャコード」を入れてね。フレンドがコードの画面を開いているあいだに受け取れます。</p>
+      <div class="on-join"><input type="text" id="gfCode" maxlength="6" placeholder="コード" autocomplete="off" autocapitalize="characters" aria-label="ガチャコード"><button type="button" class="btn-main" id="gfGo">受け取る</button></div>
+      <p class="fr-msg" id="gfMsg" role="status"></p>
     </div>
   </div>
   <div class="detail ms-modal bt-iv" id="btInfo" hidden role="dialog" aria-modal="true" aria-label="カードのステータス">
@@ -1494,19 +1516,21 @@ function load(){
   if(typeof s.homeCard==="number")s.homeCard=String(s.homeCard);
   // keep only well-formed entries (data may come from an imported file)
   const isColor=c=>typeof c==="string"&&/^#[0-9a-f]{6}$/i.test(c);
-  s.packs=s.packs.filter(p=>p&&typeof p.id==="string").map(p=>({id:p.id,name:String(p.name||"").slice(0,20),color:isColor(p.color)?p.color:PACK_COLORS[0]}));
+  s.packs=s.packs.filter(p=>p&&typeof p.id==="string").map(p=>{const o={id:p.id,name:String(p.name||"").slice(0,20),color:isColor(p.color)?p.color:PACK_COLORS[0]};
+    if(typeof p.shareUid==="string")o.shareUid=p.shareUid.slice(0,40);
+    if(p.friend&&typeof p.friend==="object")o.friend={from:String(p.friend.from||"").slice(0,12),uid:String(p.friend.uid||"").slice(0,40)};return o});
   s.custom=s.custom.filter(c=>c&&typeof c.id==="string"&&typeof c.img==="string"&&/^data:image\/(jpeg|png|webp|gif);base64,[A-Za-z0-9+/=]+$/.test(c.img)&&ORDER.includes(c.r))
-    .map(c=>({id:c.id,r:c.r,name:String(c.name||"").slice(0,22),kana:String(c.kana||"").slice(0,20),flavor:String(c.flavor||"").slice(0,60),h:Number(c.h)||0,shape:"shield",img:c.img,m:"?",pack:typeof c.pack==="string"?c.pack:"",bt:cleanBt(c.bt)}));
+    .map(c=>({id:c.id,r:c.r,name:String(c.name||"").slice(0,22),kana:String(c.kana||"").slice(0,20),flavor:String(c.flavor||"").slice(0,60),h:Number(c.h)||0,shape:"shield",img:c.img,m:"?",pack:typeof c.pack==="string"?c.pack:"",bt:cleanBt(c.bt),...(c.friend?{friend:true}:{})}));
   if(!s.pityBy||typeof s.pityBy!=="object")s.pityBy={};
   // migrate the single "MY PACK" from the previous version
-  if(!s.packs.length){
+  if(!s.packs.some(p=>!p.friend)){
     const p={id:newId("p"),name:(v.packName||"").trim()||"MY PACK",color:PACK_COLORS[0]};
     s.packs.push(p);
     s.custom.forEach(c=>{if(!c.pack)c.pack=p.id});
     if(v.pityMy)s.pityBy[p.id]=v.pityMy;
     if(s.banner==="my")s.banner=p.id;
   }
-  const first=s.packs[0].id;
+  const first=(s.packs.find(p=>!p.friend)||s.packs[0]).id;
   s.custom.forEach(c=>{if(!s.packs.some(p=>p.id===c.pack))c.pack=first});
   delete s.packName;delete s.pityMy;delete s.refillAt;
   // numbers and dates must have the right type (data may come from an imported file)
@@ -2284,7 +2308,9 @@ function renderSwitch(){
     b.onclick=()=>setBanner(id);box.appendChild(b);
   };
   mk("std","STAR LIGHT COMICS","スターライト・コミックス");
-  S.packs.forEach(p=>mk(p.id,pname(p),`自作 ${cardsIn(p.id).length} 枚`,p.color));
+  S.packs.filter(p=>!p.friend).forEach(p=>mk(p.id,pname(p),`自作 ${cardsIn(p.id).length} 枚`,p.color));
+  S.packs.filter(p=>p.friend).forEach(p=>mk(p.id,pname(p),`FRIEND ・ ${esc(p.friend.from||"フレンド")} ・ ${cardsIn(p.id).length} 枚`,p.color));
+  const fadd=document.createElement("button");fadd.className="add friend";fadd.innerHTML=`<span>+ FRIEND</span><small>フレンドガチャを追加</small>`;fadd.onclick=gfOpen;box.appendChild(fadd);
   const add=document.createElement("button");add.className="add";add.innerHTML=`<span>+ NEW</span><small>ガチャを作る</small>`;
   add.onclick=()=>{tab("make");$("newPackName").focus();$("packsPanel").scrollIntoView({behavior:"smooth"})};
   box.appendChild(add);
@@ -2308,8 +2334,9 @@ function renderCover(){
     const tag=document.createElement("span");tag.className="pu-badge";tag.textContent="PICK UP! ×2";feat.appendChild(tag);
   }else{
     const p=packOf(bid);cover.style.setProperty("--pc",p.color);
-    $("cvIssue").textContent="SPECIAL ISSUE ・ 25¢";
-    $("cvEye").textContent=n?`収録 ${n} 枚 ・ あなたが作ったガチャ`:"あなたが作ったガチャ";
+    $("cvIssue").textContent=p.friend?"FRIEND ISSUE ・ 25¢":"SPECIAL ISSUE ・ 25¢";
+    const who=p.friend?`${p.friend.from||"フレンド"} のガチャ（フレンドガチャ）`:"あなたが作ったガチャ";
+    $("cvEye").textContent=n?`収録 ${n} 枚 ・ ${who}`:who;
     $("cvTitle").textContent=`${pname(p)}、発売中！`;
     if(!n){
       $("cvText").innerHTML=`まだカードがありません。<b>MAKE</b> タブでカードを作るとき「入れるガチャ」でこのガチャを選ぶと、ここで引けるようになります。`;
@@ -2328,6 +2355,8 @@ function renderCover(){
   $("pull1").querySelector("small").textContent=`単発 ・ コイン ${c1.toLocaleString()}`;
   $("pull10").querySelector("small").textContent=`十連 ・ コイン ${c10.toLocaleString()}${std?" ・ SR以上確定":""}`;
   $("pull1").disabled=!n||S.gems<c1;$("pull10").disabled=!n||S.gems<c10;
+  const fdel=$("gfDel");const fp=!std&&packOf(bid);fdel.hidden=!(fp&&fp.friend);
+  if(fp&&fp.friend)armed(fdel,"このフレンドガチャを消す","もう一度押すと消します（引いたカードも消えます）",()=>gfDelete(fp.id));
 }
 function setBanner(id){
   if(S.banner===id)return;
@@ -2602,14 +2631,15 @@ $("newPackForm").addEventListener("submit",e=>{
 });
 function renderMine(){
   const box=$("mine");box.innerHTML="";
-  $("mineCount").textContent=`${S.packs.length} 個のガチャ ・ ${S.custom.length} 枚`;
-  if(!S.packs.length){box.innerHTML=`<div class="empty" style="margin-top:14px">ガチャがありません。上で名前を入れて「ガチャを作る」を押してください。</div>`;return}
-  S.packs.forEach(p=>{
+  const ownPacks=S.packs.filter(p=>!p.friend);
+  $("mineCount").textContent=`${ownPacks.length} 個のガチャ ・ ${S.custom.filter(c=>!c.friend).length} 枚`;
+  if(!ownPacks.length){box.innerHTML=`<div class="empty" style="margin-top:14px">ガチャがありません。上で名前を入れて「ガチャを作る」を押してください。</div>`;return}
+  ownPacks.forEach(p=>{
     const blk=document.createElement("div");blk.className="pack-block";blk.style.setProperty("--pc",p.color);
     const list=cardsIn(p.id);
     blk.innerHTML=`<div class="pack-head"><span class="pack-swatch"></span><input type="text" maxlength="20" aria-label="ガチャの名前" id="pn-${p.id}"><span class="n">${list.length} 枚</span></div>
       <div class="pack-tools"><div class="colors" role="group" aria-label="ガチャの色"></div></div>
-      <div class="pack-tools"><button type="button" class="ghost" data-a="pull">このガチャを引く</button><button type="button" class="ghost" data-a="dex">図鑑を見る</button><button type="button" class="ghost" data-a="add">カードを追加</button><button type="button" class="ghost" data-a="del">ガチャを削除</button></div>`;
+      <div class="pack-tools"><button type="button" class="ghost" data-a="pull">このガチャを引く</button><button type="button" class="ghost" data-a="dex">図鑑を見る</button><button type="button" class="ghost" data-a="add">カードを追加</button><button type="button" class="ghost" data-a="share">コードを発行（シェア）</button><button type="button" class="ghost" data-a="del">ガチャを削除</button></div>`;
     const inp=blk.querySelector("input");inp.value=p.name;
     inp.addEventListener("input",()=>{p.name=inp.value;save();renderCover();renderDex();fillPackSelect()});
     const cols=blk.querySelector(".colors");
@@ -2618,6 +2648,7 @@ function renderMine(){
     const dexBtn=blk.querySelector('[data-a="dex"]');dexBtn.disabled=!list.length;
     dexBtn.onclick=()=>{dexSel=p.id;closeDetail();renderDex();tab("dex");window.scrollTo({top:0,behavior:"smooth"})};
     blk.querySelector('[data-a="add"]').onclick=()=>openMakeFor(p.id);
+    const sh=blk.querySelector('[data-a="share"]');sh.disabled=!list.length;sh.onclick=()=>gsOpen(p);
     armed(blk.querySelector('[data-a="del"]'),"ガチャを削除",list.length?`カード ${list.length} 枚ごと削除します。もう一度押して確定`:"もう一度押すと削除",()=>{
       S.custom.filter(c=>c.pack===p.id).forEach(c=>delete S.owned[c.id]);
       S.custom=S.custom.filter(c=>c.pack!==p.id);
@@ -2630,9 +2661,9 @@ function renderMine(){
         const s=document.createElement("div");s.className="slot";
         s.appendChild(cardEl(c,{flipped:true}));
         const tools=document.createElement("div");tools.className="slot-tools";
-        if(S.packs.length>1){
+        if(S.packs.filter(x=>!x.friend).length>1){
           const sel=document.createElement("select");sel.className="move";sel.setAttribute("aria-label",`${c.name} を移すガチャ`);
-          S.packs.forEach(x=>{const o=document.createElement("option");o.value=x.id;o.textContent=x.id===c.pack?`入っている：${pname(x)}`:`→ ${pname(x)} へ移す`;sel.appendChild(o)});
+          S.packs.filter(x=>!x.friend).forEach(x=>{const o=document.createElement("option");o.value=x.id;o.textContent=x.id===c.pack?`入っている：${pname(x)}`:`→ ${pname(x)} へ移す`;sel.appendChild(o)});
           sel.value=c.pack;sel.onchange=()=>{c.pack=sel.value;save();render()};
           tools.appendChild(sel);
         }
@@ -2724,9 +2755,10 @@ $("tab-home").onclick=()=>tab("home");$("tab-gacha").onclick=()=>tab("gacha");$(
 let mkImg=null;
 function fillPackSelect(){
   const sel=$("mkPack"),cur=sel.value;sel.innerHTML="";
-  S.packs.forEach(p=>{const o=document.createElement("option");o.value=p.id;o.textContent=pname(p);sel.appendChild(o)});
+  S.packs.filter(p=>!p.friend).forEach(p=>{const o=document.createElement("option");o.value=p.id;o.textContent=pname(p);sel.appendChild(o)});
   const o=document.createElement("option");o.value="__new";o.textContent="＋ 新しいガチャを作る";sel.appendChild(o);
-  sel.value=[...sel.options].some(x=>x.value===cur)?cur:(S.packs.some(p=>p.id===S.banner)?S.banner:(S.packs[0]?S.packs[0].id:"__new"));
+  const own=S.packs.filter(p=>!p.friend);
+  sel.value=[...sel.options].some(x=>x.value===cur)?cur:(own.some(p=>p.id===S.banner)?S.banner:(own[0]?own[0].id:"__new"));
   syncNewField();
 }
 function syncNewField(){$("mkNewWrap").hidden=$("mkPack").value!=="__new";updatePreview()}
@@ -3209,10 +3241,10 @@ function setupNormalMissions(){
     {id:"shop3",label:"スターショップでカードを3種交換する",goal:3,cur:()=>own(SHOP_CARDS),reward:{coins:500}},
     {id:"shopAll",label:`スターショップのカードを全 ${SHOP_CARDS.length} 種交換する`,goal:SHOP_CARDS.length,cur:()=>own(SHOP_CARDS),reward:{coins:2000}},
     // making
-    {id:"make1",label:"自分のカードを作る",goal:1,cur:()=>S.custom.length,reward:{coins:100}},
-    {id:"make5",label:"自分のカードを5枚作る",goal:5,cur:()=>S.custom.length,reward:{coins:200}},
-    {id:"make10",label:"自分のカードを10枚作る",goal:10,cur:()=>S.custom.length,reward:{coins:400}},
-    {id:"pack2",label:"自分のガチャを2個作る",goal:2,cur:()=>S.packs.length,reward:{coins:200}},
+    {id:"make1",label:"自分のカードを作る",goal:1,cur:()=>S.custom.filter(c=>!c.friend).length,reward:{coins:100}},
+    {id:"make5",label:"自分のカードを5枚作る",goal:5,cur:()=>S.custom.filter(c=>!c.friend).length,reward:{coins:200}},
+    {id:"make10",label:"自分のカードを10枚作る",goal:10,cur:()=>S.custom.filter(c=>!c.friend).length,reward:{coins:400}},
+    {id:"pack2",label:"自分のガチャを2個作る",goal:2,cur:()=>S.packs.filter(p=>!p.friend).length,reward:{coins:200}},
     // mini game
     {id:"game10",label:"VELVET COMET MISSION を10回遊ぶ",goal:10,cur:()=>S.stats.games,reward:{coins:200}},
     {id:"wave10",label:"VELVET COMET MISSION でウェーブ10までクリア",goal:10,cur:()=>S.stats.bestWave,reward:{coins:200}},
@@ -4237,6 +4269,96 @@ $("onHostStd").onclick=()=>netHost("s");
 $("onHostCus").onclick=()=>netHost("c");
 $("onJoin").onclick=()=>netJoin($("onJoinCode").value);
 $("onCancel").onclick=()=>netLeave("部屋をとじました。");
+/* ---- friend gacha: share one of your packs with a short code (sent peer to peer while the share window is open) ---- */
+const GS_PREFIX="starlightcc-g-";
+let GS=null,GF=null;
+function gsShrink(src){ // pictures are made smaller so the pack fits in the friend's storage
+  return new Promise(res=>{
+    if(!src||typeof Image==="undefined"){res(src);return}
+    const im=new Image();let done=false;const fin=v=>{if(!done){done=true;res(v)}};
+    setTimeout(()=>fin(src),4000);
+    im.onload=()=>{try{const cv=document.createElement("canvas");cv.width=240;cv.height=280;cv.getContext("2d").drawImage(im,0,0,240,280);fin(cv.toDataURL("image/jpeg",.72))}catch(e){fin(src)}};
+    im.onerror=()=>fin(src);im.src=src;
+  });
+}
+function gsStop(){if(GS){try{GS.peer.destroy()}catch(e){}GS=null}}
+async function gsOpen(p){
+  gsStop();
+  const list=cardsIn(p.id);if(!list.length)return;
+  $("gsModal").hidden=false;document.body.style.overflow="hidden";
+  $("gsName").textContent=pname(p);$("gsCode").textContent="------";$("gsInfo").textContent="準備中…";
+  if(!p.shareUid){p.shareUid=newId("share");save()}
+  const cards=[];for(const c of list)cards.push({id:c.id,r:c.r,name:c.name,kana:c.kana||"",flavor:c.flavor||"",h:c.h||0,bt:c.bt||btCustomDefaults(c),img:await gsShrink(c.img)});
+  const payload={t:"pack",pack:{uid:p.shareUid,name:pname(p),color:p.color,from:frNick()||"フレンド",cards}};
+  try{await netLoadLib()}catch(e){$("gsInfo").textContent="通信の準備ができませんでした。インターネットにつながっているか確かめてね。";return}
+  const code=Array.from({length:6},()=>NET_CHARS[Math.floor(Math.random()*NET_CHARS.length)]).join("");
+  const peer=new Peer(GS_PREFIX+code);GS={peer,sent:0};
+  peer.on("open",()=>{if(!GS||GS.peer!==peer)return;$("gsCode").textContent=code;$("gsInfo").textContent="フレンドが受け取るのを待っています…"});
+  peer.on("connection",conn=>{conn.on("open",()=>{conn.send(payload)});conn.on("data",d=>{if(d&&d.t==="thanks"&&GS){GS.sent++;$("gsInfo").textContent=`${GS.sent} 人が受け取りました！ ほかの人にも送れます。`;sfx("rare")}})});
+  peer.on("error",()=>{if(GS&&GS.peer===peer)$("gsInfo").textContent="通信エラーが起きました。閉じてもう一度ためしてね。"});
+}
+function gsClose(){gsStop();$("gsModal").hidden=true;document.body.style.overflow=""}
+$("gsClose").onclick=gsClose;
+$("gsModal").addEventListener("click",e=>{if(e.target===$("gsModal"))gsClose()});
+function gfOpen(){$("gfModal").hidden=false;document.body.style.overflow="hidden";$("gfMsg").textContent="";$("gfCode").value=""}
+function gfClose(){if(GF){try{GF.destroy()}catch(e){}GF=null}$("gfModal").hidden=true;document.body.style.overflow=""}
+$("gfClose").onclick=gfClose;
+$("gfModal").addEventListener("click",e=>{if(e.target===$("gfModal"))gfClose()});
+// add (or update) a friend's pack from what was received, checking every value
+function gfImport(pk){
+  if(!pk||typeof pk!=="object"||!Array.isArray(pk.cards)||!pk.cards.length||pk.cards.length>300)return "ガチャの中身が正しくありません。";
+  const uid=String(pk.uid||"").slice(0,40);if(!uid)return "ガチャの中身が正しくありません。";
+  if(S.packs.some(p=>!p.friend&&p.shareUid===uid))return "これはあなた自身のガチャです。";
+  const okImg=x=>typeof x==="string"&&/^data:image\/(jpeg|png|webp|gif);base64,[A-Za-z0-9+/=]+$/.test(x)&&x.length<600000;
+  const cards=pk.cards.filter(c=>c&&ORDER.includes(c.r)&&okImg(c.img)).slice(0,300);
+  if(!cards.length)return "ガチャの中身が正しくありません。";
+  const before=JSON.stringify(S);
+  let p=S.packs.find(x=>x.friend&&x.friend.uid===uid);
+  if(!p){p={id:newId("p"),name:"",color:PACK_COLORS[0],friend:{from:"",uid}};S.packs.push(p)}
+  p.name=String(pk.name||"FRIEND PACK").slice(0,20);p.color=(typeof pk.color==="string"&&/^#[0-9a-f]{6}$/i.test(pk.color))?pk.color:PACK_COLORS[0];p.friend.from=String(pk.from||"フレンド").slice(0,12);
+  const keepIds=new Set();
+  cards.forEach(c=>{
+    const id="f-"+uid.slice(-12)+"-"+String(c.id||"").slice(-16);keepIds.add(id);
+    const card={id,r:c.r,name:String(c.name||"???").slice(0,22),kana:String(c.kana||"").slice(0,20),flavor:String(c.flavor||"").slice(0,60),h:Number(c.h)||0,shape:"shield",img:c.img,m:"?",pack:p.id,bt:cleanBt(c.bt),friend:true};
+    const at=S.custom.findIndex(x=>x.id===id);if(at>=0)S.custom[at]=card;else S.custom.push(card);
+  });
+  S.custom=S.custom.filter(c=>c.pack!==p.id||keepIds.has(c.id)); // cards the friend removed disappear
+  if(!save()){S=JSON.parse(before);save();return "端末の保存容量が足りず、追加できませんでした。使っていないガチャを消してからためしてね。"}
+  setBanner(p.id);render();
+  return null;
+}
+async function gfReceive(){
+  const code=String($("gfCode").value||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
+  if(code.length!==6){$("gfMsg").textContent="6文字のガチャコードを入れてね。";return}
+  $("gfMsg").textContent="つないでいます…";
+  try{await netLoadLib()}catch(e){$("gfMsg").textContent="通信の準備ができませんでした。インターネットにつながっているか確かめてね。";return}
+  if(GF){try{GF.destroy()}catch(e){}}
+  const peer=new Peer();GF=peer;let got=false;
+  const fail=t=>{if(GF!==peer)return;$("gfMsg").textContent=t;try{peer.destroy()}catch(e){}GF=null};
+  setTimeout(()=>{if(!got)fail("ガチャが見つかりませんでした。コードと、フレンドがコードの画面を開いているか確かめてね。")},20000);
+  peer.on("open",()=>{
+    const conn=peer.connect(GS_PREFIX+code,{reliable:true});
+    conn.on("data",d=>{
+      if(got||!d||d.t!=="pack")return;got=true;
+      const err=gfImport(d.pack);
+      try{conn.send({t:"thanks"})}catch(e){}
+      setTimeout(()=>{try{peer.destroy()}catch(e){}if(GF===peer)GF=null},800);
+      if(err){$("gfMsg").textContent=err;return}
+      sfx("ur");toast(`フレンドガチャ「${String(d.pack.name||"").slice(0,20)}」を追加しました！`);
+      $("gfModal").hidden=true;document.body.style.overflow="";
+      tab("gacha");window.scrollTo({top:0,behavior:"smooth"});
+    });
+  });
+  peer.on("error",e=>fail(e&&e.type==="peer-unavailable"?"ガチャが見つかりませんでした。コードと、フレンドがコードの画面を開いているか確かめてね。":"通信エラーが起きました。もう一度ためしてね。"));
+}
+$("gfGo").onclick=gfReceive;
+function gfDelete(id){
+  S.custom.filter(c=>c.pack===id).forEach(c=>delete S.owned[c.id]);
+  S.custom=S.custom.filter(c=>c.pack!==id);
+  S.packs=S.packs.filter(p=>p.id!==id);delete S.pityBy[id];
+  if(S.banner===id)S.banner="std";
+  save();render();toast("フレンドガチャを消しました");
+}
 abBuild($("abEdit"),"ab");
 abBuild($("mkAb"),"mk");abFill("mk",null,$("mkRar").value);
 $("mkRar").addEventListener("change",()=>abRarity("mk",$("mkRar").value));
@@ -4276,7 +4398,7 @@ function renderHome(){
   btSeasonCheck();
   {const mine=CARDS.concat(SHOP_CARDS,REWARD_CARDS,S.custom).filter(c=>(S.owned[c.id]||0)>0);$("hpCards").textContent=`${mine.reduce((a,c)=>a+S.owned[c.id],0)}枚 ・ ${mine.length}種類`}
   $("hpBattle").textContent=`RANK ${btRankOf(S.battle.bp)} ・ BP ${S.battle.bp||0}`;
-  $("hpMake").textContent=`自作 ${S.custom.length} 枚 ・ ガチャ ${S.packs.length} 個`;
+  $("hpMake").textContent=`自作 ${S.custom.filter(c=>!c.friend).length} 枚 ・ ガチャ ${S.packs.filter(p=>!p.friend).length} 個`;
 }
 document.querySelectorAll(".hp").forEach(b=>b.onclick=()=>{const go=b.dataset.go;if(go==="dex"){dexSel=null;closeDetail();dexStale=true}tab(go);window.scrollTo({top:0,behavior:"smooth"})});
 $("hsIdle").onclick=()=>{$("idleBtn").click();renderHome()};
