@@ -1501,10 +1501,18 @@ const CARDS=[
  ["SR","SF","Solar Flare","ソーラー・フレア","惑星クエーセリアを守る精鋭部隊「クエーサーガード」の戦士。スター・ランスの指揮のもと、太陽の炎を宿した大剣と巨体を武器に最前線で戦う豪快な戦士。",28,"shield"],
  ["SR","LM","Luna Mirage","ルナ・ミラージュ","惑星クエーセリアを守る精鋭部隊「クエーサーガード」の魔術師。月や星の力を利用した幻影魔法と強力な攻撃魔法を操り、スター・ランスたちを後方から支える。",235,"shield"],
  ["SR","AG","Astra Guard","アストラ・ガード","惑星クエーセリアを守る「クエーサーガード」の重装戦士。巨大な体と頑丈な大盾を武器に仲間たちの前に立ち、どんな攻撃からもチームを守る頼れる防御役。",42,"shield"],
- ["SR","NB","Nebula Bolt","ネビュラ・ボルト","惑星クエーセリアを守る「クエーサーガード」の戦士。強力な電撃を発生させる特殊武器を操り、高速の一撃と雷撃で敵陣へ切り込む攻撃役。",250,"shield"]
+ ["SR","NB","Nebula Bolt","ネビュラ・ボルト","惑星クエーセリアを守る「クエーサーガード」の戦士。強力な電撃を発生させる特殊武器を操り、高速の一撃と雷撃で敵陣へ切り込む攻撃役。",250,"shield"],
+ ["N","SN","Snack Sam","スナック・サム","いつもポケットとリュックいっぱいにスナック菓子を詰め込み、どこへ行くにも何かを食べている食いしん坊な少年。",40,"shield"],
+ ["N","EE","Elevator Eddie","エレベーター・エディ","政府の秘密基地でエレベーター係をしている青年。階を間違えたり書類を落としたりとかなりのおっちょこちょいだが、誰にでも親切。",210,"shield"],
+ ["N","PP","Pencil Penny","ペンシル・ペニー","いつも大量の鉛筆とスケッチブックを持ち歩き、学校でも街中でも気になったものをすぐ絵にしてしまう、ちょっと変わったアーティスティックな少女。",15,"shield"],
+ ["N","LO","Laundry Lou","ランドリー・ルー","ヒーローたちのスーツまで引き受けてくれる街の洗濯屋のおばさん。どんなに汚れた特殊スーツでも丁寧に手洗いしてくれる。",350,"shield"],
+ ["N","CC","Coupon Carl","クーポン・カール","いつも大量のクーポン券を持ち歩き、買い物となれば1円でも安くするために何十枚ものクーポンを漁り始める、節約が生きがいのおじさん。",95,"shield"],
+ ["N","RR","Radio Ray","ラジオ・レイ","古いラジオを何よりも大切にしている穏やかなおじいさん。暇さえあればお気に入りのラジオをいじりながら、昔の音楽や番組を聴いてのんびり暮らしている。",25,"shield"],
+ ["N","OL","Oliver","オリバー","ラジオ・レイの飼い猫。",45,"shield"],
+ ["N","BB","Burger Barry","バーガー・バリー","ダイナー・ダイナモがやっているハンバーガー店「ダイナモ・バーガー」で働く気弱でドジな青年。ただの店員なのに、なぜか事件に毎回巻き込まれてしまう不運な男。",5,"shield"]
 ].map((c,i)=>({id:i,r:c[0],m:c[1],name:c[2],kana:c[3],flavor:c[4],h:c[5],shape:c[6]}));
 // standard cards that use a picture instead of the drawn portrait
-const PHOTOS={"Rubber Duck":"rubber-duck.jpg","Atlas Prime":"atlas-prime.jpg","Nova Mae":"nova-mae.jpg","Skyline Sentinel":"skyline-sentinel.jpg","Queen Quasar":"queen-quasar.jpg","Thunder Hound":"thunder-hound.jpg","Atomic Bee":"atomic-bee.jpg","Radio Ranger":"radio-ranger.jpg","Mirror Max":"mirror-max.jpg","Velvet Comet":"velvet-comet.jpg","Doctor Fuse":"doctor-fuse.jpg","Neon Noodle":"neon-noodle.jpg","Jukebox Jane":"jukebox-jane.jpg","Skate Saint":"skate-saint.jpg","Diner Dynamo":"diner-dynamo.jpg","Tornado Tess":"tornado-tess.jpg","Captain Cactus":"captain-cactus.jpg","Glitter Gator":"glitter-gator.jpg","Gumball Kid":"gumball-kid.jpg","Traffic Cone":"traffic-cone.jpg","Lunchbox Larry":"lunchbox-larry.jpg","Static Sally":"static-sally.jpg","Paper Boy":"paper-boy.jpg","Night Janitor":"night-janitor.jpg","Hot Dog Man":"hot-dog-man.jpg","Mailbox Mike":"mailbox-mike.jpg","Coin Op":"coin-op.jpg","Solar Flare":"solar-flare.jpg","Luna Mirage":"luna-mirage.jpg","Astra Guard":"astra-guard.jpg","Nebula Bolt":"nebula-bolt.jpg"};
+const PHOTOS={"Rubber Duck":"rubber-duck.jpg","Atlas Prime":"atlas-prime.jpg","Nova Mae":"nova-mae.jpg","Skyline Sentinel":"skyline-sentinel.jpg","Queen Quasar":"queen-quasar.jpg","Thunder Hound":"thunder-hound.jpg","Atomic Bee":"atomic-bee.jpg","Radio Ranger":"radio-ranger.jpg","Mirror Max":"mirror-max.jpg","Velvet Comet":"velvet-comet.jpg","Doctor Fuse":"doctor-fuse.jpg","Neon Noodle":"neon-noodle.jpg","Jukebox Jane":"jukebox-jane.jpg","Skate Saint":"skate-saint.jpg","Diner Dynamo":"diner-dynamo.jpg","Tornado Tess":"tornado-tess.jpg","Captain Cactus":"captain-cactus.jpg","Glitter Gator":"glitter-gator.jpg","Gumball Kid":"gumball-kid.jpg","Traffic Cone":"traffic-cone.jpg","Lunchbox Larry":"lunchbox-larry.jpg","Static Sally":"static-sally.jpg","Paper Boy":"paper-boy.jpg","Night Janitor":"night-janitor.jpg","Hot Dog Man":"hot-dog-man.jpg","Mailbox Mike":"mailbox-mike.jpg","Coin Op":"coin-op.jpg","Solar Flare":"solar-flare.jpg","Luna Mirage":"luna-mirage.jpg","Astra Guard":"astra-guard.jpg","Nebula Bolt":"nebula-bolt.jpg","Snack Sam":"snack-sam.jpg","Elevator Eddie":"elevator-eddie.jpg","Pencil Penny":"pencil-penny.jpg","Laundry Lou":"laundry-lou.jpg","Coupon Carl":"coupon-carl.jpg","Radio Ray":"radio-ray.jpg","Oliver":"oliver.jpg","Burger Barry":"burger-barry.jpg"};
 const PHOTO_V="3";
 CARDS.forEach(c=>{if(PHOTOS[c.name])c.photo=PHOTOS[c.name]+"?v="+PHOTO_V});
 /* ---- cover cards: random owned cards, or the rarest ones when nothing is owned ---- */
@@ -3574,6 +3582,14 @@ var BT_ABIL={ // var: may be read by early renders on startup
  "Astra Guard":{t:0,hp:1.3,atk:.85,spd:.75,s:{name:"スター・バスティオン",cost:3,desc:"味方全員、2ターンのあいだ受けるダメージ45%カット＋自分は受けたダメージの30%を返す",fx:[{k:"guard",v:.45,turns:2,team:true},{k:"reflect",v:.3,turns:2}]},p:{k:"tough",v:.2,name:"大盾の守り",desc:"受けるダメージがいつも20%少ない"}},
  "Nebula Bolt":{t:1,hp:.9,atk:1.1,spd:1.2,s:{name:"ネビュラ・サンダー",cost:3,desc:"0.75倍ダメージ×2回＋50%の確率で敵をしびれさせる",fx:[btH(.75,2),{k:"stun",ch:.5}]},p:{k:"first",name:"電光石火",desc:"いつも先に行動する"}},
  "King Astrion Quasar":{t:2,hp:1.05,s:{name:"ロイヤル・コンステレーション",cost:4,desc:"1.6倍ダメージ＋味方全員のHPを20%回復＋味方全員の攻撃力20%アップ（3ターン）",fx:[btH(1.6),{k:"heal",v:.2,team:true},{k:"buff",v:.2,turns:3,team:true}]},p:{k:"buddy",v:.3,with:"Queen Quasar",name:"王家の絆",desc:"味方チームにクイーン・クエーサーがいると攻撃力30%アップ"}},
+ "Snack Sam":{t:0,hp:1.15,atk:.9,s:{name:"おやつタイム",cost:2,desc:"自分のHPを30%回復＋攻撃力20%アップ（2ターン）",fx:[{k:"heal",v:.3},{k:"buff",v:.2,turns:2}]}},
+ "Elevator Eddie":{t:1,s:{name:"行き先まちがい",cost:2,desc:"0.8倍ダメージ＋50%の確率で敵をしびれさせる（違う階へご案内）",fx:[btH(.8),{k:"stun",ch:.5}]}},
+ "Pencil Penny":{t:2,s:{name:"らくがきスケッチ",cost:2,desc:"1.0倍ダメージ＋敵の攻撃力25%ダウン（3ターン）",fx:[btH(1),{k:"weaken",v:.25,turns:3}]}},
+ "Laundry Lou":{t:0,hp:1.1,s:{name:"まっさら手洗い",cost:3,desc:"味方全員のHPを20%回復",fx:[{k:"heal",v:.2,team:true}]}},
+ "Coupon Carl":{t:2,s:{name:"クーポン大放出",cost:2,desc:"0.4倍ダメージ×4回",fx:[btH(.4,4)]}},
+ "Radio Ray":{t:2,hp:.9,atk:.85,s:{name:"なつかしのメロディ",cost:3,desc:"味方全員の攻撃力20%アップ（3ターン）",fx:[{k:"buff",v:.2,turns:3,team:true}]}},
+ "Oliver":{t:1,hp:.8,spd:1.25,s:{name:"ねこパンチ",cost:2,desc:"0.5倍ダメージ×3回",fx:[btH(.5,3)]}},
+ "Burger Barry":{t:0,s:{name:"まさかの大惨事",cost:2,desc:"1.7倍ダメージ。ただし自分も最大HPの10%ダメージ（なぜか巻き込まれる）",fx:[btH(1.7),{k:"recoil",v:.1}]}},
  "Star Velvet":{t:1,spd:1.15,s:{name:"ハイパードライブ砲",cost:4,desc:"2.1倍ダメージ",fx:[btH(2.1)]},p:{k:"buddy",v:.3,name:"最高の相棒",desc:"味方チームにベルベット・コメットがいると攻撃力30%アップ"}},
 };
 function btHash(str){let h=2166136261;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
