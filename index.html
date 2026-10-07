@@ -961,10 +961,16 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
 .hh-card .hh-edit{position:absolute;right:-8px;bottom:-10px;z-index:3;padding:3px 9px;border:3px solid var(--ink);background:var(--yellow,#ffd21f);color:var(--ink);font:16px/1 Bangers,Impact,sans-serif;letter-spacing:1px;box-shadow:3px 3px 0 var(--ink);transform:rotate(5deg)}
 .hc-modal .mission{width:min(640px,100%)}
 .hc-note{margin:4px 0 12px;font-size:13px;font-weight:700}
-.hc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:12px}
+.hc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:18px 12px}
+.hc-modal .mission{width:min(760px,100%)!important;display:flex;flex-direction:column;gap:10px}
+.hc-f{margin:0}
+.hc-item{position:relative}
+.hc-now{position:absolute;left:50%;bottom:-10px;transform:translateX(-50%);z-index:4;white-space:nowrap;font-size:11px;font-weight:700;background:var(--red);color:#fff;border:2px solid var(--ink);padding:0 6px}
+.hc-rand small{display:block;font-family:var(--jp);font-size:11px;font-weight:700;margin-top:4px}
+@media (max-width:640px){.hc-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px 8px}}
 .hc-grid .card{cursor:pointer}
 .hc-grid .card.sel{outline:5px solid var(--red,#e2231a);outline-offset:3px}
-.hc-rand{display:flex;align-items:center;justify-content:center;aspect-ratio:5/7;border:4px dashed var(--ink);background:#fff;color:var(--ink);font:22px/1.1 Bangers,Impact,sans-serif;text-align:center;cursor:pointer;padding:6px}
+.hc-rand{display:flex;flex-direction:column;align-items:center;justify-content:center;aspect-ratio:5/7;border:4px dashed var(--ink);background:#fff;color:var(--ink);font:22px/1.1 Bangers,Impact,sans-serif;text-align:center;cursor:pointer;padding:6px}
 .hc-rand.sel{outline:5px solid var(--red,#e2231a);outline-offset:3px}
 .hh-text{position:relative;display:flex;flex-direction:column;gap:12px;min-width:0}
 .hh-cap{align-self:flex-start;font-family:var(--display);font-size:13px;letter-spacing:.05em;background:var(--yellow);color:var(--ink);border:2px solid var(--ink);padding:1px 8px;transform:rotate(-1.5deg)}
@@ -1418,6 +1424,11 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
       <button type="button" class="close" id="hcClose" aria-label="閉じる">×</button>
       <div class="ms-head"><b>HOME CARD</b></div>
       <p class="hc-note">ホーム画面に飾るカードを、持っているカードから選んでね。</p>
+      <div class="mc-tabs" id="hcTabs" role="tablist"></div>
+      <div class="dxf hc-f">
+        <div class="dxf-row"><span class="dxf-lbl">レア</span><span class="dxf-chips" id="hcR"></span></div>
+        <div class="dxf-row"><span class="dxf-lbl">並び</span><span class="dxf-chips" id="hcSort"></span></div>
+      </div>
       <div class="hc-grid" id="hcGrid"></div>
     </div>
   </div>
@@ -4707,18 +4718,40 @@ function renderHome(){
 }
 document.querySelectorAll(".hp").forEach(b=>b.onclick=()=>{const go=b.dataset.go;if(go==="dex"){dexSel=null;closeDetail();dexStale=true}tab(go);window.scrollTo({top:0,behavior:"smooth"})});
 $("hsIdle").onclick=()=>{$("idleBtn").click();renderHome()};
+// home card picker: tabs (STAR LIGHT / original), rarity filter and sort, laid out like the dex
+let hcF={book:"std",r:"ALL",sort:"rare"};
 function openHomePicker(){
-  const pool=CARDS.concat(SHOP_CARDS,REWARD_CARDS,S.custom).filter(c=>S.owned[c.id]);
-  if(!pool.length)return;
-  const g=$("hcGrid");g.innerHTML="";
-  const rnd=document.createElement("button");rnd.type="button";rnd.className="hc-rand"+(S.homeCard==null?" sel":"");rnd.textContent="RANDOM!";
-  rnd.onclick=()=>setHomeCard(null);g.appendChild(rnd);
-  pool.sort((a,b)=>ORDER.indexOf(a.r)-ORDER.indexOf(b.r)).forEach(c=>{
-    const el=cardEl(c,{flipped:true});
-    if(String(c.id)===S.homeCard)el.classList.add("sel");
-    el.onclick=()=>setHomeCard(String(c.id));g.appendChild(el);
-  });
+  const all=CARDS.concat(SHOP_CARDS,REWARD_CARDS,S.custom).filter(c=>S.owned[c.id]);
+  if(!all.length)return;
+  const cur=all.find(c=>String(c.id)===S.homeCard);
+  if(cur)hcF.book=cur.img?"custom":"std";
+  hcDraw();
   $("hcModal").hidden=false;document.body.style.overflow="hidden";
+}
+function hcDraw(){
+  const std=CARDS.concat(SHOP_CARDS,REWARD_CARDS).filter(c=>S.owned[c.id]),cus=S.custom.filter(c=>S.owned[c.id]);
+  if(hcF.book==="custom"&&!cus.length)hcF.book="std";
+  const tabs=$("hcTabs");tabs.innerHTML="";
+  [["std","STAR LIGHT",`スタンダード ・ ${std.length}種`],["custom","自作カード",`自分で作ったカード ・ ${cus.length}種`]].forEach(([id,t,sub])=>{
+    const b=document.createElement("button");b.type="button";b.setAttribute("role","tab");b.setAttribute("aria-selected",hcF.book===id);
+    b.innerHTML=`<b>${t}</b><small>${sub}</small>`;b.disabled=id==="custom"&&!cus.length;
+    b.onclick=()=>{hcF.book=id;hcF.r="ALL";hcDraw()};tabs.appendChild(b);
+  });
+  const pool=hcF.book==="custom"?cus:std;
+  const chips=(id,opts,cur,set)=>{const box=$(id);box.innerHTML="";opts.forEach(([v,label,cls])=>{const b=document.createElement("button");b.type="button";b.className="dxf-chip"+(cls?" "+cls:"");b.setAttribute("aria-pressed",cur===v);b.innerHTML=label;b.onclick=()=>{set(v);hcDraw()};box.appendChild(b)})};
+  chips("hcR",[["ALL","ぜんぶ"]].concat(ORDER.filter(r=>pool.some(c=>c.r===r)).map(r=>[r,r,"r-"+r])),hcF.r,v=>hcF.r=v);
+  chips("hcSort",[["rare","レア順"],["no","No.順"],["name","名前順"]],hcF.sort,v=>hcF.sort=v);
+  const rk=c=>ORDER.indexOf(c.r),no=c=>stdNo(c)||(1000+S.custom.indexOf(c));
+  const list=pool.filter(c=>hcF.r==="ALL"||c.r===hcF.r).sort(hcF.sort==="no"?(a,b)=>no(a)-no(b):hcF.sort==="name"?(a,b)=>String(a.name).localeCompare(String(b.name)):(a,b)=>rk(a)-rk(b)||no(a)-no(b));
+  const g=$("hcGrid");g.innerHTML="";
+  const rnd=document.createElement("button");rnd.type="button";rnd.className="hc-rand"+(S.homeCard==null?" sel":"");rnd.innerHTML="RANDOM!<small>開くたびに<br>ランダム</small>";
+  rnd.onclick=()=>setHomeCard(null);g.appendChild(rnd);
+  list.forEach(c=>{
+    const w=document.createElement("div");w.className="hc-item";
+    const el=cardEl(c,{flipped:true});w.appendChild(el);
+    if(String(c.id)===S.homeCard){el.classList.add("sel");w.insertAdjacentHTML("beforeend",`<span class="hc-now">いま飾っている</span>`)}
+    el.onclick=()=>setHomeCard(String(c.id));g.appendChild(w);
+  });
 }
 function setHomeCard(id){S.homeCard=id;save();closeHomePicker();renderHome()}
 function closeHomePicker(){$("hcModal").hidden=true;document.body.style.overflow=""}
