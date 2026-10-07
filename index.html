@@ -1476,9 +1476,10 @@ const CARDS=[
  ["SSR","TH","Thunder Hound","サンダー・ハウンド","雷を浴びて超人的な力を得た猟犬戦士。稲妻の速さと鋭い嗅覚を武器に街の悪を追い詰める。",58,"burst"],
  ["UR","AP","Atlas Prime","アトラス・プライム","宇宙の核と融合し、重力そのものを武器に戦う超重量級ヒーロー。",205,"burst"],
  ["UR","NM","Nova Mae","ノヴァ・メイ","宇宙の光「ノヴァ・エネルギー」を操り、闇に希望を灯す若きヒーロー。",320,"burst"],
+ ["SR","SL","Star Lance","スター・ランス","惑星クエーセリアを守護する精鋭戦士部隊「クエーサーガード」のリーダー。巨大な星槍を武器に、数々の宇宙戦争を生き抜いてきた歴戦の戦士。",222,"shield"]
 ].map((c,i)=>({id:i,r:c[0],m:c[1],name:c[2],kana:c[3],flavor:c[4],h:c[5],shape:c[6]}));
 // standard cards that use a picture instead of the drawn portrait
-const PHOTOS={"Rubber Duck":"rubber-duck.jpg","Atlas Prime":"atlas-prime.jpg","Nova Mae":"nova-mae.jpg","Skyline Sentinel":"skyline-sentinel.jpg","Queen Quasar":"queen-quasar.jpg","Thunder Hound":"thunder-hound.jpg","Atomic Bee":"atomic-bee.jpg","Radio Ranger":"radio-ranger.jpg","Mirror Max":"mirror-max.jpg","Velvet Comet":"velvet-comet.jpg","Doctor Fuse":"doctor-fuse.jpg","Neon Noodle":"neon-noodle.jpg","Jukebox Jane":"jukebox-jane.jpg","Skate Saint":"skate-saint.jpg","Diner Dynamo":"diner-dynamo.jpg","Tornado Tess":"tornado-tess.jpg","Captain Cactus":"captain-cactus.jpg","Glitter Gator":"glitter-gator.jpg","Gumball Kid":"gumball-kid.jpg","Traffic Cone":"traffic-cone.jpg","Lunchbox Larry":"lunchbox-larry.jpg","Static Sally":"static-sally.jpg","Paper Boy":"paper-boy.jpg","Night Janitor":"night-janitor.jpg","Hot Dog Man":"hot-dog-man.jpg","Mailbox Mike":"mailbox-mike.jpg","Coin Op":"coin-op.jpg"};
+const PHOTOS={"Rubber Duck":"rubber-duck.jpg","Atlas Prime":"atlas-prime.jpg","Nova Mae":"nova-mae.jpg","Skyline Sentinel":"skyline-sentinel.jpg","Queen Quasar":"queen-quasar.jpg","Thunder Hound":"thunder-hound.jpg","Atomic Bee":"atomic-bee.jpg","Radio Ranger":"radio-ranger.jpg","Mirror Max":"mirror-max.jpg","Velvet Comet":"velvet-comet.jpg","Doctor Fuse":"doctor-fuse.jpg","Neon Noodle":"neon-noodle.jpg","Jukebox Jane":"jukebox-jane.jpg","Skate Saint":"skate-saint.jpg","Diner Dynamo":"diner-dynamo.jpg","Tornado Tess":"tornado-tess.jpg","Captain Cactus":"captain-cactus.jpg","Glitter Gator":"glitter-gator.jpg","Gumball Kid":"gumball-kid.jpg","Traffic Cone":"traffic-cone.jpg","Lunchbox Larry":"lunchbox-larry.jpg","Static Sally":"static-sally.jpg","Paper Boy":"paper-boy.jpg","Night Janitor":"night-janitor.jpg","Hot Dog Man":"hot-dog-man.jpg","Mailbox Mike":"mailbox-mike.jpg","Coin Op":"coin-op.jpg","Star Lance":"star-lance.jpg"};
 const PHOTO_V="3";
 CARDS.forEach(c=>{if(PHOTOS[c.name])c.photo=PHOTOS[c.name]+"?v="+PHOTO_V});
 /* ---- cover cards: random owned cards, or the rarest ones when nothing is owned ---- */
@@ -3463,6 +3464,7 @@ const BT_ABIL={
  "Echo Valkyrie":{t:0,s:{name:"天空の神槍",cost:4,desc:"2.0倍ダメージ＋自分のHPを15%回復",fx:[btH(2),{k:"heal",v:.15}]},p:{k:"soul",v:.25,name:"魂の導き",desc:"味方が倒れるたびに攻撃力25%アップ（ずっと続く）"}},
  "Solar Sovereign":{t:0,atk:1.05,s:{name:"スーパーノヴァ",cost:5,desc:"3.0倍ダメージ＋敵をやけど状態に（3ターン、毎ターン最大HPの8%ダメージ）",fx:[btH(3),{k:"dot",v:.08,turns:3}]},p:{k:"rage",v:.5,name:"恒星の力",desc:"HPが40%以下になると攻撃力50%アップ"}},
  "Omega Paragon":{t:2,s:{name:"万象の魔術",cost:4,desc:"1.5倍ダメージ＋敵の攻撃力40%ダウン（3ターン）＋敵を確実にしびれさせる",fx:[btH(1.5),{k:"weaken",v:.4,turns:3},{k:"stun",ch:1}]},p:{k:"charge",name:"千年の叡智",desc:"毎ターン、チャージが1多くたまる"}},
+ "Star Lance":{t:0,hp:1.05,s:{name:"クエーサー・ストライク",cost:3,desc:"1.6倍ダメージ＋味方全員の攻撃力20%アップ（2ターン）",fx:[btH(1.6),{k:"buff",v:.2,turns:2,team:true}]},p:{k:"tough",v:.15,name:"クエーサーガードの鎧",desc:"受けるダメージがいつも15%少ない"}},
  "Star Velvet":{t:1,spd:1.15,s:{name:"ハイパードライブ砲",cost:4,desc:"2.1倍ダメージ",fx:[btH(2.1)]},p:{k:"buddy",v:.3,name:"最高の相棒",desc:"味方チームにベルベット・コメットがいると攻撃力30%アップ"}},
 };
 function btHash(str){let h=2166136261;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
