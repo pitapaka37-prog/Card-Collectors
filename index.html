@@ -594,6 +594,25 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
 .bt-type{display:inline-grid;place-items:center;width:24px;height:24px;border:2px solid var(--ink);border-radius:50%;color:#fff;font:700 13px/1 var(--jp);flex:none}
 .bt-type.t0{background:#e2231a}.bt-type.t1{background:#1d5fd6}.bt-type.t2{background:#1d9e5a}
 .bt-need{color:var(--red)}
+.dxf{display:flex;flex-direction:column;gap:8px;margin:12px 0 16px;padding:12px;background:#fff;border:4px solid var(--ink);box-shadow:5px 5px 0 var(--ink)}
+.dxf-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px}
+.dxf-row[hidden]{display:none}
+.dxf-lbl{font-size:12px;font-weight:700;min-width:3em}
+.dxf-chips{display:flex;flex-wrap:wrap;gap:6px;margin-right:8px}
+.dxf-chip{display:inline-flex;align-items:center;gap:4px;font-size:13px;font-weight:700;border:2px solid var(--ink);background:#fff;padding:2px 10px;box-shadow:2px 2px 0 var(--ink)}
+.dxf-chip[aria-pressed="true"]{background:var(--ink);color:var(--yellow)}
+.dxf-chip .bt-type{width:20px;height:20px;font-size:11px}
+#dxfQ{flex:1;min-width:140px;font:inherit;font-size:15px;padding:6px 10px;border:3px solid var(--ink);background:#fffdf5}
+.dxf-fav{font-size:14px;font-weight:700;border:3px solid var(--ink);background:#fff;padding:4px 12px;box-shadow:3px 3px 0 var(--ink)}
+.dxf-fav[aria-pressed="true"]{background:var(--yellow)}
+.dxf-reset{font-size:13px;padding:4px 10px}
+.dxf-count{font-size:12px;font-weight:700;min-height:0}
+.dxf-count:empty{display:none}
+.slot{position:relative}
+.fav-btn{position:absolute;top:-8px;left:-8px;z-index:5;width:30px;height:30px;display:grid;place-items:center;border:2px solid var(--ink);border-radius:50%;background:#fff;color:#9aa4b8;font-size:17px;line-height:1;box-shadow:2px 2px 0 var(--ink);padding:0}
+.fav-btn.on{background:var(--yellow);color:var(--red)}
+.fav-detail{margin:6px 0}
+.fav-detail.on{background:var(--yellow)}
 .dk-panel{align-self:stretch;display:flex;flex-direction:column;gap:10px;padding:14px;background:#fff;border:4px solid var(--ink);box-shadow:6px 6px 0 var(--ink)}
 .dk-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px}
 .dk-head>b{font-family:var(--display);font-weight:400;font-size:28px;letter-spacing:.04em}
@@ -1040,6 +1059,13 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
       <div class="resetbar" id="resetbar" hidden><span>この自作ガチャの図鑑（集めた枚数と天井の回数）をリセットできます。カードそのものは消えません。</span><button type="button" class="ghost" id="dexReset">この図鑑をリセット</button></div>
       <div class="sellbar" id="sellbar"><span id="sellInfo"></span><button type="button" class="ghost" id="sellAll">ダブりをまとめて売る</button></div>
       <div class="detail" id="detail" hidden></div>
+      <div class="dxf" id="dexFilter">
+        <div class="dxf-row"><input type="search" id="dxfQ" placeholder="名前でさがす" aria-label="名前でさがす" autocomplete="off"><button type="button" class="dxf-fav" id="dxfFav" aria-pressed="false">★ お気に入りだけ</button><button type="button" class="ghost dxf-reset" id="dxfReset">リセット</button></div>
+        <div class="dxf-row"><span class="dxf-lbl">レア</span><span class="dxf-chips" id="dxfR"></span></div>
+        <div class="dxf-row"><span class="dxf-lbl">所持</span><span class="dxf-chips" id="dxfOwn"></span></div>
+        <div class="dxf-row" id="dxfStdRow"><span class="dxf-lbl">タイプ</span><span class="dxf-chips" id="dxfType"></span><span class="dxf-lbl">入手</span><span class="dxf-chips" id="dxfKind"></span></div>
+        <div class="dxf-count" id="dxfCount"></div>
+      </div>
       <div id="dexBody"></div>
     </div>
   </section>
@@ -1333,7 +1359,7 @@ const SFX={SR:"WHAM!",SSR:"KA-POW!!",UR:"KRAKA-BOOM!!!"};
 const PACK_COLORS=["#e2231a","#1d9e5a","#ff7a00","#7a3cff","#e0218a","#0f8f8f","#3d3d3d"];
 const STD_TEXT="十連なら最後の1枚は SR 以上が確定。80 回 SSR が出なければ、次の1枚は SSR 以上になります。";
 
-const DEFAULT={gems:3000,pity:0,owned:{},custom:[],packs:[],pityBy:{},banner:"std",loginLast:"",streak:0,idleAt:0,points:0,sound:true,bgm:true,hiScore:0,mission:null,stats:{pulls:0,bestWave:0,sold:0,games:0,bestRank:1,dailyAll:0,loginDays:0,bestStreak:0},normalClaimed:{},battle:{w:0,l:0,d:0,bp:0},decks:[[],[],[]],deckSel:0};
+const DEFAULT={gems:3000,pity:0,owned:{},custom:[],packs:[],pityBy:{},banner:"std",loginLast:"",streak:0,idleAt:0,points:0,sound:true,bgm:true,hiScore:0,mission:null,stats:{pulls:0,bestWave:0,sold:0,games:0,bestRank:1,dailyAll:0,loginDays:0,bestStreak:0},normalClaimed:{},battle:{w:0,l:0,d:0,bp:0},decks:[[],[],[]],deckSel:0,fav:{}};
 const KEY="cch-gacha";
 const newId=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
 let S=load();
@@ -1376,6 +1402,7 @@ function load(){
   if(!Array.isArray(s.decks))s.decks=[];
   s.decks=[0,1,2].map(k=>Array.isArray(s.decks[k])?s.decks[k].filter(x=>typeof x==="number"||typeof x==="string").map(String).filter((x,i,a)=>a.indexOf(x)===i).slice(0,5):[]);
   s.deckSel=num(s.deckSel,0,0,2);
+  {const f=s.fav&&typeof s.fav==="object"&&!Array.isArray(s.fav)?s.fav:{};s.fav={};Object.keys(f).slice(0,2000).forEach(k=>{if(f[k]===true)s.fav[String(k).slice(0,60)]=true})}
   s.hiScore=Math.max(0,Math.floor(Number(s.hiScore)||0));s.sound=s.sound!==false;s.bgm=s.bgm!==false;s.gems=num(s.gems,3000,0,1e9);s.points=num(s.points,0,0,1e9);s.pity=num(s.pity,0,0,PITY);s.streak=num(s.streak,0,0,1e6);
   s.idleAt=num(s.idleAt,0,0,Date.now());
   if(typeof s.loginLast!=="string"||!/^\d{4}-\d{2}-\d{2}$/.test(s.loginLast))s.loginLast="";
@@ -2209,6 +2236,7 @@ function drawDetail(){
     <div class="stats"><div><small>レアリティ</small><b>${c.r}</b></div><div><small>所持数</small><b>×${S.owned[c.id]}</b></div><div><small>No.</small><b>${no}</b></div></div>
     ${S.owned[c.id]>1?`<div class="sell"><button type="button" class="ghost" id="sell1">1枚売る <b>${valueText(c)}</b></button>${S.owned[c.id]>2?`<button type="button" class="ghost" id="sellN">ダブり ${S.owned[c.id]-1} 枚を全部売る <b>${valueText(c,S.owned[c.id]-1)}</b></button>`:""}</div>`:""}
     ${c.flavor?`<p>${esc(c.flavor)}</p>`:""}
+    <button type="button" class="ghost fav-detail ${isFav(c)?"on":""}" id="dFav">${isFav(c)?"★ お気に入り登録中":"☆ お気に入りに登録"}</button>
     ${btAbilityHTML(c)}
     <div class="nav"><button type="button" class="ghost" id="dPrev">← 前のカード</button><span style="align-self:center;font-weight:700;font-variant-numeric:tabular-nums">${detailIdx+1} / ${detailList.length}</span><button type="button" class="ghost" id="dNext">次のカード →</button></div>`;
   const close=document.createElement("button");close.type="button";close.className="close";close.textContent="×";close.setAttribute("aria-label","閉じる");close.onclick=closeDetail;
@@ -2216,6 +2244,8 @@ function drawDetail(){
   const s1=t.querySelector("#sell1"),sN=t.querySelector("#sellN");
   if(s1)s1.onclick=()=>{sellCards([[c,1]]);drawDetail()};
   if(sN)sN.onclick=()=>{sellCards([[c,S.owned[c.id]-1]]);drawDetail()};
+  const fb=t.querySelector("#dFav");
+  if(fb)fb.onclick=()=>{const on=toggleFav(c);fb.classList.toggle("on",on);fb.textContent=on?"★ お気に入り登録中":"☆ お気に入りに登録";dexStale=true};
   const prev=t.querySelector("#dPrev"),next=t.querySelector("#dNext");
   prev.disabled=detailList.length<2;next.disabled=detailList.length<2;
   prev.onclick=()=>{detailIdx=(detailIdx-1+detailList.length)%detailList.length;drawDetail()};
@@ -2295,10 +2325,56 @@ function renderDex(){
     $("sellAll").textContent=`ダブりをまとめて売る ${dl}`;
   }
   const body=$("dexBody");body.innerHTML="";
-  dexGroup(body,dexPoolOf(dexSel));
+  dxfDraw();
+  const full=dexPoolOf(dexSel),pool={};let shown=0,all=0;
+  ORDER.forEach(r=>{all+=full[r].length;pool[r]=full[r].filter(dxfMatch);shown+=pool[r].length});
+  $("dxfCount").textContent=dxfActive()?`${shown} / ${all} 枚を表示中`:"";
+  if(!shown){body.innerHTML=`<div class="empty">条件に合うカードがありません。${dexF.fav?"カードの詳しい画面で ☆ を押すとお気に入りに登録できます。":""}</div>`;return}
+  dexGroup(body,pool,dxfActive());
 }
+/* ---- dex filters and favourites ---- */
+const isFav=c=>!!S.fav[String(c.id)];
+function toggleFav(c){const k=String(c.id);if(S.fav[k])delete S.fav[k];else S.fav[k]=true;save();sfx(S.fav[k]?"rare":"tink");return !!S.fav[k]}
+const DXF0={r:"ALL",own:"all",fav:false,type:-1,kind:"all",q:""};
+let dexF=Object.assign({},DXF0);
+function dxfActive(){return dexF.r!=="ALL"||dexF.own!=="all"||dexF.fav||dexF.type>=0||dexF.kind!=="all"||!!dexF.q.trim()}
+function dxfMatch(c){
+  const n=S.owned[c.id]||0;
+  if(dexF.r!=="ALL"&&c.r!==dexF.r)return false;
+  if(dexF.own==="have"&&!n)return false;
+  if(dexF.own==="miss"&&n)return false;
+  if(dexF.own==="dup"&&n<2)return false;
+  if(dexF.fav&&!isFav(c))return false;
+  if(dexSel==="std"){
+    if(dexF.type>=0){const p=btProfile(c);if(!p||p.type!==dexF.type)return false}
+    if(dexF.kind==="gacha"&&(c.shop||c.reward))return false;
+    if(dexF.kind==="shop"&&!c.shop)return false;
+    if(dexF.kind==="mission"&&!c.reward)return false;
+  }
+  const q=dexF.q.trim().toLowerCase();
+  if(q&&!((c.name||"").toLowerCase().includes(q)||(c.kana||"").includes(q)))return false;
+  return true;
+}
+function dxfChips(id,opts,cur,set){
+  const box=$(id);box.innerHTML="";
+  opts.forEach(([v,label,cls])=>{const b=document.createElement("button");b.type="button";b.className="dxf-chip"+(cls?" "+cls:"");b.setAttribute("aria-pressed",cur===v);b.innerHTML=label;b.onclick=()=>{set(v);renderDex()};box.appendChild(b)});
+}
+function dxfDraw(){
+  dxfChips("dxfR",[["ALL","ぜんぶ"]].concat(ORDER.map(r=>[r,r,"r-"+r])),dexF.r,v=>dexF.r=v);
+  dxfChips("dxfOwn",[["all","ぜんぶ"],["have","持っている"],["miss","持っていない"],["dup","ダブり"]],dexF.own,v=>dexF.own=v);
+  const std=dexSel==="std";$("dxfStdRow").hidden=!std;
+  if(std){
+    dxfChips("dxfType",[[-1,"ぜんぶ"]].concat(BT_TYPES.map((t,i)=>[i,`<span class="bt-type t${i}">${t}</span>`])),dexF.type,v=>dexF.type=v);
+    dxfChips("dxfKind",[["all","ぜんぶ"],["gacha","ガチャ"],["shop","ショップ"],["mission","ミッション"]],dexF.kind,v=>dexF.kind=v);
+  }
+  const fb=$("dxfFav");fb.setAttribute("aria-pressed",dexF.fav);fb.textContent=`★ お気に入りだけ（${Object.keys(S.fav).length}）`;
+  const q=$("dxfQ");if(q.value!==dexF.q)q.value=dexF.q;
+}
+$("dxfFav").onclick=()=>{dexF.fav=!dexF.fav;renderDex()};
+$("dxfReset").onclick=()=>{dexF=Object.assign({},DXF0);renderDex()};
+$("dxfQ").addEventListener("input",e=>{dexF.q=e.target.value.slice(0,40);renderDex();const q=$("dxfQ");q.focus()});
 $("dexBack").onclick=()=>{dexSel=null;renderDex()};
-function dexGroup(body,pool){
+function dexGroup(body,pool,filtered){
   ORDER.forEach(r=>{
     if(!pool[r].length)return;
     const sec=document.createElement("div");sec.className="dex-section";
@@ -2311,6 +2387,10 @@ function dexGroup(body,pool){
         const el=cardEl(c,{flipped:true});el.tabIndex=0;el.setAttribute("role","button");el.setAttribute("aria-label",c.name);
         el.onclick=()=>showDetail(c,el);el.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();el.onclick()}};
         s.appendChild(el);s.insertAdjacentHTML("beforeend",`<span class="count">×${S.owned[c.id]}</span>`);
+        const fv=document.createElement("button");fv.type="button";fv.className="fav-btn"+(isFav(c)?" on":"");fv.textContent=isFav(c)?"★":"☆";
+        fv.setAttribute("aria-label",`${c.name} をお気に入り${isFav(c)?"から外す":"に登録"}`);
+        fv.onclick=e=>{e.stopPropagation();const on=toggleFav(c);fv.classList.toggle("on",on);fv.textContent=on?"★":"☆";if(dexF.fav&&!on)renderDex();else dxfDraw()};
+        s.appendChild(fv);
       }else{
         const b=document.createElement("div");b.className="locked named";
         b.setAttribute("aria-label",`${c.name}（未所持）`);
