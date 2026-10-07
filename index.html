@@ -637,22 +637,9 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
 .on-join input{font-family:var(--display);font-size:24px;letter-spacing:.2em;text-transform:uppercase;width:9em;padding:2px 10px;border:3px solid var(--ink)}
 .on-panel .fr-msg{color:#ffd21f}
 .bt-net{font-family:var(--jp);font-size:13px;font-weight:700;background:var(--yellow);color:var(--ink);border:2px solid var(--ink);padding:0 8px}
-.fr-panel{align-self:stretch;display:flex;flex-direction:column;gap:8px;padding:14px;background:#e9f3ff;border:4px solid var(--ink);box-shadow:6px 6px 0 var(--blue)}
-.fr-panel .dk-head small{font-size:13px;font-weight:700}
 .fr-row{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700}
 .fr-row input{font:inherit;padding:4px 8px;border:3px solid var(--ink);width:min(220px,100%)}
-.fr-out,.fr-in{display:flex;flex-direction:column;gap:6px}
-.fr-in label{font-size:13px;font-weight:700}
-.fr-panel textarea{width:100%;font:12px/1.4 ui-monospace,Menlo,monospace;padding:6px 8px;border:3px solid var(--ink);background:#fff;resize:vertical;word-break:break-all}
-.fr-out small{font-size:12px;font-weight:700}
 .fr-msg{font-size:12px;font-weight:700;color:var(--red)}
-.fr-modal .mission{width:min(560px,100%);display:flex;flex-direction:column;gap:10px}
-.fr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:10px}
-.fr-pc{display:flex;flex-direction:column;gap:2px;padding:0;border:0;background:none;text-align:left;cursor:pointer;min-width:0}
-.fr-pc span{font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.fr-pc small{font-size:10px;font-weight:700;opacity:.7}
-.fr-pc .bt-face{border-width:3px}
-.fr-pc.on .bt-face{outline:4px solid var(--red);outline-offset:1px}
 @media (max-width:640px){.ab-grid{grid-template-columns:1fr}}
 .lv-badge{display:inline-block;font-family:var(--display);font-weight:400;font-size:18px;letter-spacing:.04em;background:var(--ink);color:var(--yellow);padding:0 8px;line-height:1.3}
 .lv-badge.sm{font-size:13px;padding:0 5px}
@@ -1226,25 +1213,10 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
           <p class="dk-note">自分で作ったカードだけで戦うモード。持っている自作カードからランダムに5枚、敵も自作カードから選ばれます。自作カードの能力（タイプ・わざ・とくせいの効果）はカードを作ったときにランダムで決まり、わざととくせいの名前は自分で付けられます。勝ち負けのコインは同じですが、ランクと経験値には入りません。</p>
           <div class="dk-btns"><button type="button" class="btn-main" id="btStartCustom">自作カードでバトル！</button><span class="bt-need" id="btNeedCustom"></span></div>
         </div>
-        <div class="fr-panel">
-          <div class="dk-head"><b>FRIEND BATTLE</b><small>コードでフレンドと対戦</small></div>
-          <p class="dk-note">自分のチームを「バトルコード」にしてフレンドに送ろう。フレンドのコードを入れると、そのチームと対戦できます。相手のカードはコンピューターが動かします（同時に通信して遊ぶ対戦ではありません）。フレンド戦ではコイン・BP・経験値は増減しません。</p>
-          <div class="fr-row"><label for="frNick">あなたの名前</label><input type="text" id="frNick" maxlength="12" placeholder="なまえ"></div>
-          <div class="dk-btns"><button type="button" class="ghost" id="frMakeStd">デッキのコードを作る</button><button type="button" class="ghost" id="frMakeCus">自作カードのコードを作る</button></div>
-          <div class="fr-out" id="frOut" hidden>
-            <small id="frOutInfo"></small>
-            <textarea id="frCode" readonly rows="3" aria-label="あなたのバトルコード"></textarea>
-            <div class="dk-btns"><button type="button" class="ghost" id="frCopy">コピー</button><button type="button" class="ghost" id="frShare">共有する</button></div>
-          </div>
-          <div class="fr-in">
-            <label for="frInput">フレンドのコード</label>
-            <textarea id="frInput" rows="3" placeholder="フレンドからもらったコードをここに貼り付け"></textarea>
-            <div class="dk-btns"><button type="button" class="btn-main" id="frGo">このコードとバトル！</button><span class="fr-msg" id="frMsg" role="status"></span></div>
-          </div>
-        </div>
         <div class="on-panel">
           <div class="dk-head"><b>ONLINE BATTLE</b><small>リアルタイムでほかの人と対戦</small></div>
-          <p class="dk-note">片方が「部屋を作る」と<b>ルームコード</b>が出るので、相手に伝えよう。相手がそのコードで「参加する」と、同時に対戦が始まります。お互いが自分の番に行動を選び、両方そろうとターンが進みます。名前は上の FRIEND BATTLE の「あなたの名前」が使われます。コイン・BP・経験値は増減しません。</p>
+          <p class="dk-note">片方が「部屋を作る」と<b>ルームコード</b>が出るので、相手に伝えよう。相手がそのコードで「参加する」と、同時に対戦が始まります。お互いが自分の番に行動を選び、両方そろうとターンが進みます。相手には「あなたの名前」が表示されます。コイン・BP・経験値は増減しません。</p>
+          <div class="fr-row"><label for="frNick">あなたの名前</label><input type="text" id="frNick" maxlength="12" placeholder="なまえ"></div>
           <div class="dk-btns"><button type="button" class="btn-main" id="onHostStd">デッキで部屋を作る</button><button type="button" class="ghost" id="onHostCus">自作カードで部屋を作る</button></div>
           <div class="on-room" id="onRoom" hidden><small>ルームコード</small><b id="onCode">-----</b><span id="onRoomInfo">相手を待っています…</span><button type="button" class="ghost" id="onCancel">やめる</button></div>
           <div class="on-join"><input type="text" id="onJoinCode" maxlength="5" placeholder="ルームコード" autocomplete="off" autocapitalize="characters" aria-label="ルームコード"><button type="button" class="btn-main" id="onJoin">参加する</button></div>
@@ -1285,15 +1257,6 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
       <p class="ab-note">効果はカードを作ったときにランダムで決まっています。ここでは、わざととくせいの名前を変えられます。</p>
       <fieldset class="ab-set" id="abEdit"><legend>バトルの能力</legend></fieldset>
       <div class="dk-btns"><button type="button" class="btn-main" id="abSave">この能力にする</button><button type="button" class="ghost" id="abCancel">やめる</button></div>
-    </div>
-  </div>
-  <div class="detail ms-modal fr-modal" id="frPick" hidden role="dialog" aria-modal="true" aria-label="コードにする自作カードを選ぶ">
-    <div class="mission">
-      <button type="button" class="close" id="frPickClose" aria-label="閉じる">×</button>
-      <div class="ms-head"><b>MY TEAM</b><span id="frPickN"></span></div>
-      <p class="ab-note">コードにする自作カードを5枚えらんでね。</p>
-      <div class="fr-grid" id="frPickGrid"></div>
-      <div class="dk-btns"><button type="button" class="btn-main" id="frPickGo" disabled>この5枚でコードを作る</button></div>
     </div>
   </div>
   <div class="detail ms-modal bt-iv" id="btInfo" hidden role="dialog" aria-modal="true" aria-label="カードのステータス">
@@ -4036,10 +3999,10 @@ function btEnd(r){
   btDraw();
   $("btResult").hidden=false;document.body.style.overflow="hidden";
   const close=()=>{$("btResult").hidden=true;document.body.style.overflow=""};
-  const again=BT.mode,againCode=BT.friendCode;
+  const again=BT.mode;
   $("btAgain").hidden=again==="online";
   if(again==="online"&&BT.online==="host")netSnap();
-  $("btAgain").onclick=()=>{close();if(again==="friend")frStart(againCode);else btStart(again)};
+  $("btAgain").onclick=()=>{close();btStart(again)};
   $("btHome").onclick=()=>{close();BT=null;tab("home");window.scrollTo({top:0})};
 }
 $("btStart").onclick=()=>btStart("random");
@@ -4048,7 +4011,7 @@ $("rkClose").onclick=btHideRanks;
 $("rkModal").addEventListener("click",e=>{if(e.target===$("rkModal"))btHideRanks()});
 $("btStartDeck").onclick=()=>btStart("deck");
 $("btStartCustom").onclick=()=>btStart("custom");
-/* ---- friend battles: a team is shared as a "battle code" and fought against the computer ---- */
+/* ---- team codes: a team packed into a string, used to send your team to the online opponent ---- */
 const FR_PREFIX="SLB1-";
 const FR_BLANK="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==";
 function frEncode(o){return FR_PREFIX+btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"")}
@@ -4068,48 +4031,9 @@ function frThumb(src){
     im.onerror=()=>fin(FR_BLANK);im.src=src;
   });
 }
-function frShow(code,info){$("frOut").hidden=false;$("frCode").value=code;$("frOutInfo").textContent=info;}
 function frNick(){return ($("frNick").value||"").trim().slice(0,12)}
 $("frNick").value=S.nick||"";
 $("frNick").addEventListener("input",()=>{S.nick=frNick();save()});
-$("frMakeStd").onclick=()=>{
-  const list=dkCards(S.deckSel);
-  if(!dkValid(list)){toast(`DECK ${S.deckSel+1} が完成していません。先にデッキを作ってね`);return}
-  const code=frEncode({k:"s",n:frNick(),c:list.map(c=>[String(c.id),lvOf(c)])});
-  frShow(code,`DECK ${S.deckSel+1} のバトルコード（${list.map(c=>c.name).join("・")}）`);sfx("rare");
-};
-let frSel=[];
-function frPickDraw(){
-  const g=$("frPickGrid");g.innerHTML="";
-  btCustomPool().forEach(c=>{
-    const on=frSel.includes(c.id);
-    const b=document.createElement("button");b.type="button";b.className="fr-pc"+(on?" on":"");
-    b.appendChild(btFace(c));b.insertAdjacentHTML("beforeend",`<span>${esc(c.name)}</span><small>${c.r}</small>`);
-    b.onclick=()=>{if(on)frSel=frSel.filter(x=>x!==c.id);else if(frSel.length<5)frSel.push(c.id);else{toast("5枚までです");return}frPickDraw()};
-    g.appendChild(b);
-  });
-  $("frPickN").textContent=`${frSel.length} / 5`;
-  $("frPickGo").disabled=frSel.length!==5;
-}
-$("frMakeCus").onclick=()=>{
-  if(btCustomPool().length<5){toast("自作カードが5種類以上必要です");return}
-  frSel=frSel.filter(id=>btCustomPool().some(c=>c.id===id));
-  $("frPick").hidden=false;document.body.style.overflow="hidden";frPickDraw();
-};
-const frPickClose=()=>{$("frPick").hidden=true;document.body.style.overflow=""};
-$("frPickClose").onclick=frPickClose;
-$("frPick").addEventListener("click",e=>{if(e.target===$("frPick"))frPickClose()});
-$("frPickGo").onclick=async()=>{
-  const list=frSel.map(id=>S.custom.find(c=>c.id===id)).filter(Boolean);if(list.length!==5)return;
-  $("frPickGo").disabled=true;
-  const cards=[];
-  for(const c of list){const b=c.bt||btCustomDefaults(c);cards.push({n:c.name,k:c.kana||"",r:c.r,h:c.h||0,bt:b,i:await frThumb(c.img)})}
-  frPickClose();
-  frShow(frEncode({k:"c",n:frNick(),c:cards}),`自作カードのバトルコード（${list.map(c=>c.name).join("・")}）`);sfx("rare");
-};
-$("frCopy").onclick=async()=>{const t=$("frCode");try{await navigator.clipboard.writeText(t.value);toast("コードをコピーしました！")}catch(e){t.select();try{document.execCommand("copy");toast("コードをコピーしました！")}catch(_){toast("コードを長押ししてコピーしてね")}}};
-$("frShare").onclick=async()=>{const text=`STAR LIGHT COMICS CARD のバトルコード！アプリの BATTLE → FRIEND BATTLE に貼り付けて対戦してね\n${$("frCode").value}`;
-  if(navigator.share){try{await navigator.share({text})}catch(e){}}else $("frCopy").onclick()};
 // turn a code into the opponent team, checking every value
 function frParse(code){
   let o;try{o=frDecode(code)}catch(e){return{err:"コードが読み取れません。最初から最後まで、まるごと貼り付けてね。"}}
@@ -4132,29 +4056,6 @@ function frParse(code){
   }
   return{err:"コードの中身が正しくありません。"};
 }
-function frStart(code){
-  const f=frParse(code);
-  if(f.err){$("frMsg").textContent=f.err;return false}
-  let mine;
-  if(f.kind==="std"){
-    mine=dkCards(S.deckSel);
-    if(!dkValid(mine)){$("frMsg").textContent=`STAR LIGHT のコードには、あなたのデッキ（DECK ${S.deckSel+1}）で戦います。先にデッキを完成させてね。`;return false}
-    mine=mine.slice();
-  }else{
-    const pool=btCustomPool();
-    if(pool.length<5){$("frMsg").textContent="自作カードのコードには、あなたの自作カード（ランダム5枚）で戦います。自作カードが5種類以上必要です。";return false}
-    mine=shuffled(pool).slice(0,5);
-  }
-  $("frMsg").textContent="";
-  BT={mode:"friend",friendCode:code,foeName:f.name,eLv:1,p:{list:mine.map(c=>btMake(c,"p")),cur:null},e:{list:shuffled(f.team).map(x=>btMake(x.c,"e",x.lv)),cur:0},turn:0,busy:false,mustPick:true,switching:false,over:false,log:[]};
-  $("btPAct").dataset.cid="";$("btEAct").dataset.cid="";
-  btEnter(BT.e.list[0]);
-  sfx("up");renderBattle();
-  btLog(`${esc(f.name)} のチームとフレンド戦！ 先鋒は ${esc(BT.e.list[0].c.name)}。最初に出すカードを選んでね。`);
-  btDraw();
-  return true;
-}
-$("frGo").onclick=()=>frStart($("frInput").value);
 /* ---- online battle: real-time, peer to peer (WebRTC through the free PeerJS service) ----
    The room host runs the battle; the guest sends its moves and receives the state after every turn. */
 const NET_LIB="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.5/peerjs.min.js";
