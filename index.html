@@ -683,7 +683,18 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
 .dk-book button{font-size:18px;padding:2px 14px}
 .gs-modal .mission{width:min(480px,100%);display:flex;flex-direction:column;gap:10px}
 .gs-modal .on-room b{font-size:36px}
-.bswitch .add.friend{background:#e9f3ff}
+.bswitch .friend-tab{background:#e9f3ff}
+.gf-list{display:flex;flex-direction:column;gap:8px}
+.gf-item{display:grid;grid-template-columns:auto 1fr auto auto;align-items:center;gap:8px 10px;padding:8px 10px;background:#fff;border:3px solid var(--ink);box-shadow:3px 3px 0 var(--ink)}
+.gf-item.on{outline:3px solid var(--red);outline-offset:2px}
+.gf-sw{width:18px;height:40px;background:var(--pc);border:2px solid var(--ink)}
+.gf-t{display:flex;flex-direction:column;min-width:0}
+.gf-t b{font-family:var(--display);font-weight:400;font-size:20px;letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gf-t small{font-size:11px;font-weight:700;opacity:.75}
+.gf-item .btn-main{font-size:18px;padding:0 12px}
+.gf-item .ghost{font-size:12px;padding:2px 8px}
+.gf-add-h{margin-top:6px;font-family:var(--display);font-size:20px;letter-spacing:.05em;border-top:3px dashed rgba(0,0,0,.2);padding-top:10px}
+@media (max-width:640px){.gf-item{grid-template-columns:auto 1fr auto}.gf-item .ghost{grid-column:2/4;justify-self:end}}
 .gf-del{font-size:13px;padding:2px 10px;margin:6px 0}
 .dk-book button[aria-selected="true"]{background:var(--ink);color:var(--yellow)}
 .dk-row{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
@@ -1282,7 +1293,10 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
   <div class="detail ms-modal gs-modal" id="gfModal" hidden role="dialog" aria-modal="true" aria-label="フレンドガチャを追加">
     <div class="mission">
       <button type="button" class="close" id="gfClose" aria-label="閉じる">×</button>
-      <div class="ms-head"><b>FRIEND GACHA</b></div>
+      <div class="ms-head"><b>FRIEND GACHA</b><span id="gfCount"></span></div>
+      <p class="ab-note">フレンドからもらったガチャはここに入ります。引きたいガチャを選んでね。</p>
+      <div class="gf-list" id="gfList"></div>
+      <div class="gf-add-h">コードで追加する</div>
       <p class="ab-note">フレンドから聞いた「ガチャコード」を入れてね。受け取ったガチャは、作った人がカードを追加すると自動で最新になります。</p>
       <div class="on-join"><input type="text" id="gfCode" maxlength="6" placeholder="コード" autocomplete="off" autocapitalize="characters" aria-label="ガチャコード"><button type="button" class="btn-main" id="gfGo">受け取る</button></div>
       <p class="fr-msg" id="gfMsg" role="status"></p>
@@ -2311,8 +2325,12 @@ function renderSwitch(){
   };
   mk("std","STAR LIGHT COMICS","スターライト・コミックス");
   S.packs.filter(p=>!p.friend).forEach(p=>mk(p.id,pname(p),`自作 ${cardsIn(p.id).length} 枚`,p.color));
-  S.packs.filter(p=>p.friend).forEach(p=>mk(p.id,pname(p),`FRIEND ・ ${esc(p.friend.from||"フレンド")} ・ ${cardsIn(p.id).length} 枚`,p.color));
-  const fadd=document.createElement("button");fadd.className="add friend";fadd.innerHTML=`<span>+ FRIEND</span><small>フレンドガチャを追加</small>`;fadd.onclick=gfOpen;box.appendChild(fadd);
+  // friends' gachas all live behind one FRIEND GACHA button
+  const fr=S.packs.filter(p=>p.friend),cur=fr.find(p=>p.id===bid);
+  const fb=document.createElement("button");fb.className="friend-tab";fb.setAttribute("role","tab");fb.setAttribute("aria-selected",!!cur);
+  fb.innerHTML=`<span>FRIEND GACHA</span><small>${cur?`いま：${esc(pname(cur))}`:`フレンドガチャ ${fr.length} 個`}</small>`;
+  if(cur)fb.style.borderBottom=`6px solid ${cur.color}`;
+  fb.onclick=gfOpen;box.appendChild(fb);
   const add=document.createElement("button");add.className="add";add.innerHTML=`<span>+ NEW</span><small>ガチャを作る</small>`;
   add.onclick=()=>{tab("make");$("newPackName").focus();$("packsPanel").scrollIntoView({behavior:"smooth"})};
   box.appendChild(add);
@@ -4386,7 +4404,22 @@ async function gsOpen(p){
 function gsClose(){$("gsModal").hidden=true;document.body.style.overflow=""}
 $("gsClose").onclick=gsClose;
 $("gsModal").addEventListener("click",e=>{if(e.target===$("gsModal"))gsClose()});
-function gfOpen(){$("gfModal").hidden=false;document.body.style.overflow="hidden";$("gfMsg").textContent="";$("gfCode").value=""}
+function gfOpen(){$("gfModal").hidden=false;document.body.style.overflow="hidden";$("gfMsg").textContent="";$("gfCode").value="";gfDrawList();cloudCheckFriends()}
+function gfDrawList(){
+  const fr=S.packs.filter(p=>p.friend),box=$("gfList");box.innerHTML="";
+  $("gfCount").textContent=`${fr.length} 個`;
+  if(!fr.length){box.innerHTML=`<div class="empty">まだフレンドガチャはありません。下にフレンドのガチャコードを入れて追加しよう！</div>`;return}
+  fr.forEach(p=>{
+    const n=cardsIn(p.id).length,have=cardsIn(p.id).filter(c=>S.owned[c.id]).length,on=S.banner===p.id;
+    const row=document.createElement("div");row.className="gf-item"+(on?" on":"");row.style.setProperty("--pc",p.color);
+    row.innerHTML=`<span class="gf-sw"></span><div class="gf-t"><b>${esc(pname(p))}</b><small>${esc(p.friend.from||"フレンド")} のガチャ ・ ${n} 枚 ・ 集めた ${have}/${n}${p.friend.code?` ・ コード ${esc(p.friend.code)}`:""}</small></div>`;
+    const go=document.createElement("button");go.type="button";go.className="btn-main";go.textContent=on?"選択中":"引く";
+    go.onclick=()=>{setBanner(p.id);gfClose();tab("gacha");window.scrollTo({top:0,behavior:"smooth"})};
+    const del=document.createElement("button");del.type="button";del.className="ghost";del.textContent="消す";
+    armed(del,"消す","もう一度押すと消します",()=>{gfDelete(p.id);gfDrawList()});
+    row.append(go,del);box.appendChild(row);
+  });
+}
 function gfClose(){$("gfModal").hidden=true;document.body.style.overflow=""}
 $("gfClose").onclick=gfClose;
 $("gfModal").addEventListener("click",e=>{if(e.target===$("gfModal"))gfClose()});
@@ -4437,6 +4470,7 @@ async function cloudCheckFriends(force){
         p.friend.ver=res.ver;save();
         const n=cardsIn(p.id).length;
         if(n>before)toast(`フレンドガチャ「${pname(p)}」に新しいカードが追加されました！`);
+        if(!$("gfModal").hidden)gfDrawList();
       }
     }catch(e){}
   }
