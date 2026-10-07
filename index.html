@@ -680,6 +680,8 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
 .dk-tabs{display:flex;gap:6px}
 .dk-tabs button{font-family:var(--display);font-size:16px;letter-spacing:.04em;border:3px solid var(--ink);background:#fff;padding:0 10px;box-shadow:2px 2px 0 var(--ink)}
 .dk-tabs button[aria-selected="true"]{background:var(--red);color:#fff}
+.dk-book button{font-size:18px;padding:2px 14px}
+.dk-book button[aria-selected="true"]{background:var(--ink);color:var(--yellow)}
 .dk-row{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
 .dk-slot{display:flex;flex-direction:column;gap:3px;padding:0;border:0;background:none;color:inherit;text-align:left;cursor:pointer;min-width:0}
 .dk-slot.empty{aspect-ratio:6/7;border:3px dashed rgba(20,20,20,.45);display:grid;place-items:center}
@@ -1210,8 +1212,13 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
         </div>
         <div class="cb-panel">
           <div class="dk-head"><b>ORIGINAL BATTLE</b><small>自作カードバトル</small></div>
-          <p class="dk-note">自分で作ったカードだけで戦うモード。持っている自作カードからランダムに5枚、敵も自作カードから選ばれます。自作カードの能力（タイプ・わざ・とくせいの効果）はカードを作ったときにランダムで決まり、わざととくせいの名前は自分で付けられます。勝ち負けのコインは同じですが、ランクと経験値には入りません。</p>
-          <div class="dk-btns"><button type="button" class="btn-main" id="btStartCustom">自作カードでバトル！</button><span class="bt-need" id="btNeedCustom"></span></div>
+          <p class="dk-note">自分で作ったカードだけで戦うモード。自作デッキ（コスト15以内・UR と SSR は1枚まで）か、持っている自作カードからランダム5枚で戦います。敵も自作カードから選ばれます。自作カードの能力（タイプ・わざ・とくせいの効果）はカードを作ったときにランダムで決まり、わざととくせいの名前は自分で付けられます。勝ち負けのコインは同じですが、ランクと経験値には入りません。</p>
+          <div class="dk-head"><span class="dk-tabs" id="cdkTabs" role="tablist"></span></div>
+          <div class="dk-row" id="cdkRow"></div>
+          <div class="dk-caps" id="cdkCaps"></div>
+          <p class="dk-note" id="cdkNote"></p>
+          <div class="dk-btns"><button type="button" class="btn-main" id="btStartCDeck">自作デッキでバトル！</button><button type="button" class="dk-go" id="cdkEdit"><b>DECK</b><small>自作デッキを作る</small></button></div>
+          <div class="dk-btns"><button type="button" class="ghost" id="btStartCustom">ランダムでバトル</button><span class="bt-need" id="btNeedCustom"></span></div>
         </div>
         <div class="on-panel">
           <div class="dk-head"><b>ONLINE BATTLE</b><small>リアルタイムでほかの人と対戦</small></div>
@@ -1270,6 +1277,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
     <div class="panel">
       <div class="panel-head"><h3>DECK<small>デッキを作る</small></h3><button type="button" class="ghost" id="dkBack">← バトルにもどる</button></div>
       <div class="dk-top">
+        <div class="dk-head"><span class="dk-tabs dk-book" id="dkBookTabs" role="tablist"></span></div>
         <div class="dk-head"><span class="dk-tabs" id="dkEditTabs" role="tablist"></span><span class="dk-caps" id="dkEditCaps"></span></div>
         <p class="dk-note">下のカードをタップすると入れる・外すができます。デッキは5枚で、<b>コストの合計が15以内</b>になるように作ろう。コストは <b>UR 5・SSR 4・SR 3・R 2・N 1</b>。カードの左上の数字がコストです。<b>UR と SSR はそれぞれ1枚まで</b>。「詳しく」で能力が見られます。</p>
         <div class="dk-btns"><button type="button" class="ghost" id="dkAuto">おまかせ</button><button type="button" class="ghost" id="dkClear">ぜんぶ外す</button><button type="button" class="btn-main" id="dkDone">このデッキでバトル！</button></div>
@@ -1464,7 +1472,7 @@ const SFX={SR:"WHAM!",SSR:"KA-POW!!",UR:"KRAKA-BOOM!!!"};
 const PACK_COLORS=["#e2231a","#1d9e5a","#ff7a00","#7a3cff","#e0218a","#0f8f8f","#3d3d3d"];
 const STD_TEXT="十連なら最後の1枚は SR 以上が確定。80 回 SSR が出なければ、次の1枚は SSR 以上になります。";
 
-const DEFAULT={gems:3000,pity:0,owned:{},custom:[],packs:[],pityBy:{},banner:"std",loginLast:"",streak:0,idleAt:0,points:0,sound:true,bgm:true,hiScore:0,mission:null,stats:{pulls:0,bestWave:0,sold:0,games:0,bestRank:1,dailyAll:0,loginDays:0,bestStreak:0},normalClaimed:{},battle:{w:0,l:0,d:0,bp:0},decks:[[],[],[]],deckSel:0,fav:{},lv:{}};
+const DEFAULT={gems:3000,pity:0,owned:{},custom:[],packs:[],pityBy:{},banner:"std",loginLast:"",streak:0,idleAt:0,points:0,sound:true,bgm:true,hiScore:0,mission:null,stats:{pulls:0,bestWave:0,sold:0,games:0,bestRank:1,dailyAll:0,loginDays:0,bestStreak:0},normalClaimed:{},battle:{w:0,l:0,d:0,bp:0},decks:[[],[],[]],deckSel:0,cdecks:[[],[],[]],cdeckSel:0,fav:{},lv:{}};
 const KEY="cch-gacha";
 const newId=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
 let S=load();
@@ -1513,6 +1521,9 @@ function load(){
   if(!Array.isArray(s.decks))s.decks=[];
   s.decks=[0,1,2].map(k=>Array.isArray(s.decks[k])?s.decks[k].filter(x=>typeof x==="number"||typeof x==="string").map(String).filter((x,i,a)=>a.indexOf(x)===i).slice(0,5):[]);
   s.deckSel=num(s.deckSel,0,0,2);
+  if(!Array.isArray(s.cdecks))s.cdecks=[];
+  s.cdecks=[0,1,2].map(k=>Array.isArray(s.cdecks[k])?s.cdecks[k].filter(x=>typeof x==="string").map(x=>x.slice(0,40)).filter((x,i,a)=>a.indexOf(x)===i).slice(0,5):[]);
+  s.cdeckSel=num(s.cdeckSel,0,0,2);
   s.nick=typeof s.nick==="string"?s.nick.slice(0,12):"";
   {const L=s.lv&&typeof s.lv==="object"&&!Array.isArray(s.lv)?s.lv:{};s.lv={};Object.keys(L).slice(0,500).forEach(k=>{const e=L[k];if(e&&typeof e==="object")s.lv[String(k).slice(0,60)]={lv:num(e.lv,1,1,100),xp:num(e.xp,0,0,1e6)}})}
   {const f=s.fav&&typeof s.fav==="object"&&!Array.isArray(s.fav)?s.fav:{};s.fav={};Object.keys(f).slice(0,2000).forEach(k=>{if(f[k]===true)s.fav[String(k).slice(0,60)]=true})}
@@ -3809,16 +3820,20 @@ const DK_MAXCOST=15;
 const DK_LIMIT={UR:1,SSR:1}; // on top of the cost limit, at most one UR and one SSR
 const dkOver=(list,c)=>DK_LIMIT[c.r]!=null&&list.filter(x=>x.r===c.r).length>=DK_LIMIT[c.r];
 const DK_SIZE=5;
-let dkEditK=0;
-function dkCard(id){return CARDS.concat(SHOP_CARDS,REWARD_CARDS).find(c=>String(c.id)===String(id))}
-function dkCards(k){return S.decks[k].map(dkCard).filter(c=>c&&S.owned[c.id])}
+let dkEditK=0,dkBook="std"; // dkBook: "std" = STAR LIGHT decks, "custom" = original-card decks (same rules)
+const dkArr=book=>book==="custom"?S.cdecks:S.decks;
+const dkSelOf=book=>book==="custom"?S.cdeckSel:S.deckSel;
+function dkSetSel(book,k){if(book==="custom")S.cdeckSel=k;else S.deckSel=k}
+const dkPool=book=>book==="custom"?btCustomPool():btPool();
+function dkCard(id,book){return (book==="custom"?S.custom:CARDS.concat(SHOP_CARDS,REWARD_CARDS)).find(c=>String(c.id)===String(id))}
+function dkCards(k,book){book=book||dkBook;return dkArr(book)[k].map(id=>dkCard(id,book)).filter(c=>c&&S.owned[c.id])}
 function dkCost(list){return list.reduce((a,c)=>a+DK_COST[c.r],0)}
 function dkValid(list){return list.length===DK_SIZE&&dkCost(list)<=DK_MAXCOST&&Object.keys(DK_LIMIT).every(r=>list.filter(x=>x.r===r).length<=DK_LIMIT[r])}
 // can c be added and still leave room (cost-wise) to fill the rest of the deck with cards you own?
 function dkCanAdd(list,c){
   if(list.length>=DK_SIZE||list.includes(c)||dkOver(list,c))return false;
   const left=DK_SIZE-list.length-1;
-  const cheap=btPool().filter(x=>x!==c&&!list.includes(x)).map(x=>DK_COST[x.r]).sort((a,b)=>a-b).slice(0,left);
+  const cheap=dkPool(c.img?"custom":"std").filter(x=>x!==c&&!list.includes(x)).map(x=>DK_COST[x.r]).sort((a,b)=>a-b).slice(0,left);
   const need=cheap.length<left?Infinity:cheap.reduce((a,b)=>a+b,0);
   return dkCost(list)+DK_COST[c.r]+need<=DK_MAXCOST;
 }
@@ -3837,19 +3852,30 @@ function dkSlots(box,list,onTap){
 function dkRender(){
   const tabs=$("dkTabs");tabs.innerHTML="";
   [0,1,2].forEach(k=>{const b=document.createElement("button");b.type="button";b.setAttribute("role","tab");b.setAttribute("aria-selected",S.deckSel===k);b.textContent=`DECK ${k+1}`;b.onclick=()=>{S.deckSel=k;save();dkRender()};tabs.appendChild(b)});
-  const list=dkCards(S.deckSel);
-  dkSlots($("dkRow"),list,()=>dkOpen(S.deckSel));
+  cdkRender();
+  const list=dkCards(S.deckSel,"std");
+  dkSlots($("dkRow"),list,()=>dkOpen(S.deckSel,"std"));
   $("dkCaps").innerHTML=dkCapsHTML(list);
   const ok=dkValid(list);
   $("btStartDeck").disabled=!ok;
   const cost=dkCost(list);
   $("dkNote").textContent=ok?`このデッキで戦えます！（コスト ${cost}/${DK_MAXCOST}） バトルでは、出す順番をその場で選べます。`:cost>DK_MAXCOST?`コストオーバー！（${cost}/${DK_MAXCOST}） 「DECK」からコスト15以内に作り直してね。`:list.length===DK_SIZE?"UR と SSR はそれぞれ1枚までです。「DECK」から作り直してね。":list.length?`あと ${DK_SIZE-list.length} 枚入れるとバトルできます。`:"「DECK」から、持っている STAR LIGHT のカードを5枚、コスト15以内でえらんでデッキを作ろう。";
 }
+function cdkRender(){
+  const tabs=$("cdkTabs");tabs.innerHTML="";
+  [0,1,2].forEach(k=>{const b=document.createElement("button");b.type="button";b.setAttribute("role","tab");b.setAttribute("aria-selected",S.cdeckSel===k);b.textContent=`DECK ${k+1}`;b.onclick=()=>{S.cdeckSel=k;save();cdkRender()};tabs.appendChild(b)});
+  const list=dkCards(S.cdeckSel,"custom");
+  dkSlots($("cdkRow"),list,()=>dkOpen(S.cdeckSel,"custom"));
+  $("cdkCaps").innerHTML=dkCapsHTML(list);
+  const ok=dkValid(list),cost=dkCost(list);
+  $("btStartCDeck").disabled=!ok;
+  $("cdkNote").textContent=ok?`この自作デッキで戦えます！（コスト ${cost}/${DK_MAXCOST}）`:cost>DK_MAXCOST?`コストオーバー！（${cost}/${DK_MAXCOST}）`:list.length===DK_SIZE?"UR と SSR はそれぞれ1枚までです。":list.length?`あと ${DK_SIZE-list.length} 枚入れるとバトルできます。`:"「DECK」から、自作カードを5枚（コスト15以内）えらんで自作デッキを作ろう。";
+}
 let dkFilterR="ALL";
-function dkOpen(k){dkEditK=k;tab("deck");window.scrollTo({top:0,behavior:"smooth"})}
+function dkOpen(k,book){dkBook=book==="custom"?"custom":"std";dkSetSel(dkBook,k);dkEditK=k;dkFilterR="ALL";tab("deck");window.scrollTo({top:0,behavior:"smooth"})}
 function dkClose(){save();tab("battle");window.scrollTo({top:0,behavior:"smooth"})}
 function dkToggle(c){
-  const ids=S.decks[dkEditK];const id=String(c.id);
+  const ids=dkArr(dkBook)[dkEditK];const id=String(c.id);
   const at=ids.indexOf(id);
   if(at>=0){ids.splice(at,1);sfx("tink")}
   else{
@@ -3857,16 +3883,18 @@ function dkToggle(c){
     if(list.length>=DK_SIZE){toast("デッキは5枚までです");return}
     if(dkOver(list,c)){toast(`${c.r} はデッキに1枚までしか入れられません`);return}
     if(!dkCanAdd(list,c)){toast(dkCost(list)+DK_COST[c.r]>DK_MAXCOST?`コストオーバー！（いま ${dkCost(list)}、${c.name} はコスト${DK_COST[c.r]}）`:"このカードを入れると、残りの枠をコスト15以内で埋められません");return}
-    S.decks[dkEditK]=list.map(x=>String(x.id)).concat(id);sfx("flip");
+    dkArr(dkBook)[dkEditK]=list.map(x=>String(x.id)).concat(id);sfx("flip");
   }
   save();dkDrawEdit();
 }
 function dkDrawEdit(){
-  dkEditK=S.deckSel;
-  S.decks[dkEditK]=dkCards(dkEditK).map(c=>String(c.id)); // drop cards that were sold
+  dkEditK=dkSelOf(dkBook);
+  dkArr(dkBook)[dkEditK]=dkCards(dkEditK).map(c=>String(c.id)); // drop cards that were sold
   const list=dkCards(dkEditK);
+  const bt=$("dkBookTabs");bt.innerHTML="";
+  [["std","STAR LIGHT"],["custom","自作カード"]].forEach(([b,label])=>{const x=document.createElement("button");x.type="button";x.setAttribute("role","tab");x.setAttribute("aria-selected",dkBook===b);x.textContent=label;x.onclick=()=>{dkBook=b;dkFilterR="ALL";dkDrawEdit()};bt.appendChild(x)});
   const tabs=$("dkEditTabs");tabs.innerHTML="";
-  [0,1,2].forEach(k=>{const b=document.createElement("button");b.type="button";b.setAttribute("role","tab");b.setAttribute("aria-selected",dkEditK===k);b.textContent=`DECK ${k+1}`;b.onclick=()=>{S.deckSel=k;save();dkDrawEdit()};tabs.appendChild(b)});
+  [0,1,2].forEach(k=>{const b=document.createElement("button");b.type="button";b.setAttribute("role","tab");b.setAttribute("aria-selected",dkEditK===k);b.textContent=`DECK ${k+1}`;b.onclick=()=>{dkSetSel(dkBook,k);save();dkDrawEdit()};tabs.appendChild(b)});
   const row=$("dkEditRow");row.innerHTML="";
   for(let i=0;i<DK_SIZE;i++){
     const c=list[i];
@@ -3877,13 +3905,13 @@ function dkDrawEdit(){
       b.appendChild(cardEl(c,{flipped:true}));
       b.insertAdjacentHTML("beforeend",`<span class="dk-cc big">${DK_COST[c.r]}</span><span class="dk-out">外す</span>`);
       b.onclick=()=>dkToggle(c);w.appendChild(b);
-      w.insertAdjacentHTML("beforeend",`<div class="dk-st"><b class="lv-badge sm">Lv${p.lv}</b><span class="bt-type t${p.type}">${BT_TYPES[p.type]}</span><span>HP <b>${p.hp}</b></span><span>ATK <b>${p.atk}</b></span><span>SPD <b>${p.spd}</b></span></div>`);
+      w.insertAdjacentHTML("beforeend",`<div class="dk-st">${btStdOK(c)?`<b class="lv-badge sm">Lv${p.lv}</b>`:""}<span class="bt-type t${p.type}">${BT_TYPES[p.type]}</span><span>HP <b>${p.hp}</b></span><span>ATK <b>${p.atk}</b></span><span>SPD <b>${p.spd}</b></span></div>`);
     }else w.innerHTML=`<div class="dk-emptycard"><span>${i+1}</span><small>カードを<br>えらんでね</small></div>`;
     row.appendChild(w);
   }
   $("dkEditCaps").innerHTML=dkCapsHTML(list);
   $("dkDone").disabled=!dkValid(list);
-  const pool=btPool();
+  const pool=dkPool(dkBook);
   const f=$("dkFilter");f.innerHTML="";
   ["ALL"].concat(ORDER).forEach(r=>{
     const n=r==="ALL"?pool.length:pool.filter(c=>c.r===r).length;
@@ -3892,7 +3920,7 @@ function dkDrawEdit(){
   });
   const g=$("dkGrid");g.innerHTML="";
   const shown=pool.filter(c=>dkFilterR==="ALL"||c.r===dkFilterR).sort((a,b)=>ORDER.indexOf(a.r)-ORDER.indexOf(b.r));
-  if(!shown.length)g.innerHTML=`<div class="empty">このレアリティのカードはまだ持っていません。</div>`;
+  if(!shown.length)g.innerHTML=`<div class="empty">${dkBook==="custom"&&!pool.length?"自作カードをまだ持っていません。MAKE でカードを作って、自分のガチャで引いてみよう！":"このレアリティのカードはまだ持っていません。"}</div>`;
   shown.forEach(c=>{
     const inDeck=list.includes(c);
     const full=!inDeck&&list.length>=DK_SIZE,cap=!inDeck&&!full&&!dkCanAdd(list,c);
@@ -3905,7 +3933,7 @@ function dkDrawEdit(){
     b.insertAdjacentHTML("beforeend",`<span class="dk-cc big">${DK_COST[c.r]}</span>`);
     b.onclick=()=>dkToggle(c);
     w.appendChild(b);
-    w.insertAdjacentHTML("beforeend",`<div class="dk-st"><b class="lv-badge sm">Lv${p.lv}</b><span class="bt-type t${p.type}">${BT_TYPES[p.type]}</span><span>HP <b>${p.hp}</b></span><span>ATK <b>${p.atk}</b></span><span>SPD <b>${p.spd}</b></span></div>`);
+    w.insertAdjacentHTML("beforeend",`<div class="dk-st">${btStdOK(c)?`<b class="lv-badge sm">Lv${p.lv}</b>`:""}<span class="bt-type t${p.type}">${BT_TYPES[p.type]}</span><span>HP <b>${p.hp}</b></span><span>ATK <b>${p.atk}</b></span><span>SPD <b>${p.spd}</b></span></div>`);
     const more=document.createElement("button");more.type="button";more.className="dk-more";more.textContent="詳しく";more.onclick=()=>dkInfo(c);
     w.appendChild(more);
     g.appendChild(w);
@@ -3930,24 +3958,27 @@ function dkAuto(){
   // fill the empty slots with the strongest cards that still fit in the cost limit
   const list=dkCards(dkEditK);
   const score=c=>{const p=btProfile(c);return p.hp*.6+p.atk*4+(p.passive?20:0)};
-  const rest=btPool().filter(c=>!list.includes(c)).sort((a,b)=>score(b)-score(a));
+  const rest=dkPool(dkBook).filter(c=>!list.includes(c)).sort((a,b)=>score(b)-score(a));
   for(const c of rest){if(list.length>=DK_SIZE)break;if(dkCanAdd(list,c))list.push(c)}
-  S.decks[dkEditK]=list.map(c=>String(c.id));save();sfx("rankup");dkDrawEdit();
+  dkArr(dkBook)[dkEditK]=list.map(c=>String(c.id));save();sfx("rankup");dkDrawEdit();
 }
-$("dkEdit").onclick=()=>dkOpen(S.deckSel);
+$("dkEdit").onclick=()=>dkOpen(S.deckSel,"std");
+$("cdkEdit").onclick=()=>dkOpen(S.cdeckSel,"custom");
+$("btStartCDeck").onclick=()=>btStart("cdeck");
 $("dkBack").onclick=dkClose;
-$("dkDone").onclick=()=>{save();tab("battle");btStart("deck")};
+$("dkDone").onclick=()=>{save();tab("battle");btStart(dkBook==="custom"?"cdeck":"deck")};
 $("dkAuto").onclick=dkAuto;
-$("dkClear").onclick=()=>{S.decks[dkEditK]=[];save();dkDrawEdit()};
+$("dkClear").onclick=()=>{dkArr(dkBook)[dkEditK]=[];save();dkDrawEdit()};
 
 function btStart(mode){
-  mode=mode==="deck"?"deck":mode==="custom"?"custom":"random";
-  const pool=mode==="custom"?btCustomPool():btPool();
+  mode=["deck","custom","cdeck"].includes(mode)?mode:"random";
+  const isCus=mode==="custom"||mode==="cdeck";
+  const pool=isCus?btCustomPool():btPool();
   let mine;
-  if(mode==="deck"){mine=dkCards(S.deckSel);if(!dkValid(mine)){toast("デッキが完成していません");return}mine=mine.slice()}
+  if(mode==="deck"||mode==="cdeck"){mine=dkCards(mode==="cdeck"?S.cdeckSel:S.deckSel,mode==="cdeck"?"custom":"std");if(!dkValid(mine)){toast("デッキが完成していません");return}mine=mine.slice()}
   else{if(pool.length<5)return;mine=shuffled(pool).slice(0,5)}
   // custom battles: the enemy team is also made of your original cards (everything you have made)
-  const foes=mode==="custom"?S.custom.slice():CARDS.concat(SHOP_CARDS,REWARD_CARDS);
+  const foes=isCus?S.custom.slice():CARDS.concat(SHOP_CARDS,REWARD_CARDS);
   // no card appears twice in the same battle, on either side (custom battles reuse cards only if there are not enough)
   const used=new Set(mine.map(c=>c.id)),enemyIds=new Set();
   const enemy=mine.map(m=>{
@@ -3958,7 +3989,7 @@ function btStart(mode){
   });
   // enemies come in a little below your team's average level
   const avgLv=mine.reduce((a,c)=>a+lvOf(c),0)/mine.length;
-  const eLv=mode==="custom"?1:Math.max(1,Math.round(avgLv*.8));
+  const eLv=isCus?1:Math.max(1,Math.round(avgLv*.8));
   BT={mode,eLv,p:{list:mine.map(c=>btMake(c,"p")),cur:null},e:{list:shuffled(enemy).map(c=>btMake(c,"e",eLv)),cur:0},turn:0,busy:false,mustPick:true,switching:false,over:false,log:[]};
   $("btPAct").dataset.cid="";$("btEAct").dataset.cid="";
   btEnter(BT.e.list[0]);
@@ -3973,7 +4004,7 @@ function btEnd(r){
   btSeasonCheck();
   const online=BT.mode==="online";
   const friend=BT.mode==="friend"||online; // friend / online battles: nothing but their own record changes
-  const custom=BT.mode==="custom"||friend; // custom battles: coins only, no BP or card XP
+  const custom=BT.mode==="custom"||BT.mode==="cdeck"||friend; // custom battles: coins only, no BP or card XP
   const bp0=S.battle.bp||0,rk0=btRankOf(bp0);
   if(!custom)S.battle.bp=Math.max(0,bp0+BT_BP[r]);
   S.stats.bestRank=Math.max(S.stats.bestRank||1,btRankOf(S.battle.bp));
@@ -4082,9 +4113,9 @@ async function netMyTeam(kind){
     if(!dkValid(list))return{err:`デッキで対戦するには、DECK ${S.deckSel+1} を完成させてね。`};
     return{code:frEncode({k:"s",n:frNick(),c:list.map(c=>[String(c.id),lvOf(c)])})};
   }
-  const pool=btCustomPool();
+  const pool=btCustomPool(),deck=dkCards(S.cdeckSel,"custom");
   if(pool.length<5)return{err:"自作カードで対戦するには、自作カードが5種類以上必要です。"};
-  const list=shuffled(pool).slice(0,5),cards=[];
+  const list=dkValid(deck)?deck.slice():shuffled(pool).slice(0,5),cards=[]; // your custom deck if it is complete, otherwise 5 at random
   for(const c of list)cards.push({n:c.name,k:c.kana||"",r:c.r,h:c.h||0,bt:c.bt||btCustomDefaults(c),i:await frThumb(c.img)});
   return{code:frEncode({k:"c",n:frNick(),c:cards})};
 }
