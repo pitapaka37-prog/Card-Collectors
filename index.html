@@ -1476,10 +1476,11 @@ const CARDS=[
  ["SSR","QQ","Queen Quasar","クイーン・クエーサー","ノヴァ・エネルギーを自在に操り、銀河の平和を守る気高き宇宙の女王戦士。",270,"burst"],
  ["SSR","TH","Thunder Hound","サンダー・ハウンド","雷を浴びて超人的な力を得た猟犬戦士。稲妻の速さと鋭い嗅覚を武器に街の悪を追い詰める。",58,"burst"],
  ["UR","AP","Atlas Prime","アトラス・プライム","宇宙の核と融合し、重力そのものを武器に戦う超重量級ヒーロー。",205,"burst"],
- ["UR","NM","Nova Mae","ノヴァ・メイ","宇宙の光「ノヴァ・エネルギー」を操り、闇に希望を灯す若きヒーロー。",320,"burst"]
+ ["UR","NM","Nova Mae","ノヴァ・メイ","宇宙の光「ノヴァ・エネルギー」を操り、闇に希望を灯す若きヒーロー。",320,"burst"],
+ ["SR","SF","Solar Flare","ソーラー・フレア","惑星クエーセリアを守る精鋭部隊「クエーサーガード」の戦士。スター・ランスの指揮のもと、太陽の炎を宿した大剣と巨体を武器に最前線で戦う豪快な戦士。",28,"shield"]
 ].map((c,i)=>({id:i,r:c[0],m:c[1],name:c[2],kana:c[3],flavor:c[4],h:c[5],shape:c[6]}));
 // standard cards that use a picture instead of the drawn portrait
-const PHOTOS={"Rubber Duck":"rubber-duck.jpg","Atlas Prime":"atlas-prime.jpg","Nova Mae":"nova-mae.jpg","Skyline Sentinel":"skyline-sentinel.jpg","Queen Quasar":"queen-quasar.jpg","Thunder Hound":"thunder-hound.jpg","Atomic Bee":"atomic-bee.jpg","Radio Ranger":"radio-ranger.jpg","Mirror Max":"mirror-max.jpg","Velvet Comet":"velvet-comet.jpg","Doctor Fuse":"doctor-fuse.jpg","Neon Noodle":"neon-noodle.jpg","Jukebox Jane":"jukebox-jane.jpg","Skate Saint":"skate-saint.jpg","Diner Dynamo":"diner-dynamo.jpg","Tornado Tess":"tornado-tess.jpg","Captain Cactus":"captain-cactus.jpg","Glitter Gator":"glitter-gator.jpg","Gumball Kid":"gumball-kid.jpg","Traffic Cone":"traffic-cone.jpg","Lunchbox Larry":"lunchbox-larry.jpg","Static Sally":"static-sally.jpg","Paper Boy":"paper-boy.jpg","Night Janitor":"night-janitor.jpg","Hot Dog Man":"hot-dog-man.jpg","Mailbox Mike":"mailbox-mike.jpg","Coin Op":"coin-op.jpg"};
+const PHOTOS={"Rubber Duck":"rubber-duck.jpg","Atlas Prime":"atlas-prime.jpg","Nova Mae":"nova-mae.jpg","Skyline Sentinel":"skyline-sentinel.jpg","Queen Quasar":"queen-quasar.jpg","Thunder Hound":"thunder-hound.jpg","Atomic Bee":"atomic-bee.jpg","Radio Ranger":"radio-ranger.jpg","Mirror Max":"mirror-max.jpg","Velvet Comet":"velvet-comet.jpg","Doctor Fuse":"doctor-fuse.jpg","Neon Noodle":"neon-noodle.jpg","Jukebox Jane":"jukebox-jane.jpg","Skate Saint":"skate-saint.jpg","Diner Dynamo":"diner-dynamo.jpg","Tornado Tess":"tornado-tess.jpg","Captain Cactus":"captain-cactus.jpg","Glitter Gator":"glitter-gator.jpg","Gumball Kid":"gumball-kid.jpg","Traffic Cone":"traffic-cone.jpg","Lunchbox Larry":"lunchbox-larry.jpg","Static Sally":"static-sally.jpg","Paper Boy":"paper-boy.jpg","Night Janitor":"night-janitor.jpg","Hot Dog Man":"hot-dog-man.jpg","Mailbox Mike":"mailbox-mike.jpg","Coin Op":"coin-op.jpg","Solar Flare":"solar-flare.jpg"};
 const PHOTO_V="3";
 CARDS.forEach(c=>{if(PHOTOS[c.name])c.photo=PHOTOS[c.name]+"?v="+PHOTO_V});
 /* ---- cover cards: random owned cards, or the rarest ones when nothing is owned ---- */
@@ -1573,8 +1574,10 @@ function load(){
   const st=s.stats&&typeof s.stats==="object"?s.stats:{};s.stats={pulls:num(st.pulls,0,0,1e9),bestWave:num(st.bestWave,0,0,50),sold:num(st.sold,0,0,1e9),games:num(st.games,0,0,1e9),bestRank:num(st.bestRank,1,1,1e6),dailyAll:num(st.dailyAll,0,0,1e7),loginDays:num(st.loginDays,0,0,1e7),bestStreak:num(st.bestStreak,0,0,1e7)};
   const nc=s.normalClaimed&&typeof s.normalClaimed==="object"?s.normalClaimed:{};s.normalClaimed=Object.fromEntries(Object.entries(nc).map(([k,v])=>[k,!!v]));
   // players who already earned Star Velvet before missions existed
-  // Star Lance moved from the gacha (id 27) to the shop (id s7): carry everything over
-  if(!CARDS[27]){
+  // Star Lance moved from the gacha (id 27) to the shop (id s7): carry everything over, once
+  // (afterwards id 27 is Solar Flare, so this must never run again)
+  if(!s.migLance){
+    s.migLance=true;
     const mv=(o)=>{if(o&&o["27"]!=null){if(typeof o["27"]==="number"&&typeof o.s7==="number")o.s7+=o["27"];else if(o.s7==null)o.s7=o["27"];delete o["27"]}};
     mv(s.owned);mv(s.lv);mv(s.fav);
     (s.decks||[]).forEach(d=>{const k=d.indexOf("27");if(k>=0)d[k]="s7"});
@@ -3507,6 +3510,7 @@ var BT_ABIL={ // var: may be read by early renders on startup
  "Solar Sovereign":{t:0,atk:1.05,s:{name:"スーパーノヴァ",cost:5,desc:"3.0倍ダメージ＋敵をやけど状態に（3ターン、毎ターン最大HPの8%ダメージ）",fx:[btH(3),{k:"dot",v:.08,turns:3}]},p:{k:"rage",v:.5,name:"恒星の力",desc:"HPが40%以下になると攻撃力50%アップ"}},
  "Omega Paragon":{t:2,s:{name:"万象の魔術",cost:4,desc:"1.5倍ダメージ＋敵の攻撃力40%ダウン（3ターン）＋敵を確実にしびれさせる",fx:[btH(1.5),{k:"weaken",v:.4,turns:3},{k:"stun",ch:1}]},p:{k:"charge",name:"千年の叡智",desc:"毎ターン、チャージが1多くたまる"}},
  "Star Lance":{t:0,hp:1.05,s:{name:"クエーサー・ストライク",cost:3,desc:"1.6倍ダメージ＋味方全員の攻撃力20%アップ（2ターン）",fx:[btH(1.6),{k:"buff",v:.2,turns:2,team:true}]},p:{k:"tough",v:.15,name:"クエーサーガードの鎧",desc:"受けるダメージがいつも15%少ない"}},
+ "Solar Flare":{t:0,hp:1.2,atk:1.05,spd:.85,s:{name:"ソーラー・ブレイド",cost:3,desc:"1.5倍ダメージ＋敵をやけど状態に（3ターン、毎ターン最大HPの6%ダメージ）",fx:[btH(1.5),{k:"dot",v:.06,turns:3}]},p:{k:"rage",v:.4,name:"燃える闘志",desc:"HPが40%以下になると攻撃力40%アップ"}},
  "Star Velvet":{t:1,spd:1.15,s:{name:"ハイパードライブ砲",cost:4,desc:"2.1倍ダメージ",fx:[btH(2.1)]},p:{k:"buddy",v:.3,name:"最高の相棒",desc:"味方チームにベルベット・コメットがいると攻撃力30%アップ"}},
 };
 function btHash(str){let h=2166136261;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
