@@ -684,6 +684,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
 .gs-modal .mission{width:min(480px,100%);display:flex;flex-direction:column;gap:10px}
 .gs-modal .on-room b{font-size:36px}
 .bswitch .friend-tab{background:#e9f3ff}
+.bswitch .my-tab{background:#fff6dc}
 .gf-list{display:flex;flex-direction:column;gap:8px}
 .gf-item{display:grid;grid-template-columns:auto 1fr auto auto;align-items:center;gap:8px 10px;padding:8px 10px;background:#fff;border:3px solid var(--ink);box-shadow:3px 3px 0 var(--ink)}
 .gf-item.on{outline:3px solid var(--red);outline-offset:2px}
@@ -1288,6 +1289,15 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
       <div class="ms-head"><b>SHARE</b><span id="gsName"></span></div>
       <p class="ab-note">このコードをフレンドに伝えてね。フレンドがガチャ画面の「+ FRIEND」でコードを入れると、このガチャがフレンドガチャ枠に追加されます。<b>コードはずっと同じ</b>で、あとからカードを追加・削除すると、フレンドがアプリを開いたときに自動で最新になります（あなたがアプリを閉じていてもOK）。</p>
       <div class="on-room"><small>ガチャコード</small><b id="gsCode">------</b><span id="gsInfo">準備中…</span></div>
+    </div>
+  </div>
+  <div class="detail ms-modal gs-modal" id="mgModal" hidden role="dialog" aria-modal="true" aria-label="自作ガチャ">
+    <div class="mission">
+      <button type="button" class="close" id="mgClose" aria-label="閉じる">×</button>
+      <div class="ms-head"><b>MY GACHA</b><span id="mgCount"></span></div>
+      <p class="ab-note">自分で作ったガチャはここに入ります。引きたいガチャを選んでね（1回1コイン）。</p>
+      <div class="gf-list" id="mgList"></div>
+      <div class="dk-btns"><button type="button" class="btn-main" id="mgNew">＋ 新しいガチャを作る</button></div>
     </div>
   </div>
   <div class="detail ms-modal gs-modal" id="gfModal" hidden role="dialog" aria-modal="true" aria-label="フレンドガチャを追加">
@@ -2324,16 +2334,35 @@ function renderSwitch(){
     b.onclick=()=>setBanner(id);box.appendChild(b);
   };
   mk("std","STAR LIGHT COMICS","スターライト・コミックス");
-  S.packs.filter(p=>!p.friend).forEach(p=>mk(p.id,pname(p),`自作 ${cardsIn(p.id).length} 枚`,p.color));
+  // your own gachas all live behind one MY GACHA button
+  const own=S.packs.filter(p=>!p.friend),mine=own.find(p=>p.id===bid);
+  const mb=document.createElement("button");mb.className="my-tab";mb.setAttribute("role","tab");mb.setAttribute("aria-selected",!!mine);
+  mb.innerHTML=`<span>MY GACHA</span><small>${mine?`いま：${esc(pname(mine))}`:`自作ガチャ ${own.length} 個`}</small>`;
+  if(mine)mb.style.borderBottom=`6px solid ${mine.color}`;
+  mb.onclick=mgOpen;box.appendChild(mb);
   // friends' gachas all live behind one FRIEND GACHA button
   const fr=S.packs.filter(p=>p.friend),cur=fr.find(p=>p.id===bid);
   const fb=document.createElement("button");fb.className="friend-tab";fb.setAttribute("role","tab");fb.setAttribute("aria-selected",!!cur);
   fb.innerHTML=`<span>FRIEND GACHA</span><small>${cur?`いま：${esc(pname(cur))}`:`フレンドガチャ ${fr.length} 個`}</small>`;
   if(cur)fb.style.borderBottom=`6px solid ${cur.color}`;
   fb.onclick=gfOpen;box.appendChild(fb);
-  const add=document.createElement("button");add.className="add";add.innerHTML=`<span>+ NEW</span><small>ガチャを作る</small>`;
-  add.onclick=()=>{tab("make");$("newPackName").focus();$("packsPanel").scrollIntoView({behavior:"smooth"})};
-  box.appendChild(add);
+}
+function mgOpen(){$("mgModal").hidden=false;document.body.style.overflow="hidden";mgDrawList()}
+function mgClose(){$("mgModal").hidden=true;document.body.style.overflow=""}
+function mgDrawList(){
+  const own=S.packs.filter(p=>!p.friend),box=$("mgList");box.innerHTML="";
+  $("mgCount").textContent=`${own.length} 個`;
+  if(!own.length){box.innerHTML=`<div class="empty">まだ自作ガチャはありません。下のボタンから作ろう！</div>`;return}
+  own.forEach(p=>{
+    const n=cardsIn(p.id).length,have=cardsIn(p.id).filter(c=>S.owned[c.id]).length,on=S.banner===p.id;
+    const row=document.createElement("div");row.className="gf-item"+(on?" on":"");row.style.setProperty("--pc",p.color);
+    row.innerHTML=`<span class="gf-sw"></span><div class="gf-t"><b>${esc(pname(p))}</b><small>${n} 枚 ・ 集めた ${have}/${n}${p.cloud&&p.cloud.code?` ・ コード ${esc(p.cloud.code)}`:""}</small></div>`;
+    const go=document.createElement("button");go.type="button";go.className="btn-main";go.textContent=on?"選択中":"引く";go.disabled=!n;
+    go.onclick=()=>{setBanner(p.id);mgClose();tab("gacha");window.scrollTo({top:0,behavior:"smooth"})};
+    const ed=document.createElement("button");ed.type="button";ed.className="ghost";ed.textContent=n?"編集":"カードを作る";
+    ed.onclick=()=>{mgClose();if(n){tab("make");$("packsPanel").scrollIntoView({behavior:"smooth"})}else openMakeFor(p.id)};
+    row.append(go,ed);box.appendChild(row);
+  });
 }
 function renderCover(){
   renderSwitch();
@@ -4453,6 +4482,9 @@ async function gfReceive(){
   gfClose();tab("gacha");window.scrollTo({top:0,behavior:"smooth"});
 }
 $("gfGo").onclick=gfReceive;
+$("mgClose").onclick=mgClose;
+$("mgModal").addEventListener("click",e=>{if(e.target===$("mgModal"))mgClose()});
+$("mgNew").onclick=()=>{mgClose();tab("make");$("newPackName").focus();$("packsPanel").scrollIntoView({behavior:"smooth"})};
 // friends' gachas: check for updates when the app opens / the gacha screen is shown
 var cloudCheckAt=0;
 async function cloudCheckFriends(force){
