@@ -1309,7 +1309,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
         </div>
         <div class="cb-panel">
           <div class="dk-head"><b>ORIGINAL BATTLE</b><small>自作カードバトル</small></div>
-          <p class="dk-note">自分で作ったカードで戦う、カードゲームのルールのモード。デッキはヒーロー5枚（コスト15以内・UR と SSR は1枚まで）＋アイテムカード（10枚まで）。勝ち負けのコインは同じですが、ランクと経験値には入りません。</p>
+          <p class="dk-note">自分で作ったカードで戦う、カードゲームのルールのモード。デッキは<b>制限なし</b>：ヒーローもアイテムも何枚でも入れられます（ヒーローは1枚以上）。勝ち負けのコインは同じですが、ランクと経験値には入りません。</p>
           <ul class="bt-rules tc-rules">
             <li>山札をシャッフルして<b>5枚引く</b>。手札のヒーローを1体バトル場に出してスタート（先攻・後攻はコイントス）</li>
             <li>自分の番のはじめにカードを<b>1枚引く</b>。ヒーローは控えに4体まで出せる</li>
@@ -1436,7 +1436,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
       <div class="dk-top">
         <div class="dk-head"><span class="dk-tabs dk-book" id="dkBookTabs" role="tablist"></span></div>
         <div class="dk-head"><span class="dk-tabs" id="dkEditTabs" role="tablist"></span><span class="dk-caps" id="dkEditCaps"></span></div>
-        <p class="dk-note">下のカードをタップすると入れる・外すができます。デッキは5枚で、<b>コストの合計が15以内</b>になるように作ろう。コストは <b>UR 5・SSR 4・SR 3・R 2・N 1</b>。カードの左上の数字がコストです。<b>UR と SSR はそれぞれ1枚まで</b>。「詳しく」で能力が見られます。</p>
+        <p class="dk-note" id="dkEditNote">下のカードをタップすると入れる・外すができます。デッキは5枚で、<b>コストの合計が15以内</b>になるように作ろう。コストは <b>UR 5・SSR 4・SR 3・R 2・N 1</b>。カードの左上の数字がコストです。<b>UR と SSR はそれぞれ1枚まで</b>。「詳しく」で能力が見られます。</p>
         <div class="dk-btns"><button type="button" class="ghost" id="dkAuto">おまかせ</button><button type="button" class="ghost" id="dkClear">ぜんぶ外す</button><button type="button" class="btn-main" id="dkDone">このデッキでバトル！</button></div>
       </div>
       <div class="dk-sec">YOUR DECK<small>タップで外す</small></div>
@@ -1445,7 +1445,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
       <div class="dk-filter" id="dkFilter" role="tablist"></div>
       <div class="dk-grid" id="dkGrid"></div>
       <div id="dkItemsWrap" hidden>
-        <div class="dk-sec">ITEMS<small>アイテムカード（10枚まで・タップで入れる／外す）</small></div>
+        <div class="dk-sec">ITEMS<small>アイテムカード（何枚でもOK・タップで入れる／外す）</small></div>
         <p class="dk-note">アイテムはデッキに入れなくても戦えます。山札にまぜて、引いたら手札から使えます。</p>
         <div class="dk-grid" id="dkItems"></div>
       </div>
@@ -1728,10 +1728,10 @@ function load(){
   s.decks=[0,1,2].map(k=>Array.isArray(s.decks[k])?s.decks[k].filter(x=>typeof x==="number"||typeof x==="string").map(String).filter((x,i,a)=>a.indexOf(x)===i).slice(0,5):[]);
   s.deckSel=num(s.deckSel,0,0,2);
   if(!Array.isArray(s.cdecks))s.cdecks=[];
-  s.cdecks=[0,1,2].map(k=>Array.isArray(s.cdecks[k])?s.cdecks[k].filter(x=>typeof x==="string").map(x=>x.slice(0,40)).filter((x,i,a)=>a.indexOf(x)===i).slice(0,5):[]);
+  s.cdecks=[0,1,2].map(k=>Array.isArray(s.cdecks[k])?s.cdecks[k].filter(x=>typeof x==="string").map(x=>x.slice(0,40)).filter((x,i,a)=>a.indexOf(x)===i).slice(0,100):[]);
   s.cdeckSel=num(s.cdeckSel,0,0,2);
   if(!Array.isArray(s.citems))s.citems=[];
-  s.citems=[0,1,2].map(k=>Array.isArray(s.citems[k])?s.citems[k].filter(x=>typeof x==="string").map(x=>x.slice(0,40)).filter((x,i,a)=>a.indexOf(x)===i).slice(0,10):[]);
+  s.citems=[0,1,2].map(k=>Array.isArray(s.citems[k])?s.citems[k].filter(x=>typeof x==="string").map(x=>x.slice(0,40)).filter((x,i,a)=>a.indexOf(x)===i).slice(0,200):[]);
   s.nick=typeof s.nick==="string"?s.nick.slice(0,12):"";
   if(s.cloudAuth&&typeof s.cloudAuth==="object"&&typeof s.cloudAuth.refresh==="string")s.cloudAuth={uid:String(s.cloudAuth.uid||""),refresh:s.cloudAuth.refresh,token:String(s.cloudAuth.token||""),exp:num(s.cloudAuth.exp,0,0,9e15)};else s.cloudAuth=null;
   {const L=s.lv&&typeof s.lv==="object"&&!Array.isArray(s.lv)?s.lv:{};s.lv={};Object.keys(L).slice(0,500).forEach(k=>{const e=L[k];if(e&&typeof e==="object")s.lv[String(k).slice(0,60)]={lv:num(e.lv,1,1,100),xp:num(e.xp,0,0,1e6)}})}
@@ -4186,22 +4186,25 @@ const dkPool=book=>book==="custom"?btCustomPool():btPool();
 function dkCard(id,book){return (book==="custom"?S.custom:CARDS.concat(SHOP_CARDS,REWARD_CARDS)).find(c=>String(c.id)===String(id))}
 function dkCards(k,book){book=book||dkBook;return dkArr(book)[k].map(id=>dkCard(id,book)).filter(c=>c&&S.owned[c.id])}
 function dkCost(list){return list.reduce((a,c)=>a+DK_COST[c.r],0)}
-function dkValid(list){return list.length===DK_SIZE&&dkCost(list)<=DK_MAXCOST&&Object.keys(DK_LIMIT).every(r=>list.filter(x=>x.r===r).length<=DK_LIMIT[r])}
+const dkIsCus=list=>!!(list[0]&&list[0].img);
+function dkValid(list,book){if(book==="custom"||dkIsCus(list))return list.length>=1;return list.length===DK_SIZE&&dkCost(list)<=DK_MAXCOST&&Object.keys(DK_LIMIT).every(r=>list.filter(x=>x.r===r).length<=DK_LIMIT[r])}
 // can c be added and still leave room (cost-wise) to fill the rest of the deck with cards you own?
 function dkCanAdd(list,c){
+  if(c.img)return !list.includes(c); // original cards: no limits
   if(list.length>=DK_SIZE||list.includes(c)||dkOver(list,c))return false;
   const left=DK_SIZE-list.length-1;
   const cheap=dkPool(c.img?"custom":"std").filter(x=>x!==c&&!list.includes(x)).map(x=>DK_COST[x.r]).sort((a,b)=>a-b).slice(0,left);
   const need=cheap.length<left?Infinity:cheap.reduce((a,b)=>a+b,0);
   return dkCost(list)+DK_COST[c.r]+need<=DK_MAXCOST;
 }
-function dkCapsHTML(list){const c=dkCost(list);return `<span class="dk-cost ${c>DK_MAXCOST?"over":c===DK_MAXCOST?"full":""}"><b>COST</b>${c}<i>/${DK_MAXCOST}</i><span class="dk-meter"><span style="width:${Math.min(100,c/DK_MAXCOST*100)}%"></span></span></span><span class="dk-cap tot ${list.length===DK_SIZE?"full":""}"><b>枚数</b>${list.length}/${DK_SIZE}</span>`+Object.keys(DK_LIMIT).map(r=>{const n=list.filter(x=>x.r===r).length;return `<span class="dk-cap r-${r} ${n>DK_LIMIT[r]?"over":n===DK_LIMIT[r]?"full":""}"><b>${r}</b>${n}/${DK_LIMIT[r]}</span>`}).join("")}
-function dkSlots(box,list,onTap){
+function dkCapsHTML(list,book){if(book==="custom")return `<span class="dk-cap tot ${list.length?"full":""}"><b>ヒーロー</b>${list.length}枚</span>`;const c=dkCost(list);return `<span class="dk-cost ${c>DK_MAXCOST?"over":c===DK_MAXCOST?"full":""}"><b>COST</b>${c}<i>/${DK_MAXCOST}</i><span class="dk-meter"><span style="width:${Math.min(100,c/DK_MAXCOST*100)}%"></span></span></span><span class="dk-cap tot ${list.length===DK_SIZE?"full":""}"><b>枚数</b>${list.length}/${DK_SIZE}</span>`+Object.keys(DK_LIMIT).map(r=>{const n=list.filter(x=>x.r===r).length;return `<span class="dk-cap r-${r} ${n>DK_LIMIT[r]?"over":n===DK_LIMIT[r]?"full":""}"><b>${r}</b>${n}/${DK_LIMIT[r]}</span>`}).join("")}
+function dkSlots(box,list,onTap,book){
   box.innerHTML="";
-  for(let i=0;i<DK_SIZE;i++){
+  const n=book==="custom"?Math.max(5,list.length+1):DK_SIZE;
+  for(let i=0;i<n;i++){
     const c=list[i];
     const b=document.createElement("button");b.type="button";b.className="dk-slot"+(c?"":" empty");
-    if(c){b.appendChild(btFace(c));b.insertAdjacentHTML("beforeend",`<span class="dk-cc">${DK_COST[c.r]}</span>`);const p=btProfile(c);b.setAttribute("aria-label",c.name);b.insertAdjacentHTML("beforeend",`<span class="dk-sn"><span class="bt-type t${p.type}">${BT_TYPES[p.type]}</span>${c.r}</span>`)}
+    if(c){b.appendChild(btFace(c));if(book!=="custom")b.insertAdjacentHTML("beforeend",`<span class="dk-cc">${DK_COST[c.r]}</span>`);const p=btProfile(c);b.setAttribute("aria-label",c.name);b.insertAdjacentHTML("beforeend",`<span class="dk-sn"><span class="bt-type t${p.type}">${BT_TYPES[p.type]}</span>${c.r}</span>`)}
     else b.innerHTML=`<span class="dk-plus">＋</span>`;
     b.onclick=()=>onTap(c,i);
     box.appendChild(b);
@@ -4223,12 +4226,12 @@ function cdkRender(){
   const tabs=$("cdkTabs");tabs.innerHTML="";
   [0,1,2].forEach(k=>{const b=document.createElement("button");b.type="button";b.setAttribute("role","tab");b.setAttribute("aria-selected",S.cdeckSel===k);b.textContent=`DECK ${k+1}`;b.onclick=()=>{S.cdeckSel=k;save();cdkRender()};tabs.appendChild(b)});
   const list=dkCards(S.cdeckSel,"custom");
-  dkSlots($("cdkRow"),list,()=>dkOpen(S.cdeckSel,"custom"));
-  $("cdkCaps").innerHTML=dkCapsHTML(list);
-  const ok=dkValid(list),cost=dkCost(list);
+  dkSlots($("cdkRow"),list,()=>dkOpen(S.cdeckSel,"custom"),"custom");
+  $("cdkCaps").innerHTML=dkCapsHTML(list,"custom");
+  const ok=dkValid(list,"custom"),cost=dkCost(list);
   $("btStartCDeck").disabled=!ok;
   const nIt=dkItems(S.cdeckSel).length;
-  $("cdkNote").textContent=ok?`この自作デッキで戦えます！（コスト ${cost}/${DK_MAXCOST} ・ アイテム ${nIt}/${DK_ITEMS}枚）`:cost>DK_MAXCOST?`コストオーバー！（${cost}/${DK_MAXCOST}）`:list.length===DK_SIZE?"UR と SSR はそれぞれ1枚までです。":list.length?`あと ${DK_SIZE-list.length} 枚入れるとバトルできます。`:"「DECK」から、自作カードを5枚（コスト15以内）えらんで自作デッキを作ろう。";
+  $("cdkNote").textContent=ok?`この自作デッキで戦えます！（ヒーロー ${list.length}枚 ・ アイテム ${nIt}枚）`:"「DECK」から自作デッキを作ろう。枚数・コスト・レアリティの制限はありません（ヒーローは1枚以上）。";
 }
 let dkFilterR="ALL";
 function dkOpen(k,book){dkBook=book==="custom"?"custom":"std";dkSetSel(dkBook,k);dkEditK=k;dkFilterR="ALL";tab("deck");window.scrollTo({top:0,behavior:"smooth"})}
@@ -4239,8 +4242,8 @@ function dkToggle(c){
   if(at>=0){ids.splice(at,1);sfx("tink")}
   else{
     const list=dkCards(dkEditK);
-    if(list.length>=DK_SIZE){toast("デッキは5枚までです");return}
-    if(dkOver(list,c)){toast(`${c.r} はデッキに1枚までしか入れられません`);return}
+    if(dkBook!=="custom"&&list.length>=DK_SIZE){toast("デッキは5枚までです");return}
+    if(dkBook!=="custom"&&dkOver(list,c)){toast(`${c.r} はデッキに1枚までしか入れられません`);return}
     if(!dkCanAdd(list,c)){toast(dkCost(list)+DK_COST[c.r]>DK_MAXCOST?`コストオーバー！（いま ${dkCost(list)}、${c.name} はコスト${DK_COST[c.r]}）`:"このカードを入れると、残りの枠をコスト15以内で埋められません");return}
     dkArr(dkBook)[dkEditK]=list.map(x=>String(x.id)).concat(id);sfx("flip");
   }
@@ -4255,21 +4258,23 @@ function dkDrawEdit(){
   const tabs=$("dkEditTabs");tabs.innerHTML="";
   [0,1,2].forEach(k=>{const b=document.createElement("button");b.type="button";b.setAttribute("role","tab");b.setAttribute("aria-selected",dkEditK===k);b.textContent=`DECK ${k+1}`;b.onclick=()=>{dkSetSel(dkBook,k);save();dkDrawEdit()};tabs.appendChild(b)});
   const row=$("dkEditRow");row.innerHTML="";
-  for(let i=0;i<DK_SIZE;i++){
+  const cus=dkBook==="custom";
+  $("dkEditNote").innerHTML=cus?"下のカードをタップすると入れる・外すができます。<b>自作デッキは制限なし！</b> ヒーローもアイテムも何枚でも入れられます（ヒーローは1枚以上）。「詳しく」で能力が見られます。":"下のカードをタップすると入れる・外すができます。デッキは5枚で、<b>コストの合計が15以内</b>になるように作ろう。コストは <b>UR 5・SSR 4・SR 3・R 2・N 1</b>。カードの左上の数字がコストです。<b>UR と SSR はそれぞれ1枚まで</b>。「詳しく」で能力が見られます。";
+  for(let i=0;i<(cus?Math.max(5,list.length+1):DK_SIZE);i++){
     const c=list[i];
     const w=document.createElement("div");w.className="dk-card dk-slotbig"+(c?" in":"");
     if(c){
       const p=btProfile(c);
       const b=document.createElement("button");b.type="button";b.className="dk-pick";b.setAttribute("aria-label",`${c.name} を外す`);
       b.appendChild(cardEl(c,{flipped:true}));
-      b.insertAdjacentHTML("beforeend",`<span class="dk-cc big">${DK_COST[c.r]}</span><span class="dk-out">外す</span>`);
+      b.insertAdjacentHTML("beforeend",`${c.img?"":`<span class="dk-cc big">${DK_COST[c.r]}</span>`}<span class="dk-out">外す</span>`);
       b.onclick=()=>dkToggle(c);w.appendChild(b);
       w.insertAdjacentHTML("beforeend",`<div class="dk-st">${btStdOK(c)?`<b class="lv-badge sm">Lv${p.lv}</b>`:""}<span class="bt-type t${p.type}">${BT_TYPES[p.type]}</span><span>HP <b>${p.hp}</b></span><span>ATK <b>${p.atk}</b></span><span>SPD <b>${p.spd}</b></span></div>`);
     }else w.innerHTML=`<div class="dk-emptycard"><span>${i+1}</span><small>カードを<br>えらんでね</small></div>`;
     row.appendChild(w);
   }
-  $("dkEditCaps").innerHTML=dkCapsHTML(list);
-  $("dkDone").disabled=!dkValid(list);
+  $("dkEditCaps").innerHTML=dkCapsHTML(list,dkBook);
+  $("dkDone").disabled=!dkValid(list,dkBook);
   const pool=dkPool(dkBook);
   const f=$("dkFilter");f.innerHTML="";
   ["ALL"].concat(ORDER).forEach(r=>{
@@ -4282,14 +4287,14 @@ function dkDrawEdit(){
   if(!shown.length)g.innerHTML=`<div class="empty">${dkBook==="custom"&&!pool.length?"自作カードをまだ持っていません。MAKE でカードを作って、自分のガチャで引いてみよう！":"このレアリティのカードはまだ持っていません。"}</div>`;
   shown.forEach(c=>{
     const inDeck=list.includes(c);
-    const full=!inDeck&&list.length>=DK_SIZE,cap=!inDeck&&!full&&!dkCanAdd(list,c);
+    const full=!inDeck&&!c.img&&list.length>=DK_SIZE,cap=!inDeck&&!full&&!dkCanAdd(list,c);
     const p=btProfile(c);
     const w=document.createElement("div");w.className="dk-card"+(inDeck?" in":"")+(full||cap?" off":"");
     const b=document.createElement("button");b.type="button";b.className="dk-pick";b.setAttribute("aria-label",`${c.name} を${inDeck?"外す":"入れる"}`);
     b.appendChild(cardEl(c,{flipped:true}));
     if(inDeck)b.insertAdjacentHTML("beforeend",`<span class="dk-in">IN</span>`);
     else if(cap)b.insertAdjacentHTML("beforeend",`<span class="dk-lock">${dkOver(list,c)?`${c.r}は1枚まで`:"コストオーバー"}</span>`);
-    b.insertAdjacentHTML("beforeend",`<span class="dk-cc big">${DK_COST[c.r]}</span>`);
+    if(!c.img)b.insertAdjacentHTML("beforeend",`<span class="dk-cc big">${DK_COST[c.r]}</span>`);
     b.onclick=()=>dkToggle(c);
     w.appendChild(b);
     w.insertAdjacentHTML("beforeend",`<div class="dk-st">${btStdOK(c)?`<b class="lv-badge sm">Lv${p.lv}</b>`:""}<span class="bt-type t${p.type}">${BT_TYPES[p.type]}</span><span>HP <b>${p.hp}</b></span><span>ATK <b>${p.atk}</b></span><span>SPD <b>${p.spd}</b></span></div>`);
@@ -4300,13 +4305,13 @@ function dkDrawEdit(){
   dkItemsDraw();
 }
 // items for an original-card deck (separate from the 5 heroes; no cost)
-const DK_ITEMS=10;
+const DK_ITEMS=200; // original decks: practically no limit
 function dkItems(k){return (S.citems[k]||[]).map(id=>S.custom.find(c=>c.id===id)).filter(c=>c&&isItem(c)&&S.owned[c.id])}
 function dkItemsDraw(){
   const wrap=$("dkItemsWrap");wrap.hidden=dkBook!=="custom";if(wrap.hidden)return;
   S.citems[dkEditK]=dkItems(dkEditK).map(c=>c.id);
   const inList=dkItems(dkEditK),pool=btItemPool();
-  wrap.querySelector(".dk-sec small").textContent=`アイテムカード ${inList.length}/${DK_ITEMS}（タップで入れる／外す）`;
+  wrap.querySelector(".dk-sec small").textContent=`アイテムカード ${inList.length}枚（何枚でもOK・タップで入れる／外す）`;
   const g=$("dkItems");g.innerHTML="";
   if(!pool.length){g.innerHTML=`<div class="empty">アイテムカードをまだ持っていません。MAKE で「アイテムカード」を作って、自分のガチャで引いてみよう！</div>`;return}
   pool.forEach(c=>{
@@ -4345,7 +4350,8 @@ function dkAuto(){
   const list=dkCards(dkEditK);
   const score=c=>{const p=btProfile(c);return p.hp*.6+p.atk*4+(p.passive?20:0)};
   const rest=dkPool(dkBook).filter(c=>!list.includes(c)).sort((a,b)=>score(b)-score(a));
-  for(const c of rest){if(list.length>=DK_SIZE)break;if(dkCanAdd(list,c))list.push(c)}
+  const cap=dkBook==="custom"?list.length+5:DK_SIZE;
+  for(const c of rest){if(list.length>=cap)break;if(dkCanAdd(list,c))list.push(c)}
   dkArr(dkBook)[dkEditK]=list.map(c=>String(c.id));save();sfx("rankup");dkDrawEdit();
 }
 $("dkEdit").onclick=()=>dkOpen(S.deckSel,"std");
@@ -5047,7 +5053,7 @@ function tcAbilityHTML(c){
 function tcStart(mode){
   mode=mode==="cdeck"?"cdeck":"custom";
   let heroes,items;
-  if(mode==="cdeck"){heroes=dkCards(S.cdeckSel,"custom");if(!dkValid(heroes)){toast("デッキが完成していません");return}heroes=heroes.slice();items=dkItems(S.cdeckSel)}
+  if(mode==="cdeck"){heroes=dkCards(S.cdeckSel,"custom");if(!dkValid(heroes,"custom")){toast("デッキが完成していません");return}heroes=heroes.slice();items=dkItems(S.cdeckSel)}
   else{const pool=btCustomPool();if(pool.length<5)return;heroes=shuffled(pool).slice(0,5);items=shuffled(btItemPool()).slice(0,6)}
   // the enemy: heroes of similar rarity from every original card you have made, plus as many items as you have
   const foes=S.custom.filter(c=>!isItem(c)),used=new Set(heroes.map(c=>c.id)),eIds=new Set();
@@ -5055,6 +5061,7 @@ function tcStart(mode){
     let opts=[];
     for(let d=0;d<ORDER.length&&!opts.length;d++)opts=foes.filter(c=>Math.abs(BT_RANK[c.r]-BT_RANK[m.r])===d&&!used.has(c.id));
     if(!opts.length)opts=foes.filter(c=>!eIds.has(c.id));
+    if(!opts.length)opts=foes; // big decks: the enemy may repeat cards
     const c=opts[Math.floor(Math.random()*opts.length)];used.add(c.id);eIds.add(c.id);return c;
   });
   const allItems=S.custom.filter(isItem);
@@ -5110,7 +5117,7 @@ $("frNick").addEventListener("input",()=>{S.nick=frNick();save()});
 // turn a code into the opponent team, checking every value
 function frParse(code){
   let o;try{o=frDecode(code)}catch(e){return{err:"コードが読み取れません。最初から最後まで、まるごと貼り付けてね。"}}
-  if(!o||!Array.isArray(o.c)||o.c.length!==5)return{err:"コードの中身が正しくありません。"};
+  if(!o||!Array.isArray(o.c)||(o.k==="c"?(o.c.length<1||o.c.length>100):o.c.length!==5))return{err:"コードの中身が正しくありません。"};
   const name=typeof o.n==="string"&&o.n.trim()?o.n.trim().slice(0,12):"フレンド";
   if(o.k==="s"){
     const team=[];
@@ -5125,7 +5132,7 @@ function frParse(code){
       const nm=String(e.n||"???").slice(0,22);
       return{c:{id:"friend-"+i,r,name:nm,kana:String(e.k||"").slice(0,20),flavor:"",h:Number(e.h)||0,shape:"shield",img,m:nm.slice(0,2),bt:cleanBt(e.bt)||{t:0,sk:"strike",skn:"",ps:"tough",psn:""},friend:true},lv:1};
     });
-    const items=(Array.isArray(o.it)?o.it:[]).slice(0,10).map((e,i)=>{
+    const items=(Array.isArray(o.it)?o.it:[]).slice(0,200).map((e,i)=>{
       const r=ORDER.includes(e&&e.r)?e.r:"N",nm=String(e&&e.n||"???").slice(0,22);
       const img=e&&typeof e.i==="string"&&/^data:image\/(jpeg|png|gif|webp);base64,[A-Za-z0-9+/=]+$/.test(e.i)&&e.i.length<40000?e.i:FR_BLANK;
       return{id:"friend-it"+i,r,name:nm,kana:String(e&&e.k||"").slice(0,20),flavor:"",h:Number(e&&e.h)||0,shape:"shield",img,m:"?",kind:"item",it:CUSTOM_ITEMS[e&&e.e]?e.e:"potion",friend:true};
@@ -5162,9 +5169,9 @@ async function netMyTeam(kind){
   }
   const pool=btCustomPool(),deck=dkCards(S.cdeckSel,"custom");
   if(pool.length<5)return{err:"自作カードで対戦するには、自作カードが5種類以上必要です。"};
-  const list=dkValid(deck)?deck.slice():shuffled(pool).slice(0,5),cards=[]; // your custom deck if it is complete, otherwise 5 at random
+  const list=dkValid(deck,"custom")?deck.slice():shuffled(pool).slice(0,5),cards=[]; // your custom deck if it is complete, otherwise 5 at random
   for(const c of list)cards.push({n:c.name,k:c.kana||"",r:c.r,h:c.h||0,bt:c.bt||btCustomDefaults(c),i:await frThumb(c.img)});
-  const items=[],itl=dkValid(deck)?dkItems(S.cdeckSel):shuffled(btItemPool()).slice(0,6);
+  const items=[],itl=dkValid(deck,"custom")?dkItems(S.cdeckSel):shuffled(btItemPool()).slice(0,6);
   for(const c of itl)items.push({n:c.name,k:c.kana||"",r:c.r,h:c.h||0,e:c.it,i:await frThumb(c.img)});
   return{code:frEncode({k:"c",n:frNick(),c:cards,it:items})};
 }
