@@ -2432,9 +2432,11 @@ const pullCost=(bid,n)=>PULL_COST[bid==="std"?"std":"own"][n];
 // what one copy sells for: STAR LIGHT cards give stars, your own cards give 1 coin
 const sellValue=c=>isCustom(c)?{coins:1,stars:0}:{coins:0,stars:SELL_STARS[c.r]};
 const valueText=(c,k=1)=>{const v=sellValue(c);return v.stars?`★${(v.stars*k).toLocaleString()}`:`＋${(v.coins*k).toLocaleString()} コイン`};
+const keepOf=c=>isCustom(c)?2:1; // copies that are never sold (original cards keep 2 for decks)
+const sellable=c=>Math.max(0,(S.owned[c.id]||0)-keepOf(c));
 function sellCards(list){ // list of [card, count]
   let stars=0,coins=0,n=0;
-  list.forEach(([c,k])=>{k=Math.min(k,(S.owned[c.id]||0)-1);if(k>0){S.owned[c.id]-=k;const v=sellValue(c);stars+=k*v.stars;coins+=k*v.coins;n+=k}});
+  list.forEach(([c,k])=>{k=Math.min(k,sellable(c));if(k>0){S.owned[c.id]-=k;const v=sellValue(c);stars+=k*v.stars;coins+=k*v.coins;n+=k}});
   if(!n)return;
   S.points+=stars;S.gems+=coins;missionAdd("sell",n);S.stats.sold=(S.stats.sold||0)+n;save();render();
   toast(`${n} 枚売って ${[stars?`★${stars.toLocaleString()} スター`:"",coins?`${coins.toLocaleString()} コイン`:""].filter(Boolean).join("・")}！`);
@@ -2446,7 +2448,7 @@ function customAutoSell(){
   if(n){S.gems+=n;S.stats.sold=(S.stats.sold||0)+n}
   return n;
 }
-function dupesIn(pool){return ORDER.flatMap(r=>pool[r]).filter(c=>(S.owned[c.id]||0)>1).map(c=>[c,S.owned[c.id]-1])}
+function dupesIn(pool){return ORDER.flatMap(r=>pool[r]).filter(c=>sellable(c)>0).map(c=>[c,sellable(c)])}
 
 /* two-step button helper (the viewer has no confirm dialogs) */
 function armed(btn,label,armedLabel,action){
@@ -2625,7 +2627,7 @@ function drawDetail(){
   t.innerHTML=`<div class="rates" style="margin:0 0 8px"><span><b>${c.r}</b>${esc(where)}</span></div>
     <h4>${esc(c.name)}</h4><div class="jp">${esc(c.kana||"")}</div>
     <div class="stats"><div><small>レアリティ</small><b>${c.r}</b></div>${detailMode==="cards"?`<div><small>所持数</small><b>×${S.owned[c.id]}</b></div>`:""}<div><small>No.</small><b>${no}</b></div></div>
-    ${detailMode==="cards"&&S.owned[c.id]>1?`<div class="sell"><button type="button" class="ghost" id="sell1">1枚売る <b>${valueText(c)}</b></button>${S.owned[c.id]>2?`<button type="button" class="ghost" id="sellN">ダブり ${S.owned[c.id]-1} 枚を全部売る <b>${valueText(c,S.owned[c.id]-1)}</b></button>`:""}</div>`:""}
+    ${detailMode==="cards"&&sellable(c)>0?`<div class="sell"><button type="button" class="ghost" id="sell1">1枚売る <b>${valueText(c)}</b></button>${sellable(c)>1?`<button type="button" class="ghost" id="sellN">ダブり ${sellable(c)} 枚を全部売る <b>${valueText(c,sellable(c))}</b></button>`:""}</div>`:""}
     ${c.flavor?`<p>${esc(c.flavor)}</p>`:""}
     <button type="button" class="ghost fav-detail ${isFav(c)?"on":""}" id="dFav">${isFav(c)?"★ お気に入り登録中":"☆ お気に入りに登録"}</button>
     ${detailMode==="cards"?lvFuseHTML(c):""}
@@ -2636,7 +2638,7 @@ function drawDetail(){
   box.append(close,cw,t);d.appendChild(box);
   const s1=t.querySelector("#sell1"),sN=t.querySelector("#sellN");
   if(s1)s1.onclick=()=>{sellCards([[c,1]]);drawDetail()};
-  if(sN)sN.onclick=()=>{sellCards([[c,S.owned[c.id]-1]]);drawDetail()};
+  if(sN)sN.onclick=()=>{sellCards([[c,sellable(c)]]);drawDetail()};
   const dab=t.querySelector("#dAb");if(dab)dab.onclick=()=>abOpen(c,drawDetail);
   const f1=t.querySelector("#lvFuse1"),fA=t.querySelector("#lvFuseAll");
   if(f1)f1.onclick=()=>{lvFuse(c,1);drawDetail()};
@@ -4470,6 +4472,7 @@ $("btStartCustom").onclick=()=>btStart("custom");
    The rules engine (tcAct) is plain data in, plain data out, so online play can run it on the host and send the state. */
 const TC_WIN=3,TC_BENCH=4,TC_HAND0=5,TC_MAXTURN=60,TC_WEAK=1.5;
 const TC_PRIZE={N:1,R:1,SR:1,SSR:2,UR:2};
+const TC_HP={N:50,R:70,SR:100,SSR:140,UR:190},TC_ATK={N:18,R:25,SR:34,SSR:45,UR:60}; // original heroes: big gaps between rarities
 const TC_RETREAT={N:1,R:1,SR:1,SSR:2,UR:2};
 const TC_PDESC={
  first:"わざに必要なエネルギーが1つ少ない",
@@ -4497,7 +4500,8 @@ function tcInfo(uid){
   if(TC.info[uid])return TC.info[uid];
   const c=TC.cards[uid];
   if(isItem(c)){const e=itemOf(c);return TC.info[uid]={uid,c,item:true,it:CUSTOM_ITEMS[c.it]?c.it:"potion",name:e.name,desc:e.desc}}
-  const p=btProfile(c,1),pk=p.passive&&p.passive.k;
+  const p0=btProfile(c,1),pk=p0.passive&&p0.passive.k;
+  const p=Object.assign({},p0,{hp:Math.max(30,Math.round(TC_HP[c.r]*p0.hp/BT_HP[c.r]/10)*10),atk:TC_ATK[c.r]*p0.atk/BT_ATK[c.r]});
   const skey=p.skill.key||"";
   const supp=!p.skill.fx.some(f=>f.k==="hit");
   // every move has its own damage (multiples of 10); "1.7倍ダメージ" in the text becomes "50ダメージ"
