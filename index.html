@@ -1798,7 +1798,7 @@ var CUSTOM_ITEMS={
  gust:{name:"おびき寄せの笛",desc:"相手の控えのヒーローを1体えらんで、相手のバトル場に引っぱり出す"},
  boost:{name:"ブーストドリンク",desc:"この番、バトル場のヒーローの攻撃のダメージ1.5倍"},
  shield:{name:"防御シールド",desc:"次の相手の番、バトル場のヒーローが受けるダメージ50%カット"},
- cure:{name:"万能薬",desc:"バトル場のヒーローのしびれ・やけど・攻撃力ダウンを治す"},
+ cure:{name:"万能薬",desc:"バトル場のヒーローのしびれ・やけど・ダメージダウンを治す"},
  breaker:{name:"エネルギーブレイカー",desc:"相手のバトル場のヒーローのエネルギーを1つトラッシュする"},
 };
 const isItem=c=>!!c&&c.kind==="item";
@@ -4293,7 +4293,7 @@ function dkDrawEdit(){
       b.appendChild(cardEl(c,{flipped:true}));
       b.insertAdjacentHTML("beforeend",`${c.img?"":`<span class="dk-cc big">${DK_COST[c.r]}</span>`}<span class="dk-out">外す</span>`);
       b.onclick=()=>dkToggle(c,true);w.appendChild(b);
-      w.insertAdjacentHTML("beforeend",`<div class="dk-st">${btStdOK(c)?`<b class="lv-badge sm">Lv${p.lv}</b>`:""}<span class="bt-type t${p.type}">${BT_TYPES[p.type]}</span><span>HP <b>${p.hp}</b></span><span>ATK <b>${p.atk}</b></span><span>SPD <b>${p.spd}</b></span></div>`);
+      w.insertAdjacentHTML("beforeend",`<div class="dk-st">${btStdOK(c)?`<b class="lv-badge sm">Lv${p.lv}</b>`:""}${c.img?tcStatsHTML(c):`<span class="bt-type t${p.type}">${BT_TYPES[p.type]}</span><span>HP <b>${p.hp}</b></span><span>ATK <b>${p.atk}</b></span><span>SPD <b>${p.spd}</b></span>`}</div>`);
     }else w.innerHTML=`<div class="dk-emptycard"><span>${i+1}</span><small>カードを<br>えらんでね</small></div>`;
     row.appendChild(w);
   }
@@ -4321,7 +4321,7 @@ function dkDrawEdit(){
     if(!c.img)b.insertAdjacentHTML("beforeend",`<span class="dk-cc big">${DK_COST[c.r]}</span>`);
     b.onclick=()=>dkToggle(c);
     w.appendChild(b);
-    w.insertAdjacentHTML("beforeend",`<div class="dk-st">${btStdOK(c)?`<b class="lv-badge sm">Lv${p.lv}</b>`:""}<span class="bt-type t${p.type}">${BT_TYPES[p.type]}</span><span>HP <b>${p.hp}</b></span><span>ATK <b>${p.atk}</b></span><span>SPD <b>${p.spd}</b></span></div>`);
+    w.insertAdjacentHTML("beforeend",`<div class="dk-st">${btStdOK(c)?`<b class="lv-badge sm">Lv${p.lv}</b>`:""}${c.img?tcStatsHTML(c):`<span class="bt-type t${p.type}">${BT_TYPES[p.type]}</span><span>HP <b>${p.hp}</b></span><span>ATK <b>${p.atk}</b></span><span>SPD <b>${p.spd}</b></span>`}</div>`);
     const more=document.createElement("button");more.type="button";more.className="dk-more";more.textContent="詳しく";more.onclick=()=>dkInfo(c);
     w.appendChild(more);
     g.appendChild(w);
@@ -4476,7 +4476,8 @@ const TC_PDESC={
  charge:"自分の番のはじめ、バトル場にいるとエネルギーが1つ自動で付く",
  regen:"自分の番のはじめ、バトル場にいるとHPが5%回復する",
  ambush:"バトル場に出て最初の攻撃は1.5倍",
- immune:"攻撃力ダウン・しびれ・やけどにならない",
+ immune:"ダメージダウン・しびれ・やけどにならない",
+ rage:"HPが40%以下になると、与えるダメージ40%アップ",
 };
 const TC_SDESC={
  jam:"1.2倍ダメージ＋相手のバトル場のヒーローのエネルギーを1つトラッシュ",
@@ -4484,8 +4485,8 @@ const TC_SDESC={
  burn:"1.0倍ダメージ＋やけど（やけどしたヒーローの番の終わりに、最大HPの8%ダメージ・3回）",
  guard:"相手の番2回のあいだ、受けるダメージ50%カット",
  counter:"相手の番3回のあいだ、受けたダメージの50%を返す",
- power:"0.8倍ダメージ＋このあと2回の攻撃は攻撃力40%アップ",
- weaken:"1.2倍ダメージ＋相手の次の2回の攻撃は攻撃力30%ダウン",
+ power:"0.8倍ダメージ＋このあと2回の攻撃はダメージ40%アップ",
+ weaken:"1.2倍ダメージ＋相手の次の2回の攻撃はダメージ30%ダウン",
 };
 var TC=null; // the battle on screen: {G, me, online, cards, info, busy, mode}
 var TCU={sel:null}; // what the player is choosing right now (energy target, retreat target, item target, ...)
@@ -4499,9 +4500,14 @@ function tcInfo(uid){
   const p=btProfile(c,1),pk=p.passive&&p.passive.k;
   const skey=p.skill.key||"";
   const supp=!p.skill.fx.some(f=>f.k==="hit");
-  let sdesc=TC_SDESC[skey]||p.skill.desc;if(supp)sdesc+="（使うとエネルギーを"+p.skill.cost+"つトラッシュ）";
+  // every move has its own damage (multiples of 10); "1.7倍ダメージ" in the text becomes "50ダメージ"
+  const r10=x=>Math.max(10,Math.round(x/10)*10);
+  const basic=r10(p.atk),hits=p.skill.fx.filter(f=>f.k==="hit").map(f=>({d:r10(p.atk*f.m),n:f.n}));
+  let sdesc=(TC_SDESC[skey]||p.skill.desc).replace(/(\d+(?:\.\d+)?)倍ダメージ/g,(m0,x)=>r10(p.atk*parseFloat(x))+"ダメージ");
+  if(supp)sdesc+="（使うとエネルギーを"+p.skill.cost+"つトラッシュ）";
+  const skDmg=hits.length?hits.map(x=>x.n>1?`${x.d}×${x.n}`:`${x.d}`).join("+"):"";
   const passive=p.passive?Object.assign({},p.passive,{desc:TC_PDESC[pk]||p.passive.desc}):null;
-  return TC.info[uid]={uid,c,item:false,type:p.type,hp:p.hp,atk:p.atk,skill:Object.assign({},p.skill,{desc:sdesc}),supp,passive,
+  return TC.info[uid]={uid,c,item:false,type:p.type,hp:p.hp,atk:p.atk,basic,skDmg,skill:Object.assign({},p.skill,{desc:sdesc}),supp,passive,
     cost:Math.max(1,p.skill.cost-(pk==="first"?1:0)),ret:Math.max(0,TC_RETREAT[c.r]-(p.type===1?1:0)),prize:TC_PRIZE[c.r]||1};
 }
 const tcPk=(u,k)=>{const p=tcInfo(u.uid).passive;return p&&p.k===k?p:null};
@@ -4556,7 +4562,7 @@ function tcHit(G,s,att,def,m,pierce){
   if(att.ambush){mul*=tcPk(att,"ambush").v;att.ambush=false}
   const weak=!pierce&&btBeats(ai.type,di.type);
   let grd=0;def.mods.forEach(x=>{if(x.k==="guard")grd+=x.v});const tg=tcPk(def,"tough");if(tg)grd+=tg.v;grd=Math.min(.8,grd);
-  let d=Math.max(1,Math.round(att.atk*mul*m*(weak?TC_WEAK:1)*(1-grd)));
+  let d=Math.max(1,Math.round(m*mul*(weak?TC_WEAK:1)*(1-grd)));
   def.hp-=d;
   if(def.hp<=0&&tcPk(def,"guts")&&!def.gutsUsed){def.hp=1;def.gutsUsed=true;tcLog(G,`${tcName(G,fs,def)} は「${esc(tcPk(def,"guts").name)}」で踏みとどまった！`)}
   def.hp=Math.max(0,def.hp);
@@ -4572,14 +4578,14 @@ function tcUseSkill(G,s,u){
   const team=[P.act].concat(P.bench).filter(x=>x&&x.hp>0);
   for(const x of f.skill.fx){
     const foe=G[fs].act;
-    if(x.k==="hit"){for(let i=0;i<x.n;i++){if(!foe||foe.hp<=0)break;tcHit(G,s,u,foe,x.m,x.pierce)}}
+    if(x.k==="hit"){const dd=Math.max(10,Math.round(f.atk*x.m/10)*10);for(let i=0;i<x.n;i++){if(!foe||foe.hp<=0)break;tcHit(G,s,u,foe,dd,x.pierce)}}
     else if(x.k==="heal"){(x.team?team:[u]).forEach(t=>{t.hp=Math.min(t.maxHp,t.hp+Math.round(t.maxHp*x.v))});tcLog(G,x.team?"味方全員のHPが回復した！":`${tcName(G,s,u)} のHPが回復した！`);tcEv(G,{s,uid:u.uid,txt:"HEAL",cls:"heal",sfx:"up"})}
-    else if(x.k==="buff"){u.mods.push({k:"buff",v:x.v,t:x.turns});tcLog(G,`${tcName(G,s,u)} の攻撃力がアップ！`);tcEv(G,{s,uid:u.uid,txt:"ATK UP",cls:"heal",sfx:"rankup"})}
+    else if(x.k==="buff"){u.mods.push({k:"buff",v:x.v,t:x.turns});tcLog(G,`${tcName(G,s,u)} のダメージがアップ！`);tcEv(G,{s,uid:u.uid,txt:"POWER UP",cls:"heal",sfx:"rankup"})}
     else if(x.k==="guard"){u.mods.push({k:"guard",v:x.v,t:x.turns});tcLog(G,`${tcName(G,s,u)} は守りをかためた！`);tcEv(G,{s,uid:u.uid,txt:"GUARD",cls:"heal",sfx:"tink"})}
     else if(x.k==="reflect"){u.mods.push({k:"reflect",v:x.v,t:x.turns});tcLog(G,`${tcName(G,s,u)} は反撃の構え！`);tcEv(G,{s,uid:u.uid,txt:"COUNTER",cls:"heal",sfx:"tink"})}
     else if(foe&&foe.hp>0){
       if(tcPk(foe,"immune")&&(x.k==="weaken"||x.k==="stun"||x.k==="dot")){tcLog(G,`${tcName(G,fs,foe)} には効かない！`);continue}
-      if(x.k==="weaken"){foe.mods.push({k:"weaken",v:x.v,t:x.turns});tcLog(G,`${tcName(G,fs,foe)} の攻撃力がダウン！`);tcEv(G,{s:fs,uid:foe.uid,txt:"ATK DOWN",cls:"weak"})}
+      if(x.k==="weaken"){foe.mods.push({k:"weaken",v:x.v,t:x.turns});tcLog(G,`${tcName(G,fs,foe)} のダメージがダウン！`);tcEv(G,{s:fs,uid:foe.uid,txt:"POWER DOWN",cls:"weak"})}
       else if(x.k==="stun"){if(Math.random()<x.ch){foe.stun=true;tcLog(G,`${tcName(G,fs,foe)} はしびれた！`);tcEv(G,{s:fs,uid:foe.uid,txt:"STUN",cls:"weak",sfx:"thunder"})}else tcLog(G,`${tcName(G,fs,foe)} はしびれなかった`)}
       else if(x.k==="dot"){foe.dot={v:x.v,t:x.turns};tcLog(G,`${tcName(G,fs,foe)} はやけどした！`);tcEv(G,{s:fs,uid:foe.uid,txt:"BURN",cls:"weak"})}
       else if(x.k==="drain"){if(foe.en>0){foe.en--;tcLog(G,`${tcName(G,fs,foe)} のエネルギーを1つトラッシュ！`);tcEv(G,{s:fs,uid:foe.uid,txt:"-⚡",cls:"weak"})}}
@@ -4700,7 +4706,7 @@ function tcAct(G,s,a){
     else if(it==="battery"){const u=target(bt);u.en++;msg=`${tcName(G,s,u)} にエネルギーが付いた ⚡`;tcEv(G,{s,uid:u.uid,txt:"+⚡",cls:"heal",sfx:"tink"})}
     else if(it==="swap"){const u=P.bench[a.w];P.bench[a.w]=act;act.stun=false;act.dot=null;tcSetActive(G,s,u);msg=`${esc(tcInfo(u.uid).c.name)} とバトル場を入れ替えた！`;tcEv(G,{s,uid:u.uid,sfx:"flip"})}
     else if(it==="gust"){const u=F.bench[a.w];F.bench[a.w]=F.act;tcSetActive(G,tcFoe(s),u);msg=`相手の ${esc(tcInfo(u.uid).c.name)} を引っぱり出した！`;tcEv(G,{s:tcFoe(s),uid:u.uid,sfx:"flip"})}
-    else if(it==="boost"){act.mods.push({k:"buff",v:.5,t:1});msg=`${tcName(G,s,act)} の攻撃がパワーアップ！`;tcEv(G,{s,uid:act.uid,txt:"ATK UP",cls:"heal",sfx:"rankup"})}
+    else if(it==="boost"){act.mods.push({k:"buff",v:.5,t:1});msg=`${tcName(G,s,act)} の攻撃がパワーアップ！`;tcEv(G,{s,uid:act.uid,txt:"POWER UP",cls:"heal",sfx:"rankup"})}
     else if(it==="shield"){act.mods.push({k:"guard",v:.5,t:1});msg=`${tcName(G,s,act)} にシールド！`;tcEv(G,{s,uid:act.uid,txt:"GUARD",cls:"heal",sfx:"tink"})}
     else if(it==="cure"){act.stun=false;act.dot=null;act.mods=act.mods.filter(m=>m.k!=="weaken");msg=`${tcName(G,s,act)} は元気になった！`;tcEv(G,{s,uid:act.uid,txt:"CURE",cls:"heal",sfx:"up"})}
     else if(it==="breaker"){const u=F.act;u.en--;msg=`相手の ${esc(tcInfo(u.uid).c.name)} のエネルギーを1つトラッシュ！`;tcEv(G,{s:tcFoe(s),uid:u.uid,txt:"-⚡",cls:"weak",sfx:"crash"})}
@@ -4725,7 +4731,7 @@ function tcAct(G,s,a){
     if(a.w==="skill"){if(act.en<f.cost)return `わざにはエネルギーが${f.cost}つ必要です`;tcUseSkill(G,s,act)}
     else{
       if(act.en<1)return "こうげきにはエネルギーが1つ必要です";
-      tcLog(G,`${tcName(G,s,act)} のこうげき！`);tcHit(G,s,act,foe,1);
+      tcLog(G,`${tcName(G,s,act)} のこうげき！`);tcHit(G,s,act,foe,f.basic);
     }
     tcEndTurn(G);
     return null;
@@ -4738,15 +4744,15 @@ function tcAct(G,s,a){
 function tcPredict(G,s,att,def,w){
   if(!att||!def)return 0;
   const ai=tcInfo(att.uid),di=tcInfo(def.uid);
-  let m=1;
-  if(w==="skill"){m=ai.skill.fx.filter(f=>f.k==="hit").reduce((t,f)=>t+f.m*f.n,0)}
+  let m=ai.basic;
+  if(w==="skill"){m=ai.skill.fx.filter(f=>f.k==="hit").reduce((t,f)=>t+Math.max(10,Math.round(ai.atk*f.m/10)*10)*f.n,0)}
   let mul=1;att.mods.forEach(x=>{if(x.k==="buff")mul+=x.v;if(x.k==="weaken")mul-=x.v});
   const weak=btBeats(ai.type,di.type)&&!(w==="skill"&&ai.skill.fx.some(f=>f.pierce));
-  return att.atk*Math.max(.3,mul)*m*(weak?TC_WEAK:1);
+  return Math.max(.3,mul)*m*(weak?TC_WEAK:1);
 }
 function tcAIStep(G,s){
   const P=G[s],F=G[tcFoe(s)],a=P.act,foe=F.act;
-  const score=uid=>{const f=tcInfo(uid);return f.hp+f.atk*3+(foe&&btBeats(f.type,tcInfo(foe.uid).type)?60:0)};
+  const score=uid=>{const f=tcInfo(uid);return f.hp+f.basic*3+(foe&&btBeats(f.type,tcInfo(foe.uid).type)?60:0)};
   if(G.phase==="setup"){let best=-1,bi=0;P.hand.forEach((u,i)=>{if(!tcInfo(u).item&&score(u)>best){best=score(u);bi=i}});return{k:"setup",h:bi}}
   if(G.phase==="promote"){let best=-1,bi=0;P.bench.forEach((u,i)=>{const v=score(u.uid)*(u.hp/u.maxHp)+u.en*25;if(v>best){best=v;bi=i}});return{k:"promote",b:bi}}
   // 1. heroes from hand onto the bench
@@ -4820,7 +4826,7 @@ async function tcPlay(){
 function tcPips(n,max){let h="";for(let k=0;k<Math.max(n,max);k++)h+=`<i class="${k<n?"on":""}"></i>`;return h}
 function tcChips(u){
   const ch=[];let atk=0,grd=0;u.mods.forEach(x=>{if(x.k==="buff")atk+=x.v;if(x.k==="weaken")atk-=x.v;if(x.k==="guard")grd+=x.v});
-  if(atk>0)ch.push(`<i class="up">ATK↑</i>`);if(atk<0)ch.push(`<i class="dn">ATK↓</i>`);if(grd>0)ch.push(`<i class="up">GUARD</i>`);
+  if(atk>0)ch.push(`<i class="up">ダメージ↑</i>`);if(atk<0)ch.push(`<i class="dn">ダメージ↓</i>`);if(grd>0)ch.push(`<i class="up">GUARD</i>`);
   if(u.mods.some(x=>x.k==="reflect"))ch.push(`<i class="up">反撃</i>`);if(u.stun)ch.push(`<i class="dn">しびれ</i>`);if(u.dot)ch.push(`<i class="dn">やけど</i>`);
   return ch.join("");
 }
@@ -4828,7 +4834,7 @@ function tcActHTML(G,s,u){
   const f=tcInfo(u.uid);
   return `<div class="bt-info">
     <div class="bt-nm"><span class="bt-type t${f.type}">${BT_TYPES[f.type]}</span><b>${esc(f.c.name)}</b><small>${f.c.r}</small></div>
-    ${btBar(u)}<div class="bt-hpn">HP ${u.hp} / ${u.maxHp} ・ ATK ${f.atk}</div>
+    ${btBar(u)}<div class="bt-hpn">HP ${u.hp} / ${u.maxHp} ・ こうげき ${f.basic}${f.skDmg?` ・ わざ ${f.skDmg}`:""}</div>
     <div class="bt-ch tc-en" title="エネルギー">${tcPips(u.en,f.cost)}<span>⚡${u.en}</span></div>
     <div class="bt-chips">${tcChips(u)}</div></div>`;
 }
@@ -4875,7 +4881,7 @@ function tcRender(){
   const a=P.act,fa=a&&tcInfo(a.uid);
   const canAtk=myTurn&&a&&tcCanAttack(G,me)&&!a.stun;
   $("tcAtk").disabled=!canAtk||a.en<1;
-  $("tcAtk").querySelector("small").textContent="⚡1";
+  $("tcAtk").querySelector("small").textContent=a?`⚡1 ・ ${fa.basic}ダメージ`:"⚡1";
   const sk=$("tcSkill");sk.disabled=!canAtk||a.en<fa.cost;
   sk.innerHTML=`<b>わざ</b><small>${a?`${esc(fa.skill.name)} ⚡${fa.cost}`:"-"}</small>`;
   sk.classList.toggle("ready",!!(canAtk&&a.en>=fa.cost));
@@ -4936,10 +4942,10 @@ function tcShowUnit(s,u){
   const match=foe?(btBeats(f.type,ft)?`<span class="bt-match good">${esc(tcInfo(foe.uid).c.name)} の弱点をつける！</span>`:btBeats(ft,f.type)?`<span class="bt-match bad">${esc(tcInfo(foe.uid).c.name)} が弱点…</span>`:""):"";
   top.insertAdjacentHTML("beforeend",`<div class="bt-iv-head"><small>${mine?"YOUR HERO":"ENEMY"} ・ ${f.c.r}</small><b>${esc(f.c.name)}</b><span>${esc(f.c.kana||"")}</span><div class="bt-nm"><span class="bt-type t${f.type}">${BT_TYPES[f.type]}</span>${BT_TNAME[f.type]}</div>${match}</div>`);
   box.append(close,top);
-  box.insertAdjacentHTML("beforeend",`${btBar(u)}<div class="bt-iv-stats"><div><small>HP</small><b>${u.hp}<i>/${u.maxHp}</i></b></div><div><small>ATK</small><b>${f.atk}</b></div><div><small>にげる</small><b>⚡${f.ret}</b></div></div>
+  box.insertAdjacentHTML("beforeend",`${btBar(u)}<div class="bt-iv-stats"><div><small>HP</small><b>${u.hp}<i>/${u.maxHp}</i></b></div><div><small>こうげき</small><b>${f.basic}</b></div><div><small>にげる</small><b>⚡${f.ret}</b></div></div>
     <div class="bt-ch tc-en">${tcPips(u.en,f.cost)}<span>エネルギー ${u.en}</span></div>
     <div class="bt-chips">${tcChips(u)}</div>
-    <div class="bt-abil-sk"><small>こうげき ・ ⚡1</small><b>ふつうの攻撃</b><span>1.0倍ダメージ</span></div>
+    <div class="bt-abil-sk"><small>こうげき ・ ⚡1</small><b>ふつうの攻撃</b><span>${f.basic}ダメージ</span></div>
     <div class="bt-abil-sk"><small>わざ ・ ⚡${f.cost}</small><b>${esc(f.skill.name)}</b><span>${esc(f.skill.desc)}</span></div>
     ${f.passive?`<div class="bt-abil-sk ps"><small>とくせい</small><b>${esc(f.passive.name)}</b><span>${esc(f.passive.desc)}</span></div>`:""}
     <p class="tc-note">たおされると相手に ${f.prize} ポイント</p>`);
@@ -5070,9 +5076,12 @@ function tcNetBuild(role,me,foe,myName,foeName){
   return true;
 }
 // card detail text for an original hero (these rules)
+function tcStatic(c){const save0=TC;TC={cards:{x:c},info:{},me:"A"};try{return tcInfo("x")}finally{TC=save0}}
+function tcStatsHTML(c){const f=tcStatic(c);return `<span class="bt-type t${f.type}">${BT_TYPES[f.type]}</span><span>HP <b>${f.hp}</b></span><span>こうげき <b>${f.basic}</b></span><span>わざ <b>⚡${f.cost}</b></span>`}
 function tcAbilityHTML(c){
   const save0=TC;TC={cards:{x:c},info:{},me:"A"};let f;try{f=tcInfo("x")}finally{TC=save0}
-  return `<div class="bt-abil"><div class="bt-abil-row"><span class="bt-type t${f.type}">${BT_TYPES[f.type]}</span><b>${BT_TNAME[f.type]}</b><span>HP ${f.hp}</span><span>ATK ${f.atk}</span><span>にげる ⚡${f.ret}</span></div>
+  return `<div class="bt-abil"><div class="bt-abil-row"><span class="bt-type t${f.type}">${BT_TYPES[f.type]}</span><b>${BT_TNAME[f.type]}</b><span>HP ${f.hp}</span><span>にげる ⚡${f.ret}</span></div>
+    <div class="bt-abil-sk"><small>こうげき ・ エネルギー ⚡1</small><b>ふつうの攻撃</b><span>${f.basic}ダメージ</span></div>
     <div class="bt-abil-sk"><small>わざ ・ エネルギー ⚡${f.cost}（自作カードバトル）</small><b>${esc(f.skill.name)}</b><span>${esc(f.skill.desc)}</span></div>
     ${f.passive?`<div class="bt-abil-sk ps"><small>とくせい</small><b>${esc(f.passive.name)}</b><span>${esc(f.passive.desc)}</span></div>`:""}</div>`;
 }
