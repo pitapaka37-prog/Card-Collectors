@@ -892,6 +892,9 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
 .tc-card{position:relative;flex:0 0 112px;display:flex;flex-direction:column;gap:4px;padding:0;border:0;background:none;color:inherit;cursor:pointer;scroll-snap-align:start}
 .tc-card .card{width:112px;font-size:9px}
 .tc-cap{display:flex;align-items:center;gap:4px;font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tc-card.can{animation:ts-float 1.6s ease-in-out infinite}.tc-card.can .card{outline:4px solid var(--yellow);outline-offset:2px}
+.tc-acts{display:flex;flex-direction:column;gap:8px}
+.tc-acts button{font-size:16px;padding:10px 12px;line-height:1.35}
 .tc-hv{width:min(200px,60%);margin:0 auto}
 .tc-note{margin:0;font-size:12px;font-weight:700;opacity:.8}
 @media (max-width:640px){.tc-cmds .bt-cmd b{font-size:14px}.tc-cmds .bt-cmd small{font-size:11px}.tc-card{flex-basis:96px}.tc-card .card{width:96px}}
@@ -1319,7 +1322,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
             <li>自分の番のはじめにカードを<b>1枚引く</b>。ヒーローは控えに4体まで出せる</li>
             <li><b>エネルギー</b>は1ターンに1回、好きなヒーロー（控えも）に1つ付けられる</li>
             <li><b>こうげき</b>はエネルギー1つ、<b>わざ</b>はカードごとの数が必要（付けたエネルギーはなくならない。回復・守りのわざだけ使うとトラッシュ）。攻撃すると番が終わる</li>
-            <li><b>サポート</b>は手札から何枚でも使える。<b>にげる</b>はエネルギーをトラッシュして控えと入れ替え</li>
+            <li><b>サポート</b>は手札から何枚でも使える。<b>にげる</b>はエネルギーをトラッシュして控えと入れ替え。控えのヒーローはエネルギー1つで<b>手札のヒーローと入れかえ</b>られる（1ターン1回）</li>
             <li>相手のヒーローをたおすと<b>1ポイント</b>（SSR・UR は<b>2ポイント</b>）。<b>先に3ポイント</b>取るか、相手の場のヒーローがいなくなったら勝ち！</li>
             <li>弱点のタイプ（力→技→速→力）で攻撃するとダメージ1.5倍。先攻の最初の番は攻撃できない</li>
           </ul>
@@ -4546,7 +4549,7 @@ function tcNewGame(aDeck,bDeck,aName,bName){
 }
 function tcStartTurn(G,s){
   G.cur=s;G.turn++;G.phase="main";
-  const P=G[s];P.en=false;P.ret=false;
+  const P=G[s];P.en=false;P.ret=false;P.bsw=false;
   [P.act].concat(P.bench).forEach(u=>{if(!u)return;u.mods.forEach(m=>m.t--);u.mods=u.mods.filter(m=>m.t>0)});
   if(tcDrawCards(G,s,1))tcLog(G,`${tcWho(G,s)}の番！ カードを1枚引いた`);
   else tcLog(G,`${tcWho(G,s)}の番！ 山札がないので引けない…`);
@@ -4720,6 +4723,16 @@ function tcAct(G,s,a){
     else if(it==="cure"){act.stun=false;act.dot=null;act.mods=act.mods.filter(m=>m.k!=="weaken");msg=`${tcName(G,s,act)} は元気になった！`;tcEv(G,{s,uid:act.uid,txt:"CURE",cls:"heal",sfx:"up"})}
     else if(it==="breaker"){const u=F.act;u.en--;msg=`相手の ${esc(tcInfo(u.uid).c.name)} のエネルギーを1つトラッシュ！`;tcEv(G,{s:tcFoe(s),uid:u.uid,txt:"-⚡",cls:"weak",sfx:"crash"})}
     tcLog(G,`${tcPre(G,s)}サポート「${esc(f.name)}」！ ${msg}`);
+    return null;
+  }
+  if(a.k==="bswap"){
+    if(P.bsw)return "手札との入れかえは、この番はもうしました";
+    const u=P.bench[a.b];if(!u)return "控えのヒーローを選んでね";
+    const uid=P.hand[a.h];if(!uid||tcInfo(uid).item)return "手札のヒーローを選んでね";
+    if(u.en<1)return "このヒーローにエネルギーが1つ必要です";
+    const nu=tcUnit(G,uid);nu.en=u.en-1; // 1 energy is trashed, the rest moves to the new hero
+    P.hand.splice(a.h,1);P.hand.push(u.uid);P.bench[a.b]=nu;P.bsw=true;
+    tcLog(G,`${tcPre(G,s)}${esc(tcInfo(u.uid).c.name)} を手札にもどして、${esc(tcInfo(uid).c.name)} を控えに出した（⚡1トラッシュ）`);tcEv(G,{s,uid:nu.uid,sfx:"flip"});
     return null;
   }
   if(a.k==="retreat"){
@@ -4909,6 +4922,7 @@ function tcRender(){
   if(G.phase==="setup")hint=P.act?"相手が選ぶのを待っています…（そろったら同時にオープン！）":"手札から、最初にバトル場に出すヒーローをタップしてね。お互いに選んだら同時にオープン！";
   else if(G.phase==="promote")hint=G.need[me]?"控えから、次にバトル場に出すヒーローをタップしてね。":"相手が次のヒーローを選んでいます…";
   else if(sel&&sel.k==="energy")hint="エネルギーを付けるヒーロー（バトル場か控え）をタップしてね。";
+  else if(sel&&sel.k==="bswap")hint="手札から、控えに出すヒーローをタップしてね（エネルギー1つをトラッシュ）。";
   else if(sel&&sel.k==="retreat")hint=`入れ替える控えのヒーローをタップしてね（エネルギー${fa?fa.ret:0}つをトラッシュ）。`;
   else if(sel&&sel.k==="item")hint=sel.need==="foebench"?"相手の控えから、引っぱり出すヒーローをタップしてね。":sel.need==="mybench"?"入れ替える控えのヒーローをタップしてね。":"エネルギーを付けるヒーローをタップしてね。";
   else if(G.phase==="main"&&G.cur!==me)hint=TC.online?"相手の番です…":"敵が考えています…";
@@ -4920,7 +4934,7 @@ function tcRender(){
   const hand=$("tcHand");hand.innerHTML="";
   P.hand.forEach((uid,i)=>{
     const f=tcInfo(uid);
-    const b=document.createElement("button");b.type="button";b.className="tc-card"+(f.item?" item":"");
+    const b=document.createElement("button");b.type="button";b.className="tc-card"+(f.item?" item":"")+(sel&&sel.k==="bswap"&&!f.item?" can":"");
     b.appendChild(cardEl(f.c,{flipped:true}));
     b.insertAdjacentHTML("beforeend",`<span class="tc-cap">${f.item?`<span class="it-badge">SUPPORT</span>${esc(f.name)}`:`<span class="bt-type t${f.type}">${BT_TYPES[f.type]}</span>HP${f.hp}`}</span>`);
     b.onclick=()=>tcTapHand(i);
@@ -4932,19 +4946,27 @@ function tcRender(){
 // tapping a hero on the field
 function tcTapUnit(s,w){
   if(!TC)return;
-  const G=TC.G,me=TC.me,sel=TCU.sel;
+  const G=TC.G,me=TC.me,sel=TCU.sel,P=G[me];
   const u=w==="a"?G[s].act:G[s].bench[w];if(!u)return;
-  if(s===me&&G.phase==="promote"&&G.need[me]&&w!=="a")return tcDo({k:"promote",b:w});
-  if(sel&&s===me){
-    if(sel.k==="energy")return tcDo({k:"energy",w});
-    if(sel.k==="retreat"&&w!=="a")return tcDo({k:"retreat",b:w});
-    if(sel.k==="item"&&sel.need==="mine")return tcDo({k:"item",h:sel.h,w});
-    if(sel.k==="item"&&sel.need==="mybench"&&w!=="a")return tcDo({k:"item",h:sel.h,w});
-  }
-  if(sel&&s!==me&&sel.k==="item"&&sel.need==="foebench"&&w!=="a")return tcDo({k:"item",h:sel.h,w});
-  tcShowUnit(s,u);
+  if(sel&&sel.k==="energy"&&s===me)return tcDo({k:"energy",w}); // energy: one tap is enough
+  const btns=[];
+  const myTurn=G.phase==="main"&&G.cur===me&&!TC.busy;
+  if(s===me&&w!=="a"){
+    if(G.phase==="promote"&&G.need[me])btns.push(["このヒーローをバトル場に出す",{k:"promote",b:w}]);
+    else if(sel&&sel.k==="retreat")btns.push([`にげて、このヒーローを出す（⚡${P.act?tcInfo(P.act.uid).ret:0}トラッシュ）`,{k:"retreat",b:w}]);
+    else if(sel&&sel.k==="item"&&sel.need==="mybench")btns.push(["このヒーローと入れ替える",{k:"item",h:sel.h,w}]);
+    else if(sel&&sel.k==="item"&&sel.need==="mine")btns.push(["このヒーローにエネルギーを付ける",{k:"item",h:sel.h,w}]);
+    else if(myTurn){
+      if(!P.en)btns.push(["エネルギーを付ける（1ターン1回）",{k:"energy",w}]);
+      if(P.hand.some(x=>!tcInfo(x).item))btns.push([u.en>=1&&!P.bsw?"手札のヒーローと入れかえる（このヒーローの⚡1トラッシュ）":`手札と入れかえる（${P.bsw?"この番はもうしました":"このヒーローにエネルギーが1つ必要"}）`,u.en>=1&&!P.bsw?{sel:{k:"bswap",b:w}}:null]);
+      const a=P.act;if(a&&!P.ret&&!a.stun){const rc=tcInfo(a.uid).ret;btns.push([a.en>=rc?`にげて、このヒーローを出す（⚡${rc}トラッシュ）`:`にげるにはバトル場のヒーローに⚡${rc}が必要`,a.en>=rc?{k:"retreat",b:w}:null])}
+    }
+  }else if(s===me&&w==="a"&&sel&&sel.k==="item"&&sel.need==="mine")btns.push(["このヒーローにエネルギーを付ける",{k:"item",h:sel.h,w:"a"}]);
+  else if(s===me&&w==="a"&&myTurn&&!P.en)btns.push(["エネルギーを付ける（1ターン1回）",{k:"energy",w:"a"}]);
+  if(s!==me&&w!=="a"&&sel&&sel.k==="item"&&sel.need==="foebench")btns.push(["このヒーローを引っぱり出す",{k:"item",h:sel.h,w}]);
+  tcShowUnit(s,u,btns);
 }
-function tcShowUnit(s,u){
+function tcShowUnit(s,u,btns){
   const G=TC.G,f=tcInfo(u.uid),mine=s===TC.me;
   const box=$("btInfoBox");box.innerHTML="";
   const close=document.createElement("button");close.type="button";close.className="close";close.textContent="×";close.setAttribute("aria-label","閉じる");
@@ -4963,6 +4985,22 @@ function tcShowUnit(s,u){
     <p class="tc-note">たおされると相手に ${f.prize} ポイント</p>`);
   const m=$("btInfo");m.hidden=false;
   const shut=()=>{m.hidden=true};close.onclick=shut;m.onclick=e=>{if(e.target===m)shut()};
+  if(btns&&btns.length){
+    const wrap=document.createElement("div");wrap.className="bt-iv-btn tc-acts";
+    btns.forEach(([label,act],k)=>{const b=document.createElement("button");b.type="button";b.className=k?"ghost":"btn-main";b.textContent=label;b.disabled=!act;
+      b.onclick=()=>{shut();if(act.sel){TCU.sel=act.sel;sfx("tink");tcRender()}else tcDo(act)};wrap.appendChild(b)});
+    box.appendChild(wrap);
+  }
+}
+// the details of a hand card with one action button
+function tcConfirmHand(i,label,act){
+  const G=TC.G,uid=G[TC.me].hand[i],f=tcInfo(uid);
+  const box=$("btInfoBox");box.innerHTML="";
+  const close=document.createElement("button");close.type="button";close.className="close";close.textContent="×";close.setAttribute("aria-label","閉じる");
+  const top=document.createElement("div");top.className="tc-hv";top.appendChild(cardEl(f.c,{flipped:true}));
+  box.append(close,top);box.insertAdjacentHTML("beforeend",tcAbilityHTML(f.c)+`<div class="bt-iv-btn"><button type="button" class="btn-main" id="tcHandGo">${label}</button></div>`);
+  const m=$("btInfo");m.hidden=false;const shut=()=>{m.hidden=true};close.onclick=shut;m.onclick=e=>{if(e.target===m)shut()};
+  $("tcHandGo").onclick=()=>{shut();tcDo(act)};
 }
 // tapping a card in your hand
 function tcTapHand(i){
@@ -4970,6 +5008,7 @@ function tcTapHand(i){
   const G=TC.G,me=TC.me,P=G[me],uid=P.hand[i];if(!uid)return;
   const f=tcInfo(uid);
   if(G.phase==="setup"&&!P.act&&!f.item&&!TC.busy)return tcDo({k:"setup",h:i});
+  if(TCU.sel&&TCU.sel.k==="bswap"&&!f.item&&!TC.busy){const b=TCU.sel.b;return tcConfirmHand(i,`このヒーローを控えに出す（${esc(tcInfo(G[me].bench[b].uid).c.name)} は手札へ）`,{k:"bswap",b,h:i})}
   const myTurn=G.phase==="main"&&G.cur===me&&!TC.busy;
   const box=$("btInfoBox");box.innerHTML="";
   const close=document.createElement("button");close.type="button";close.className="close";close.textContent="×";close.setAttribute("aria-label","閉じる");
