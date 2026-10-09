@@ -1309,13 +1309,13 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
         </div>
         <div class="cb-panel">
           <div class="dk-head"><b>ORIGINAL BATTLE</b><small>自作カードバトル</small></div>
-          <p class="dk-note">自分で作ったカードで戦う、カードゲームのルールのモード。デッキは<b>ヒーローとアイテムで合計20枚</b>（ヒーローは1枚以上・同じカードは2枚まで）。コストや「UR・SSR は1枚まで」の制限はありません。勝ち負けのコインは同じですが、ランクと経験値には入りません。</p>
+          <p class="dk-note">自分で作ったカードで戦う、カードゲームのルールのモード。デッキは<b>ヒーローとサポートで合計20枚</b>（ヒーローは1枚以上・同じカードは2枚まで）。コストや「UR・SSR は1枚まで」の制限はありません。勝ち負けのコインは同じですが、ランクと経験値には入りません。</p>
           <ul class="bt-rules tc-rules">
             <li>山札をシャッフルして<b>5枚引く</b>。手札のヒーローを1体バトル場に出してスタート（先攻・後攻はコイントス）</li>
             <li>自分の番のはじめにカードを<b>1枚引く</b>。ヒーローは控えに4体まで出せる</li>
             <li><b>エネルギー</b>は1ターンに1回、好きなヒーロー（控えも）に1つ付けられる</li>
             <li><b>こうげき</b>はエネルギー1つ、<b>わざ</b>はカードごとの数が必要（付けたエネルギーはなくならない。回復・守りのわざだけ使うとトラッシュ）。攻撃すると番が終わる</li>
-            <li><b>アイテム</b>は手札から何枚でも使える。<b>にげる</b>はエネルギーをトラッシュして控えと入れ替え</li>
+            <li><b>サポート</b>は手札から何枚でも使える。<b>にげる</b>はエネルギーをトラッシュして控えと入れ替え</li>
             <li>相手のヒーローをたおすと<b>1ポイント</b>（SSR・UR は<b>2ポイント</b>）。<b>先に3ポイント</b>取るか、相手の場のヒーローがいなくなったら勝ち！</li>
             <li>弱点のタイプ（力→技→速→力）で攻撃するとダメージ1.5倍。先攻の最初の番は攻撃できない</li>
           </ul>
@@ -1445,8 +1445,8 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
       <div class="dk-filter" id="dkFilter" role="tablist"></div>
       <div class="dk-grid" id="dkGrid"></div>
       <div id="dkItemsWrap" hidden>
-        <div class="dk-sec">ITEMS<small>アイテムカード（タップで入れる／外す）</small></div>
-        <p class="dk-note">アイテムは山札にまぜて、引いたら手札から使えます。</p>
+        <div class="dk-sec">SUPPORT<small>サポートカード（タップで入れる／外す）</small></div>
+        <p class="dk-note">サポートは山札にまぜて、引いたら手札から使えます。</p>
         <div class="dk-grid" id="dkItems"></div>
       </div>
     </div>
@@ -1470,7 +1470,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
           <div class="hint">プレビュー</div>
         </div>
         <form class="fields" id="mkForm" novalidate>
-          <div class="mk-kind" id="mkKind" role="tablist"><button type="button" data-k="hero" class="sel">ヒーローカード</button><button type="button" data-k="item">アイテムカード</button></div>
+          <div class="mk-kind" id="mkKind" role="tablist"><button type="button" data-k="hero" class="sel">ヒーローカード</button><button type="button" data-k="item">サポートカード</button></div>
           <label class="drop" id="mkDrop" for="mkFile">画像をえらぶ・ここにドロップ
             <small id="mkFileName">JPG / PNG / GIF など。カードの形（縦長）に合わせて自動で切り抜きます</small>
             <input type="file" id="mkFile" accept="image/*">
@@ -1486,7 +1486,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
             <div class="field"><label for="mkHue">カードの色</label><input type="range" id="mkHue" min="0" max="359" value="210"></div>
           </div>
           <div class="field"><label for="mkFlavor">説明文</label><textarea id="mkFlavor" maxlength="60" placeholder="港の風を味方にして街を守る。"></textarea></div>
-          <fieldset class="ab-set" id="mkItem" hidden><legend>アイテムの効果（自作カードバトルで手札から使う）</legend><div class="it-choose" id="mkItChoose"></div><p class="ab-note" id="mkItInfo"></p></fieldset>
+          <fieldset class="ab-set" id="mkItem" hidden><legend>サポートの効果（自作カードバトルで手札から使う）</legend><div class="it-choose" id="mkItChoose"></div><p class="ab-note" id="mkItInfo"></p></fieldset>
           <fieldset class="ab-set" id="mkAb"><legend>バトルの能力（自作カードバトル用・効果はランダム）</legend></fieldset>
           <div class="row2">
             <div class="field"><label for="mkPack">入れるガチャ</label><select id="mkPack"></select></div>
@@ -1803,11 +1803,11 @@ var CUSTOM_ITEMS={
 };
 const isItem=c=>!!c&&c.kind==="item";
 function itemOf(c){return CUSTOM_ITEMS[c&&c.it]||CUSTOM_ITEMS.potion}
-function itemHTML(c){const e=itemOf(c);return `<div class="bt-abil it-abil"><div class="bt-abil-row"><span class="it-badge">ITEM</span><b>アイテムカード</b><span>自作カードバトル用</span></div><div class="bt-abil-sk"><small>効果 ・ 手札から使う</small><b>${esc(e.name)}</b><span>${esc(e.desc)}</span></div></div>`}
+function itemHTML(c){const e=itemOf(c);return `<div class="bt-abil it-abil"><div class="bt-abil-row"><span class="it-badge">SUPPORT</span><b>サポートカード</b><span>自作カードバトル用</span></div><div class="bt-abil-sk"><small>効果 ・ 手札から使う</small><b>${esc(e.name)}</b><span>${esc(e.desc)}</span></div></div>`}
 function cardEl(c,{flipped=false,isNew=false,sfx=false}={}){
   const d=document.createElement("div");
   d.className="card"+(flipped?" flipped":"");d.dataset.r=c.r;d.dataset.shape=c.shape;d.style.setProperty("--h",c.h);
-  const tag=c.unlock?`<span class="custom-tag msn">${stdNoText(c)} UNLOCK</span>`:c.reward?`<span class="custom-tag msn">${stdNoText(c)} MISSION</span>`:c.shop?`<span class="custom-tag ltd">${stdNoText(c)} LIMITED</span>`:isItem(c)?`<span class="custom-tag item">ITEM</span>`:c.img?`<span class="custom-tag">ORIGINAL</span>`:`<span class="no">${stdNoText(c)}</span>`;
+  const tag=c.unlock?`<span class="custom-tag msn">${stdNoText(c)} UNLOCK</span>`:c.reward?`<span class="custom-tag msn">${stdNoText(c)} MISSION</span>`:c.shop?`<span class="custom-tag ltd">${stdNoText(c)} LIMITED</span>`:isItem(c)?`<span class="custom-tag item">SUPPORT</span>`:c.img?`<span class="custom-tag">ORIGINAL</span>`:`<span class="no">${stdNoText(c)}</span>`;
   const art=(c.img||c.photo)?`<div class="art${c.photo?" photo":""}"></div>`:((c.look||(typeof c.id==="number"&&LOOKS[c.id]))?`<div class="art hero">${heroSVG(c.look||LOOKS[c.id],c.h)}</div>`:`<div class="emblem"><span>${c.m}</span></div>`);
   d.innerHTML=`<div class="inner"><div class="face back"></div><div class="face front"><div class="top"><span class="rar">${c.r}</span>${tag}</div>${art}<div class="name"><b>${esc(c.name||"???")}</b><small>${esc(c.kana||"")}</small></div></div></div>${sfx&&SFX[c.r]?`<span class="sfx">${SFX[c.r]}</span>`:""}${isNew?'<span class="new">NEW!</span>':""}`;
   if(c.img||c.photo)d.querySelector(".art").style.backgroundImage=`url("${c.img||c.photo}")`;
@@ -3056,7 +3056,7 @@ function mkKindSet(k){
   mkK=k==="item"?"item":"hero";
   $("mkKind").querySelectorAll("button").forEach(b=>b.classList.toggle("sel",b.dataset.k===mkK));
   $("mkItem").hidden=mkK!=="item";$("mkAb").hidden=mkK==="item";
-  $("mkNameLbl").textContent=mkK==="item"?"アイテム名（英語）":"ヒーロー名（英語）";
+  $("mkNameLbl").textContent=mkK==="item"?"サポート名（英語）":"ヒーロー名（英語）";
   $("mkName").placeholder=mkK==="item"?"Mega Potion":"Captain Yokohama";
   mkItDraw();updatePreview();
 }
@@ -4215,7 +4215,7 @@ function dkCanAdd(list,c){
   const need=cheap.length<left?Infinity:cheap.reduce((a,b)=>a+b,0);
   return dkCost(list)+DK_COST[c.r]+need<=DK_MAXCOST;
 }
-function dkCapsHTML(list,book,k){if(book==="custom"){const ni=dkItems(k==null?S.cdeckSel:k).length,t=list.length+ni;return `<span class="dk-cap tot ${t===DK_TOTAL?"full":t>DK_TOTAL?"over":""}"><b>合計</b>${t}/${DK_TOTAL}</span><span class="dk-cap"><b>ヒーロー</b>${list.length}</span><span class="dk-cap"><b>アイテム</b>${ni}</span>`}const c=dkCost(list);return `<span class="dk-cost ${c>DK_MAXCOST?"over":c===DK_MAXCOST?"full":""}"><b>COST</b>${c}<i>/${DK_MAXCOST}</i><span class="dk-meter"><span style="width:${Math.min(100,c/DK_MAXCOST*100)}%"></span></span></span><span class="dk-cap tot ${list.length===DK_SIZE?"full":""}"><b>枚数</b>${list.length}/${DK_SIZE}</span>`+Object.keys(DK_LIMIT).map(r=>{const n=list.filter(x=>x.r===r).length;return `<span class="dk-cap r-${r} ${n>DK_LIMIT[r]?"over":n===DK_LIMIT[r]?"full":""}"><b>${r}</b>${n}/${DK_LIMIT[r]}</span>`}).join("")}
+function dkCapsHTML(list,book,k){if(book==="custom"){const ni=dkItems(k==null?S.cdeckSel:k).length,t=list.length+ni;return `<span class="dk-cap tot ${t===DK_TOTAL?"full":t>DK_TOTAL?"over":""}"><b>合計</b>${t}/${DK_TOTAL}</span><span class="dk-cap"><b>ヒーロー</b>${list.length}</span><span class="dk-cap"><b>サポート</b>${ni}</span>`}const c=dkCost(list);return `<span class="dk-cost ${c>DK_MAXCOST?"over":c===DK_MAXCOST?"full":""}"><b>COST</b>${c}<i>/${DK_MAXCOST}</i><span class="dk-meter"><span style="width:${Math.min(100,c/DK_MAXCOST*100)}%"></span></span></span><span class="dk-cap tot ${list.length===DK_SIZE?"full":""}"><b>枚数</b>${list.length}/${DK_SIZE}</span>`+Object.keys(DK_LIMIT).map(r=>{const n=list.filter(x=>x.r===r).length;return `<span class="dk-cap r-${r} ${n>DK_LIMIT[r]?"over":n===DK_LIMIT[r]?"full":""}"><b>${r}</b>${n}/${DK_LIMIT[r]}</span>`}).join("")}
 function dkSlots(box,list,onTap,book){
   box.innerHTML="";
   const n=book==="custom"?Math.max(5,list.length+1):DK_SIZE;
@@ -4249,7 +4249,7 @@ function cdkRender(){
   const ok=dkValid(list,"custom",S.cdeckSel),cost=dkCost(list),tot=cdkTotal(S.cdeckSel);
   $("btStartCDeck").disabled=!ok;
   const nIt=dkItems(S.cdeckSel).length;
-  $("cdkNote").textContent=ok?`この自作デッキで戦えます！（ヒーロー ${list.length}枚 ・ アイテム ${nIt}枚 ・ 合計${DK_TOTAL}枚）`:tot>DK_TOTAL?`${tot-DK_TOTAL}枚多すぎます。「DECK」から合計${DK_TOTAL}枚にしてね。`:list.length?`あと ${DK_TOTAL-tot} 枚入れるとバトルできます（ヒーローとアイテムで合計${DK_TOTAL}枚）。`:`「DECK」から自作デッキを作ろう。ヒーローとアイテムで合計${DK_TOTAL}枚（ヒーローは1枚以上）。コストやレアリティの制限はありません。`;
+  $("cdkNote").textContent=ok?`この自作デッキで戦えます！（ヒーロー ${list.length}枚 ・ サポート ${nIt}枚 ・ 合計${DK_TOTAL}枚）`:tot>DK_TOTAL?`${tot-DK_TOTAL}枚多すぎます。「DECK」から合計${DK_TOTAL}枚にしてね。`:list.length?`あと ${DK_TOTAL-tot} 枚入れるとバトルできます（ヒーローとサポートで合計${DK_TOTAL}枚）。`:`「DECK」から自作デッキを作ろう。ヒーローとサポートで合計${DK_TOTAL}枚（ヒーローは1枚以上）。コストやレアリティの制限はありません。`;
 }
 let dkFilterR="ALL";
 function dkOpen(k,book){dkBook=book==="custom"?"custom":"std";dkSetSel(dkBook,k);dkEditK=k;dkFilterR="ALL";tab("deck");window.scrollTo({top:0,behavior:"smooth"})}
@@ -4285,7 +4285,7 @@ function dkDrawEdit(){
   [0,1,2].forEach(k=>{const b=document.createElement("button");b.type="button";b.setAttribute("role","tab");b.setAttribute("aria-selected",dkEditK===k);b.textContent=`DECK ${k+1}`;b.onclick=()=>{dkSetSel(dkBook,k);save();dkDrawEdit()};tabs.appendChild(b)});
   const row=$("dkEditRow");row.innerHTML="";
   const cus=dkBook==="custom";
-  $("dkEditNote").innerHTML=cus?`下のカードをタップすると入れる・外すができます。自作デッキは<b>ヒーローとアイテムで合計${DK_TOTAL}枚</b>（ヒーローは1枚以上）。<b>同じカードは2枚まで</b>（2枚持っているとき）。タップするたびに 1枚→2枚→外す になります。<b>コストやレアリティの制限はありません</b>。「詳しく」で能力が見られます。`:"下のカードをタップすると入れる・外すができます。デッキは5枚で、<b>コストの合計が15以内</b>になるように作ろう。コストは <b>UR 5・SSR 4・SR 3・R 2・N 1</b>。カードの左上の数字がコストです。<b>UR と SSR はそれぞれ1枚まで</b>。「詳しく」で能力が見られます。";
+  $("dkEditNote").innerHTML=cus?`下のカードをタップすると入れる・外すができます。自作デッキは<b>ヒーローとサポートで合計${DK_TOTAL}枚</b>（ヒーローは1枚以上）。<b>同じカードは2枚まで</b>（2枚持っているとき）。タップするたびに 1枚→2枚→外す になります。<b>コストやレアリティの制限はありません</b>。「詳しく」で能力が見られます。`:"下のカードをタップすると入れる・外すができます。デッキは5枚で、<b>コストの合計が15以内</b>になるように作ろう。コストは <b>UR 5・SSR 4・SR 3・R 2・N 1</b>。カードの左上の数字がコストです。<b>UR と SSR はそれぞれ1枚まで</b>。「詳しく」で能力が見られます。";
   for(let i=0;i<(cus?Math.max(5,list.length+1):DK_SIZE);i++){
     const c=list[i];
     const w=document.createElement("div");w.className="dk-card dk-slotbig"+(c?" in":"");
@@ -4337,9 +4337,9 @@ function dkItemsDraw(){
   const wrap=$("dkItemsWrap");wrap.hidden=dkBook!=="custom";if(wrap.hidden)return;
   S.citems[dkEditK]=dkItems(dkEditK).map(c=>c.id);
   const inList=dkItems(dkEditK),pool=btItemPool();
-  wrap.querySelector(".dk-sec small").textContent=`アイテムカード ${inList.length}枚（ヒーローと合わせて${DK_TOTAL}枚まで・タップで入れる／外す）`;
+  wrap.querySelector(".dk-sec small").textContent=`サポートカード ${inList.length}枚（ヒーローと合わせて${DK_TOTAL}枚まで・タップで入れる／外す）`;
   const g=$("dkItems");g.innerHTML="";
-  if(!pool.length){g.innerHTML=`<div class="empty">アイテムカードをまだ持っていません。MAKE で「アイテムカード」を作って、自分のガチャで引いてみよう！</div>`;return}
+  if(!pool.length){g.innerHTML=`<div class="empty">サポートカードをまだ持っていません。MAKE で「サポートカード」を作って、自分のガチャで引いてみよう！</div>`;return}
   pool.forEach(c=>{
     const on=inList.includes(c),nIn=dkN(inList,c);
     const w=document.createElement("div");w.className="dk-card"+(on?" in":"")+(!on&&cdkTotal(dkEditK)>=DK_TOTAL?" off":"");
@@ -4354,7 +4354,7 @@ function dkItemsDraw(){
       save();dkDrawEdit();
     };
     w.appendChild(b);
-    w.insertAdjacentHTML("beforeend",`<div class="dk-st"><span class="it-badge">ITEM</span><span><b>${esc(itemOf(c).name)}</b></span></div>`);
+    w.insertAdjacentHTML("beforeend",`<div class="dk-st"><span class="it-badge">SUPPORT</span><span><b>${esc(itemOf(c).name)}</b></span></div>`);
     const more=document.createElement("button");more.type="button";more.className="dk-more";more.textContent="詳しく";more.onclick=()=>{toast(`${itemOf(c).name}：${itemOf(c).desc}`)};
     w.appendChild(more);g.appendChild(w);
   });
@@ -4691,7 +4691,7 @@ function tcAct(G,s,a){
     return null;
   }
   if(a.k==="item"){
-    const uid=P.hand[a.h];if(!uid||!tcInfo(uid).item)return "アイテムを選んでね";
+    const uid=P.hand[a.h];if(!uid||!tcInfo(uid).item)return "サポートを選んでね";
     const f=tcInfo(uid),it=f.it,tg=tcItemTargets(G,s,it);
     if(!tg)return "いまは使えません";
     const bt=a.w==null?"a":a.w;
@@ -4714,7 +4714,7 @@ function tcAct(G,s,a){
     else if(it==="shield"){act.mods.push({k:"guard",v:.5,t:1});msg=`${tcName(G,s,act)} にシールド！`;tcEv(G,{s,uid:act.uid,txt:"GUARD",cls:"heal",sfx:"tink"})}
     else if(it==="cure"){act.stun=false;act.dot=null;act.mods=act.mods.filter(m=>m.k!=="weaken");msg=`${tcName(G,s,act)} は元気になった！`;tcEv(G,{s,uid:act.uid,txt:"CURE",cls:"heal",sfx:"up"})}
     else if(it==="breaker"){const u=F.act;u.en--;msg=`相手の ${esc(tcInfo(u.uid).c.name)} のエネルギーを1つトラッシュ！`;tcEv(G,{s:tcFoe(s),uid:u.uid,txt:"-⚡",cls:"weak",sfx:"crash"})}
-    tcLog(G,`${tcPre(G,s)}アイテム「${esc(f.name)}」！ ${msg}`);
+    tcLog(G,`${tcPre(G,s)}サポート「${esc(f.name)}」！ ${msg}`);
     return null;
   }
   if(a.k==="retreat"){
@@ -4914,7 +4914,7 @@ function tcRender(){
     const f=tcInfo(uid);
     const b=document.createElement("button");b.type="button";b.className="tc-card"+(f.item?" item":"");
     b.appendChild(cardEl(f.c,{flipped:true}));
-    b.insertAdjacentHTML("beforeend",`<span class="tc-cap">${f.item?`<span class="it-badge">ITEM</span>${esc(f.name)}`:`<span class="bt-type t${f.type}">${BT_TYPES[f.type]}</span>HP${f.hp}`}</span>`);
+    b.insertAdjacentHTML("beforeend",`<span class="tc-cap">${f.item?`<span class="it-badge">SUPPORT</span>${esc(f.name)}`:`<span class="bt-type t${f.type}">${BT_TYPES[f.type]}</span>HP${f.hp}`}</span>`);
     b.onclick=()=>tcTapHand(i);
     hand.appendChild(b);
   });
@@ -4971,7 +4971,7 @@ function tcTapHand(i){
   if(f.item){
     box.insertAdjacentHTML("beforeend",itemHTML(f.c));
     const tg=tcItemTargets(G,me,f.it);
-    if(myTurn&&tg)btn="このアイテムを使う";else why=myTurn?"いまは使えません":"自分の番に使えます";
+    if(myTurn&&tg)btn="このサポートを使う";else why=myTurn?"いまは使えません":"自分の番に使えます";
   }else{
     box.insertAdjacentHTML("beforeend",tcAbilityHTML(f.c));
     if(G.phase==="setup"&&!P.act)btn="バトル場に出す";
