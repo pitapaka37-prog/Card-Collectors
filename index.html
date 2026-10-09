@@ -382,6 +382,8 @@ nav button span{font-family:var(--body);font-size:13px;font-weight:700}
 .ed-img{text-align:center;font-size:13px;padding:4px 6px;cursor:pointer}
 .ed-fields{display:flex;flex-direction:column;gap:8px;min-width:0}
 .ab-modal .mission{max-height:92vh;overflow:auto}
+.cc-join{margin:10px 0 4px}
+.cc-tag{display:inline-block;margin-left:6px;padding:0 6px;border:2px solid var(--ink);background:#7a3cff;color:#fff;font-size:11px;font-weight:700}
 .it-choose{display:flex;flex-wrap:wrap;gap:6px}
 .it-choose button{padding:5px 10px;border:2px solid var(--ink);border-radius:999px;background:#fff;font:700 13px var(--jp);cursor:pointer}
 .it-choose button.sel{background:#ffd23f;box-shadow:2px 2px 0 var(--ink)}
@@ -1426,6 +1428,15 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
       <div class="on-room"><small>ガチャコード</small><b id="gsCode">------</b><span id="gsInfo">準備中…</span></div>
     </div>
   </div>
+  <div class="detail ms-modal gs-modal" id="ccModal" hidden role="dialog" aria-modal="true" aria-label="共同制作コード">
+    <div class="mission">
+      <button type="button" class="close" id="ccClose" aria-label="閉じる">×</button>
+      <div class="ms-head"><b>TOGETHER</b><span id="ccName"></span></div>
+      <p class="ab-note">共同制作コードを入れた友達はメンバーになって、このガチャにカードを<b>追加・編集・削除</b>できます。追加したカードはメンバー全員に自動で届きます。ガチャの名前と色を変えられるのは作った人だけです。<b>引く用の「ガチャコード」とは別</b>なので、ガチャコードだけを配っても、勝手にカードを追加されることはありません。</p>
+      <div class="on-room"><small>共同制作コード</small><b id="ccCode">------</b><span id="ccInfo">準備中…</span></div>
+      <p class="ab-note" id="ccMembers"></p>
+    </div>
+  </div>
   <div class="detail ms-modal gs-modal" id="mgModal" hidden role="dialog" aria-modal="true" aria-label="自作ガチャ">
     <div class="mission">
       <button type="button" class="close" id="mgClose" aria-label="閉じる">×</button>
@@ -1530,6 +1541,10 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
         <div class="field"><label for="newPackName">新しいガチャを作る</label><input type="text" id="newPackName" maxlength="20" placeholder="ガチャの名前（例：SCHOOL PACK）"></div>
         <button type="submit" class="ghost" id="newPackBtn">ガチャを作る</button>
       </form>
+      <div class="cc-join">
+        <div class="field"><label for="ccJoinCode">共同制作に参加する</label><div class="on-join"><input type="text" id="ccJoinCode" maxlength="6" placeholder="共同制作コード" autocomplete="off" autocapitalize="characters"><button type="button" class="btn-main" id="ccJoinGo">参加する</button></div></div>
+        <p class="fr-msg" id="ccJoinMsg" role="status"></p>
+      </div>
       <div id="mine"></div>
     </div>
   </section>
@@ -1714,7 +1729,8 @@ function load(raw){
   const isColor=c=>typeof c==="string"&&/^#[0-9a-f]{6}$/i.test(c);
   s.packs=s.packs.filter(p=>p&&typeof p.id==="string").map(p=>{const o={id:p.id,name:String(p.name||"").slice(0,20),color:isColor(p.color)?p.color:PACK_COLORS[0]};
     if(typeof p.shareUid==="string")o.shareUid=p.shareUid.slice(0,40);
-    if(p.cloud&&typeof p.cloud.code==="string")o.cloud={code:p.cloud.code.slice(0,6),sig:p.cloud.sig&&typeof p.cloud.sig==="object"?p.cloud.sig:{},metaSig:String(p.cloud.metaSig||"")};
+    if(p.cloud&&typeof p.cloud.code==="string"){o.cloud={code:p.cloud.code.slice(0,6),sig:p.cloud.sig&&typeof p.cloud.sig==="object"?p.cloud.sig:{},rt:p.cloud.rt&&typeof p.cloud.rt==="object"?p.cloud.rt:{},metaSig:String(p.cloud.metaSig||"")};if(typeof p.cloud.collab==="string")o.cloud.collab=p.cloud.collab.slice(0,6)}
+    if(p.collab&&typeof p.collab==="object"&&typeof p.collab.code==="string"&&o.cloud)o.collab={code:p.collab.code.slice(0,6),key:String(p.collab.key||"").slice(0,6),from:String(p.collab.from||"").slice(0,12)};
     if(p.friend&&typeof p.friend==="object"){o.friend={from:String(p.friend.from||"").slice(0,12),uid:String(p.friend.uid||"").slice(0,40)};if(typeof p.friend.code==="string")o.friend.code=p.friend.code.slice(0,6);o.friend.ver=Math.max(0,Number(p.friend.ver)||0)}return o});
   s.custom=s.custom.filter(c=>c&&typeof c.id==="string"&&typeof c.img==="string"&&(c.img==="idb"||/^data:image\/(jpeg|png|webp|gif);base64,[A-Za-z0-9+/=]+$/.test(c.img))&&ORDER.includes(c.r))
     .map(c=>({id:c.id,r:c.r,name:String(c.name||"").slice(0,22),kana:String(c.kana||"").slice(0,20),flavor:String(c.flavor||"").slice(0,60),h:Number(c.h)||0,shape:"shield",img:c.img,m:"?",pack:typeof c.pack==="string"?c.pack:"",bt:c.kind==="item"?null:cleanBt(c.bt),...(c.friend?{friend:true}:{}),...(c.kind==="item"?{kind:"item",it:/^[a-z]{2,12}$/.test(c.it)?c.it:"potion"}:{})}));
@@ -3006,8 +3022,10 @@ function renderMine(){
     const list=cardsIn(p.id);
     blk.innerHTML=`<div class="pack-head"><span class="pack-swatch"></span><input type="text" maxlength="20" aria-label="ガチャの名前" id="pn-${p.id}"><span class="n">${list.length} 枚</span></div>
       <div class="pack-tools"><div class="colors" role="group" aria-label="ガチャの色"></div></div>
-      <div class="pack-tools"><button type="button" class="ghost" data-a="pull">このガチャを引く</button><button type="button" class="ghost" data-a="dex">図鑑を見る</button><button type="button" class="ghost" data-a="add">カードを追加</button><button type="button" class="ghost" data-a="share">コードを発行（シェア）</button><button type="button" class="ghost" data-a="del">ガチャを削除</button></div>`;
+      <div class="pack-tools"><button type="button" class="ghost" data-a="pull">このガチャを引く</button><button type="button" class="ghost" data-a="dex">図鑑を見る</button><button type="button" class="ghost" data-a="add">カードを追加</button><button type="button" class="ghost" data-a="share">コードを発行（シェア）</button><button type="button" class="ghost" data-a="collab">共同制作コード</button><button type="button" class="ghost" data-a="del">ガチャを削除</button></div>`;
     const inp=blk.querySelector("input");inp.value=p.name;
+    if(isCollab(p))blk.querySelector(".pack-head .n").insertAdjacentHTML("afterend",`<span class="cc-tag">${p.collab?`共同制作メンバー${p.collab.from?`（作った人：${esc(p.collab.from)}）`:""}`:"共同制作"}</span>`);
+    if(p.collab){inp.disabled=true;inp.title="名前を変えられるのは作った人だけです";blk.querySelector(".colors").hidden=true}
     inp.addEventListener("input",()=>{p.name=inp.value;save();renderCover();renderDex();fillPackSelect()});
     const cols=blk.querySelector(".colors");
     PACK_COLORS.forEach(c=>{const b=document.createElement("button");b.type="button";b.style.background=c;b.setAttribute("aria-pressed",p.color===c);b.setAttribute("aria-label","色を変える");b.onclick=()=>{p.color=c;save();render()};cols.appendChild(b)});
@@ -3017,6 +3035,10 @@ function renderMine(){
     blk.querySelector('[data-a="add"]').onclick=()=>openMakeFor(p.id);
     const sh=blk.querySelector('[data-a="share"]');sh.disabled=!list.length;sh.onclick=()=>gsOpen(p);
     if(p.cloud&&p.cloud.code)sh.textContent=`ガチャコード：${p.cloud.code}`;
+    const cb=blk.querySelector('[data-a="collab"]');cb.onclick=()=>ccOpen(p);
+    if(p.collab)cb.textContent=`共同制作コード：${p.collab.key}`;else if(p.cloud&&p.cloud.collab)cb.textContent=`共同制作コード：${p.cloud.collab}`;
+    if(p.collab){const dl=blk.querySelector('[data-a="del"]');dl.textContent="共同制作をやめる";armed(dl,"共同制作をやめる","もう一度押すとやめます（カードはほかのメンバーに残ります）",()=>ccLeave(p))}
+    else
     armed(blk.querySelector('[data-a="del"]'),"ガチャを削除",list.length?`カード ${list.length} 枚ごと削除します。もう一度押して確定`:"もう一度押すと削除",()=>{
       if(p.cloud&&p.cloud.code){const code=p.cloud.code,ids=Object.keys(p.cloud.sig||{});(async()=>{try{for(const id of ids)await fsReq("DELETE",`/packs/${code}/cards/${encodeURIComponent(id)}`,null,true);await fsReq("DELETE",`/packs/${code}`,null,true)}catch(e){}})()}
       S.custom.filter(c=>c.pack===p.id).forEach(c=>delete S.owned[c.id]);
@@ -3081,6 +3103,7 @@ function tab(which){
   if(which==="dex"){missionAdd("dex",1);save()}
   if(which==="dex"&&dexStale){renderDex();dexStale=false}
   if(which==="make"&&mineStale){renderMine();mineStale=false}
+  if((which==="make"||which==="gacha")&&typeof ccTick==="function")ccTick();
   if(which==="shop"&&shopStale){renderShop();shopStale=false}
   if(which==="battle"&&typeof renderBattle==="function")renderBattle();
   if(which==="deck"&&typeof dkDrawEdit==="function")dkDrawEdit();
@@ -5519,7 +5542,8 @@ function packMeta(p,ver){
 var cloudBusy=false,cloudAgain=false,cloudTimer=0; // var: render() can run before this block on startup
 async function cloudSyncPack(p){
   await cloudToken();
-  const code=p.cloud.code,list=cardsIn(p.id),old=p.cloud.sig||{},now={};
+  if(isCollab(p)){const ok=await collabPull(p);if(!ok)return}
+  const code=p.cloud.code,list=cardsIn(p.id),old=p.cloud.sig||{},now={},rt=p.cloud.rt||(p.cloud.rt={});
   let changed=false;
   for(const c of list){
     const sg=cardSig(c);now[c.id]=sg;
@@ -5527,9 +5551,14 @@ async function cloudSyncPack(p){
     const data={id:c.id,r:c.r,name:c.name,kana:c.kana||"",flavor:c.flavor||"",h:c.h||0,bt:isItem(c)?null:(c.bt||btCustomDefaults(c)),...(isItem(c)?{kind:"item",it:c.it}:{}),img:await gsShrink(c.img)};
     const r=await fsReq("PATCH",`/packs/${code}/cards/${encodeURIComponent(c.id)}`,{fields:{owner:fsStr(S.cloudAuth.uid),data:fsStr(JSON.stringify(data))}},true);
     if(!r.ok)throw new Error("card "+r.status);
+    if(r.j&&r.j.updateTime)rt[c.id]=r.j.updateTime;
     changed=true;
   }
-  for(const id of Object.keys(old))if(!now[id]){await fsReq("DELETE",`/packs/${code}/cards/${encodeURIComponent(id)}`,null,true);changed=true}
+  for(const id of Object.keys(old))if(!now[id]){await fsReq("DELETE",`/packs/${code}/cards/${encodeURIComponent(id)}`,null,true);delete rt[id];changed=true}
+  if(p.collab){ // a member: only tells friends that the gacha changed
+    if(changed)await fsReq("PATCH",`/packs/${code}?updateMask.fieldPaths=ver&updateMask.fieldPaths=count`,{fields:{ver:{integerValue:String(Date.now())},count:{integerValue:String(list.length)}}},true);
+    p.cloud.sig=now;save();return;
+  }
   const metaSig=[pname(p),p.color,frNick(),list.length].join("|");
   if(changed||metaSig!==p.cloud.metaSig){
     const r=await fsReq("PATCH",`/packs/${code}`,packMeta(p,Date.now()),true);
@@ -5633,6 +5662,121 @@ $("gfGo").onclick=gfReceive;
 $("mgClose").onclick=mgClose;
 $("mgModal").addEventListener("click",e=>{if(e.target===$("mgModal"))mgClose()});
 $("mgNew").onclick=()=>{mgClose();tab("make");$("newPackName").focus();$("packsPanel").scrollIntoView({behavior:"smooth"})};
+/* ---- making a gacha together: the owner gives a "co-creation code"; members can add, edit and delete cards ---- */
+function isCollab(p){return !!(p&&!p.friend&&p.cloud&&p.cloud.code&&(p.cloud.collab||p.collab))}
+function cloudCardFromData(d,p){
+  const okImg=typeof d.img==="string"&&/^data:image\/(jpeg|png|webp|gif);base64,[A-Za-z0-9+/=]+$/.test(d.img)&&d.img.length<600000;
+  if(!d||!ORDER.includes(d.r)||!okImg)return null;
+  return{id:String(d.id||"").slice(0,40),r:d.r,name:String(d.name||"").slice(0,22),kana:String(d.kana||"").slice(0,20),flavor:String(d.flavor||"").slice(0,60),h:Number(d.h)||0,shape:"shield",img:d.img,m:"?",pack:p.id,
+    bt:d.kind==="item"?null:cleanBt(d.bt),...(d.kind==="item"?{kind:"item",it:CUSTOM_ITEMS[d.it]?d.it:"potion"}:{})};
+}
+// bring the other members' new / changed / deleted cards into this device
+async function collabPull(p){
+  const code=p.cloud.code,sig=p.cloud.sig||(p.cloud.sig={}),rt=p.cloud.rt||(p.cloud.rt={});
+  const m=await fsReq("GET",`/packs/${code}`);
+  if(m.status===404){ // the owner deleted the gacha: keep the cards here as a normal gacha
+    if(p.collab){delete p.collab;delete p.cloud;save();render();toast(`共同制作ガチャ「${pname(p)}」は作った人が削除しました。カードはこの端末に残ります。`)}
+    return false;
+  }
+  if(!m.ok)return false;
+  const f=m.j.fields||{};
+  if(p.collab){const nm=fsVal(f.name),col=fsVal(f.color);if(typeof nm==="string")p.name=nm.slice(0,20);if(typeof col==="string"&&/^#[0-9a-f]{6}$/i.test(col))p.color=col;p.collab.from=String(fsVal(f.from)||"").slice(0,12)}
+  const seen=new Set();let token="",got=0,changed=false;
+  for(let i=0;i<10;i++){
+    const r=await fsReq("GET",`/packs/${code}/cards?pageSize=100${token?`&pageToken=${encodeURIComponent(token)}`:""}`);
+    if(!r.ok)return false;
+    for(const d of (r.j.documents||[])){
+      const id=decodeURIComponent(String(d.name||"").split("/").pop());seen.add(id);
+      if(rt[id]===d.updateTime)continue; // nothing new
+      const local=S.custom.find(c=>c.id===id);
+      if(local&&local.pack===p.id&&sig[id]&&cardSig(local)!==sig[id])continue; // edited here too: this device wins, it is uploaded next
+      let data;try{data=JSON.parse(fsVal(d.fields&&d.fields.data))}catch(e){continue}
+      const c=cloudCardFromData(Object.assign({},data,{id}),p);if(!c)continue;
+      if(local){if(local.pack!==p.id)continue;Object.assign(local,c);if(c.kind!=="item"){delete local.kind;delete local.it}}else{S.custom.push(c);got++}
+      sig[id]=cardSig(local||c);rt[id]=d.updateTime;changed=true;
+    }
+    token=r.j.nextPageToken;if(!token)break;
+  }
+  // cards someone else deleted
+  const gone=S.custom.filter(c=>c.pack===p.id&&sig[c.id]&&!seen.has(c.id)&&cardSig(c)===sig[c.id]);
+  if(gone.length){const ids=new Set(gone.map(c=>c.id));S.custom=S.custom.filter(c=>!ids.has(c.id));gone.forEach(c=>{delete sig[c.id];delete rt[c.id];delete S.owned[c.id]});changed=true}
+  if(changed){save();render();mineStale=true}
+  if(got)toast(`共同制作ガチャ「${pname(p)}」に新しいカードが ${got} 枚届きました！`);
+  return true;
+}
+// owner: show (and make, the first time) the co-creation code
+async function ccOpen(p){
+  $("ccModal").hidden=false;document.body.style.overflow="hidden";
+  $("ccName").textContent=pname(p);$("ccMembers").textContent="";
+  if(p.collab){$("ccCode").textContent=p.collab.key||"------";$("ccInfo").textContent="あなたはこのガチャのメンバーです。このコードを友達に教えると、その友達もメンバーになれます。";ccMembers(p);return}
+  if(!imgReady){$("ccInfo").textContent="準備中です。少し待ってからもう一度押してね。";return}
+  if(!p.shareUid){p.shareUid=newId("share");save()}
+  $("ccCode").textContent=p.cloud&&p.cloud.collab||"------";$("ccInfo").textContent="準備しています…";
+  try{
+    await cloudToken();
+    if(!p.cloud||!p.cloud.code){ // the gacha needs its online copy first
+      let code=null;
+      for(let i=0;i<6&&!code;i++){const c=Array.from({length:6},()=>NET_CHARS[Math.floor(Math.random()*NET_CHARS.length)]).join("");const r=await fsReq("POST",`/packs?documentId=${c}`,packMeta(p,Date.now()),true);if(r.ok)code=c;else if(r.status!==409)throw new Error("create "+r.status)}
+      if(!code)throw new Error("code");
+      p.cloud={code,sig:{},rt:{},metaSig:""};save();
+    }
+    if(!p.cloud.collab){
+      let key=null;
+      for(let i=0;i<6&&!key;i++){const k=Array.from({length:6},()=>NET_CHARS[Math.floor(Math.random()*NET_CHARS.length)]).join("");const r=await fsReq("POST",`/collab?documentId=${k}`,{fields:{pack:fsStr(p.cloud.code),owner:fsStr(S.cloudAuth.uid)}},true);if(r.ok)key=k;else if(r.status===403)throw new Error("rules");else if(r.status!==409)throw new Error("collab "+r.status)}
+      if(!key)throw new Error("key");
+      p.cloud.collab=key;save();
+    }
+    $("ccCode").textContent=p.cloud.collab;
+    $("ccInfo").textContent="このコードを一緒に作る友達に教えてね。友達が「共同制作に参加」でコードを入れると、メンバーになってカードを追加・編集・削除できます。";
+    await cloudSyncPack(p);renderMine();ccMembers(p);
+  }catch(e){console.warn(e);$("ccInfo").textContent=e.message==="rules"?"Firebase のルールがまだ新しくなっていないようです。ルールを書きかえて「公開」を押してから、もう一度ためしてね。":"コードを作れませんでした。インターネットにつながっているか確かめて、もう一度ためしてね。"}
+}
+async function ccMembers(p){
+  try{const r=await fsReq("GET",`/packs/${p.cloud.code}/members?pageSize=100`);if(!r.ok)return;
+    const names=(r.j.documents||[]).map(d=>fsVal(d.fields&&d.fields.nick)||"メンバー");
+    $("ccMembers").textContent=names.length?`メンバー ${names.length} 人：${names.map(n=>String(n).slice(0,12)).join("・")}`:"まだメンバーはいません。";
+  }catch(e){}
+}
+function ccClose(){$("ccModal").hidden=true;document.body.style.overflow=""}
+// a friend joins with the co-creation code
+async function ccJoin(){
+  const key=String($("ccJoinCode").value||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
+  const msg=t=>{$("ccJoinMsg").textContent=t};
+  if(key.length!==6){msg("6文字の共同制作コードを入れてね。");return}
+  if(!imgReady){msg("準備中です。少し待ってからもう一度押してね。");return}
+  msg("参加しています…");
+  try{
+    await cloudToken();
+    const k=await fsReq("GET",`/collab/${key}`,null,true);
+    if(k.status===404){msg("その共同制作コードは見つかりませんでした。コードを確かめてね。");return}
+    if(!k.ok){msg(k.status===403?"Firebase のルールがまだ新しくなっていないようです。作った人にルールの書きかえをお願いしてね。":"参加できませんでした。インターネットにつながっているか確かめてね。");return}
+    const code=fsVal(k.j.fields&&k.j.fields.pack);
+    if(S.packs.some(p=>!p.friend&&p.cloud&&p.cloud.code===code)){msg("このガチャにはもう参加しています。");return}
+    const r=await fsReq("PATCH",`/packs/${code}/members/${S.cloudAuth.uid}`,{fields:{key:fsStr(key),nick:fsStr(frNick()||"メンバー")}},true);
+    if(!r.ok){msg(r.status===403?"参加できませんでした（コードが正しくないか、ルールが古いままです）。":"参加できませんでした。もう一度ためしてね。");return}
+    const p={id:newId("p"),name:"",color:PACK_COLORS[0],collab:{code,key,from:""},cloud:{code,sig:{},rt:{},metaSig:""}};
+    S.packs.push(p);
+    try{await collabPull(p)}catch(e){S.packs=S.packs.filter(x=>x!==p);S.custom=S.custom.filter(c=>c.pack!==p.id);throw e}
+    save();
+    if(!S.packs.includes(p))return;
+    $("ccJoinCode").value="";msg("");sfx("ur");toast(`共同制作ガチャ「${pname(p)}」に参加しました！ カードを追加するとメンバー全員に届きます。`);
+    render();fillPackSelect();renderMine();
+  }catch(e){console.warn(e);msg("参加できませんでした。インターネットにつながっているか確かめてね。")}
+}
+// leave (member) – the cards stay online for the others
+async function ccLeave(p){
+  const code=p.cloud&&p.cloud.code;
+  S.custom.filter(c=>c.pack===p.id).forEach(c=>delete S.owned[c.id]);
+  S.custom=S.custom.filter(c=>c.pack!==p.id);S.packs=S.packs.filter(x=>x.id!==p.id);delete S.pityBy[p.id];
+  save();render();fillPackSelect();
+  try{if(code)await fsReq("DELETE",`/packs/${code}/members/${S.cloudAuth.uid}`,null,true)}catch(e){}
+}
+let ccTickAt=0;
+function ccTick(force){if(!force&&Date.now()-ccTickAt<30000)return;ccTickAt=Date.now();if(S.packs.some(isCollab))cloudSyncAll()}
+setTimeout(()=>ccTick(true),3500);
+$("ccClose").onclick=ccClose;
+$("ccModal").addEventListener("click",e=>{if(e.target===$("ccModal"))ccClose()});
+$("ccJoinGo").onclick=ccJoin;
 // friends' gachas: check for updates when the app opens / the gacha screen is shown
 var cloudCheckAt=0;
 async function cloudCheckFriends(force){
