@@ -384,6 +384,8 @@ nav button span{font-family:var(--body);font-size:13px;font-weight:700}
 .ab-modal .mission{max-height:92vh;overflow:auto}
 .cc-join{margin:10px 0 4px}
 .cc-tag{display:inline-block;margin-left:6px;padding:0 6px;border:2px solid var(--ink);background:#7a3cff;color:#fff;font-size:11px;font-weight:700}
+.bt-abil-sk.dw small{color:#e2231a}.bt-abil-sk.dw{background:#fff0ee}
+.bt-abil-sk.rb small{color:#1d9e5a}
 .it-choose{display:flex;flex-wrap:wrap;gap:6px}
 .it-choose button{padding:5px 10px;border:2px solid var(--ink);border-radius:999px;background:#fff;font:700 13px var(--jp);cursor:pointer}
 .it-choose button.sel{background:#ffd23f;box-shadow:2px 2px 0 var(--ink)}
@@ -1713,7 +1715,7 @@ let S=load();
 function cleanBt(b){
   if(!b||typeof b!=="object")return null;
   const str=(x,n)=>typeof x==="string"?x.slice(0,n):"";
-  return{t:[0,1,2].includes(b.t)?b.t:0,sk:str(b.sk,12),skn:str(b.skn,14),ps:str(b.ps,12),psn:str(b.psn,14)};
+  return{t:[0,1,2].includes(b.t)?b.t:0,sk:str(b.sk,12),skn:str(b.skn,14),ps:str(b.ps,12),psn:str(b.psn,14),dw:str(b.dw,12)};
 }
 function load(raw){
   let v=raw||null;
@@ -3846,19 +3848,34 @@ const CUSTOM_SKILLS={
  strike:{name:"必殺の一撃",cost:3,desc:"1.7倍ダメージ",fx:[btH(1.7)]},
  combo:{name:"連続アタック",cost:3,desc:"0.6倍ダメージ×3回",fx:[btH(.6,3)]},
  pierce:{name:"つらぬく一撃",cost:3,desc:"1.6倍ダメージ（相性を無視）",fx:[btH(1.6,1,{pierce:true})]},
- heal:{name:"ひと休み",cost:2,desc:"自分のHPを35%回復",fx:[{k:"heal",v:.35}]},
- teamheal:{name:"みんなで回復",cost:3,desc:"味方全員のHPを20%回復",fx:[{k:"heal",v:.2,team:true}]},
- guard:{name:"鉄壁ガード",cost:2,desc:"2ターンのあいだ受けるダメージ50%カット",fx:[{k:"guard",v:.5,turns:2}]},
+ heal:{name:"ひと休み",cost:2,desc:"自分のHPを45%回復",fx:[{k:"heal",v:.45}]},
+ teamheal:{name:"みんなで回復",cost:3,desc:"味方全員（控えも）のHPを25%回復",fx:[{k:"heal",v:.25,team:true}]},
+ guard:{name:"鉄壁ガード",cost:2,desc:"0.6倍ダメージ＋2ターンのあいだ受けるダメージ50%カット",fx:[btH(.6),{k:"guard",v:.5,turns:2}]},
  power:{name:"気合いため",cost:2,desc:"攻撃力40%アップ（3ターン）＋0.8倍ダメージ",fx:[btH(.8),{k:"buff",v:.4,turns:3}]},
  stun:{name:"びっくり作戦",cost:3,desc:"1.0倍ダメージ＋60%の確率で敵をしびれさせる",fx:[btH(1),{k:"stun",ch:.6}]},
  weaken:{name:"よわらせ攻撃",cost:3,desc:"1.2倍ダメージ＋敵の攻撃力30%ダウン（3ターン）",fx:[btH(1.2),{k:"weaken",v:.3,turns:3}]},
  burn:{name:"ファイアー",cost:3,desc:"1.0倍ダメージ＋やけど（3ターン、毎ターン最大HPの8%）",fx:[btH(1),{k:"dot",v:.08,turns:3}]},
- counter:{name:"カウンター",cost:3,desc:"3ターンのあいだ、受けたダメージの50%を返す",fx:[{k:"reflect",v:.5,turns:3}]},
+ counter:{name:"カウンター",cost:2,desc:"0.6倍ダメージ＋3ターンのあいだ、受けたダメージの50%を返す",fx:[btH(.6),{k:"reflect",v:.5,turns:3}]},
  jam:{name:"チャージ封じ",cost:3,desc:"1.2倍ダメージ＋敵のチャージを0にする",fx:[btH(1.2),{k:"drain"}]},
+ // original-battle skills
+ snipe:{name:"ねらい撃ち",cost:2,desc:"相手の控えでHPがいちばん少ないヒーローに1.0倍ダメージ",fx:[{k:"bench",m:1}]},
+ spread:{name:"なぎはらい",cost:3,desc:"相手のバトル場に1.0倍ダメージ＋相手の控え全員に0.3倍ダメージ",fx:[btH(1),{k:"spread",m:.3}]},
+ accel:{name:"エナジーパス",cost:2,desc:"1.0倍ダメージ＋自分の控え1体にエネルギーを1つ付ける",fx:[btH(1),{k:"accel"}]},
+ scout:{name:"作戦タイム",cost:1,desc:"0.8倍ダメージ＋カードを2枚引く",fx:[btH(.8),{k:"draw",n:2}]},
+ coin:{name:"運だめしアタック",cost:2,desc:"コインを3回投げて、表1回につき0.8倍ダメージ",fx:[{k:"coin",n:3,m:.8}]},
+ exec:{name:"とどめの一撃",cost:3,desc:"1.0倍ダメージ。相手のHPが半分以下なら2.2倍ダメージ",fx:[{k:"exec",m:1,m2:2.2}]},
+ rev:{name:"逆襲",cost:2,desc:"0.8倍ダメージ＋自分が受けているダメージの40%を上乗せ",fx:[{k:"rev",m:.8,v:.4}]},
+ grow:{name:"どんどん強く",cost:2,desc:"1.0倍ダメージ。使うたびに、このわざのダメージ+20",fx:[{k:"grow",m:1,add:20}]},
+ leech:{name:"エナジードレイン",cost:3,desc:"1.2倍ダメージ＋与えたダメージの半分だけ自分のHPを回復",fx:[{k:"leech",m:1.2,v:.5}]},
+ shove:{name:"ふっとばし",cost:2,desc:"1.1倍ダメージ＋相手のバトル場のヒーローを控えとランダムに入れ替える",fx:[btH(1.1),{k:"swapfoe"}]},
+ hitrun:{name:"ヒット＆アウェイ",cost:2,desc:"1.0倍ダメージ＋自分は控えのヒーローと入れ替わる（エネルギーはそのまま）",fx:[btH(1),{k:"retreatself"}]},
+ mega:{name:"メガトンパンチ",cost:3,desc:"2.3倍ダメージ。次の自分の番は攻撃できない",fx:[btH(2.3),{k:"tired"}]},
+ overload:{name:"オーバーロード",cost:3,desc:"2.2倍ダメージ。自分のエネルギーを全部トラッシュ",fx:[btH(2.2),{k:"dumpen"}]},
+ reckless:{name:"すてみタックル",cost:2,desc:"2.0倍ダメージ。自分も最大HPの20%ダメージ",fx:[btH(2),{k:"recoil",v:.2}]},
 };
 const CUSTOM_PASSIVES={
  tough:{k:"tough",v:.15,name:"タフネス",desc:"受けるダメージがいつも15%少ない"},
- regen:{k:"regen",v:.05,name:"自然回復",desc:"毎ターン、HPが5%回復する"},
+ regen:{k:"regen",v:.08,name:"自然回復",desc:"毎ターン、HPが8%回復する"},
  dodge:{k:"dodge",v:.15,name:"身のこなし",desc:"15%の確率で攻撃をよける"},
  rage:{k:"rage",v:.4,name:"火事場の力",desc:"HPが40%以下になると攻撃力40%アップ"},
  first:{k:"first",name:"先手必勝",desc:"いつも先に行動する"},
@@ -3866,8 +3883,28 @@ const CUSTOM_PASSIVES={
  guts:{k:"guts",name:"ど根性",desc:"倒されそうになっても、1回だけHP1で耐える"},
  ambush:{k:"ambush",v:1.5,name:"不意打ち",desc:"バトルに出て最初の攻撃は1.5倍"},
  immune:{k:"immune",name:"へっちゃら",desc:"攻撃力ダウン・しびれ・やけどを受けない"},
+ // original-battle passives
+ underdog:{k:"underdog",v:.5,name:"下克上",desc:"相手のレアリティが自分より上なら、与えるダメージ+50%"},
+ light:{k:"light",name:"身軽",desc:"にげるのにエネルギーがいらない"},
+ cheer:{k:"cheer",v:.06,name:"おうえん",desc:"控えにいるとき、自分の番のはじめにバトル場の味方のHPを6%回復"},
+ spark:{k:"spark",ch:.35,name:"スパーク",desc:"控えにいるとき、自分の番のはじめに35%の確率でバトル場の味方にエネルギーを1つ付ける"},
+ boom:{k:"boom",d:40,name:"道づれ",desc:"バトル場でたおされたとき、相手のバトル場のヒーローに40ダメージ"},
+ thorn:{k:"thorn",d:10,name:"トゲトゲ",desc:"攻撃されるたびに、攻撃してきた相手に10ダメージ"},
+ focus:{k:"focus",v:.3,name:"集中力",desc:"エネルギーが2つ以上付いていると、与えるダメージ+30%"},
+ bulky:{k:"bulky",v:.25,name:"ビッグボディ",desc:"HPが25%多い"},
+ hustle:{k:"hustle",v:.35,w:.2,name:"むてっぽう",desc:"与えるダメージ+35%。ただし受けるダメージも+20%"},
 };
-const CUSTOM_PASSIVE_MIN="SR"; // like STAR LIGHT cards, only SR and above get a passive
+// SSR and UR heroes are strong, so each one has a weak point
+const CUSTOM_DRAWBACKS={
+ heavy:{name:"重たい",desc:"にげるのに必要なエネルギー+1"},
+ costly:{name:"燃費が悪い",desc:"わざに必要なエネルギー+1"},
+ fragile:{name:"弱点が大きい",desc:"弱点のタイプから受けるダメージが2倍（ふつうは1.5倍）"},
+ decay:{name:"消耗",desc:"自分の番の終わりに、バトル場にいるとHPが最大HPの4%減る"},
+ slow:{name:"出おくれ",desc:"バトル場に出た番は攻撃できない"},
+ weakheal:{name:"回復しにくい",desc:"受ける回復が半分になる"},
+};
+const hasDrawback=r=>r==="SSR"||r==="UR";
+const CUSTOM_PASSIVE_MIN="N"; // original heroes: every rarity has a passive
 const customHasPassive=r=>BT_RANK[r]>=BT_RANK[CUSTOM_PASSIVE_MIN];
 function btCustomAbil(c){
   const b=c.bt||{},h=btHash(String(c.id)+"|"+c.name);
@@ -3877,7 +3914,8 @@ function btCustomAbil(c){
   const skill=Object.assign({},CUSTOM_SKILLS[sk],{key:sk,name:(b.skn||"").trim()});
   let p=null;
   if(customHasPassive(c.r)){const ps=CUSTOM_PASSIVES[b.ps]?b.ps:pss[(h>>>4)%pss.length];p=Object.assign({},CUSTOM_PASSIVES[ps],{name:(b.psn||"").trim()})}
-  return{t,s:skill,p};
+  const dws=Object.keys(CUSTOM_DRAWBACKS),dw=hasDrawback(c.r)?(CUSTOM_DRAWBACKS[b.dw]?b.dw:dws[(h>>>8)%dws.length]):null;
+  return{t,s:skill,p,dw};
 }
 /* ---- card levels (STAR LIGHT cards only): Lv 1-100, from battles and fusing duplicates ---- */
 const LV_MAX=100;
@@ -3919,7 +3957,7 @@ function lvFuseHTML(c){
 }
 /* ---- ability editor for original cards (used in the MAKE form and the edit window) ---- */
 // the effects (type, skill, passive) are rolled at random when the card is made; you only name the skill and the passive
-function btRandomBt(){const sks=Object.keys(CUSTOM_SKILLS),pss=Object.keys(CUSTOM_PASSIVES),rnd=a=>a[Math.floor(Math.random()*a.length)];return{t:Math.floor(Math.random()*3),sk:rnd(sks),skn:"",ps:rnd(pss),psn:""}}
+function btRandomBt(){const sks=Object.keys(CUSTOM_SKILLS),pss=Object.keys(CUSTOM_PASSIVES),rnd=a=>a[Math.floor(Math.random()*a.length)];return{t:Math.floor(Math.random()*3),sk:rnd(sks),skn:"",ps:rnd(pss),psn:"",dw:rnd(Object.keys(CUSTOM_DRAWBACKS))}}
 function abBuild(box,pre){
   box.insertAdjacentHTML("beforeend",`
     <div class="ab-types" id="${pre}T"><small>タイプ</small>${pre==="mk"?`<button type="button" data-t="">？ランダム</button>`:""}${BT_TNAME.map((n,i)=>`<button type="button" data-t="${i}"><span class="bt-type t${i}">${BT_TYPES[i]}</span>${n}</button>`).join("")}</div>
@@ -3946,7 +3984,7 @@ function abRarity(pre,r){
     const sk=CUSTOM_SKILLS[b.sk],ps=CUSTOM_PASSIVES[b.ps];
     $(pre+"Info").innerHTML=`
       ${(()=>{let f=null;try{f=tcStatic({id:"ab-preview",name:"",r,img:"x",bt:b})}catch(e){}
-        return f?`<div><small>わざの効果</small> ⚡${f.cost} ・ ${esc(f.skill.desc)}</div>${on&&f.passive?`<div><small>とくせいの効果</small> ${esc(f.passive.desc)}</div>`:""}`
+        return f?`<div><small>わざの効果</small> ⚡${f.cost} ・ ${esc(f.skill.desc)}</div>${on&&f.passive?`<div><small>とくせいの効果</small> ${esc(f.passive.desc)}</div>`:""}${f.rb?`<div><small>レア度ボーナス</small> ${r==="N"?"わざのエネルギー-1・":""}格上に+${Math.round(f.rb*100)}%ダメージ</div>`:""}${f.dw?`<div><small>欠点</small> ${esc(CUSTOM_DRAWBACKS[f.dw].name)}：${esc(CUSTOM_DRAWBACKS[f.dw].desc)}</div>`:""}`
         :`<div><small>わざの効果</small> ${sk?sk.desc:"-"}</div>${on?`<div><small>とくせいの効果</small> ${ps?ps.desc:"-"}</div>`:""}`})()}`;
   }
   $(pre+"Note").textContent=(on?"":`とくせいは ${CUSTOM_PASSIVE_MIN} 以上のカードだけに付きます。 `)+"名前を付けなければ空白のままです。";
@@ -3971,7 +4009,7 @@ function abOpen(c,after){
   edPreview();
   $("abModal").hidden=false;document.body.style.overflow="hidden";
 }
-function btCustomDefaults(c){const a=btCustomAbil(c);const sk=Object.keys(CUSTOM_SKILLS).find(k=>CUSTOM_SKILLS[k].desc===a.s.desc);const ps=a.p?Object.keys(CUSTOM_PASSIVES).find(k=>CUSTOM_PASSIVES[k].k===a.p.k):"tough";return{t:a.t,sk,skn:"",ps,psn:""}}
+function btCustomDefaults(c){const a=btCustomAbil(c);const sk=a.s.key||Object.keys(CUSTOM_SKILLS).find(k=>CUSTOM_SKILLS[k].desc===a.s.desc);const ps=a.p?Object.keys(CUSTOM_PASSIVES).find(k=>CUSTOM_PASSIVES[k].k===a.p.k):"tough";return{t:a.t,sk,skn:"",ps,psn:"",dw:a.dw||""}}
 function abClose(){$("abModal").hidden=true;if($("detail").hidden)document.body.style.overflow=""}
 function btProfile(c,lv){
   if(!btHasAbility(c))return null;
@@ -4582,22 +4620,25 @@ $("btStartCustom").onclick=()=>btStart("custom");
    The rules engine (tcAct) is plain data in, plain data out, so online play can run it on the host and send the state. */
 const TC_WIN=3,TC_BENCH=4,TC_HAND0=5,TC_MAXTURN=60,TC_WEAK=1.5;
 const TC_PRIZE={N:1,R:1,SR:1,SSR:2,UR:2};
-const TC_HP={N:50,R:70,SR:100,SSR:140,UR:190},TC_ATK={N:18,R:25,SR:34,SSR:45,UR:60}; // original heroes: big gaps between rarities
+const TC_DMG=new Set(["hit","bench","coin","exec","rev","grow","leech"]); // skill effects that deal damage
+const tcR10=x=>Math.max(10,Math.round(x/10)*10);
+var TC_HP={N:70,R:90,SR:110,SSR:150,UR:160},TC_ATK={N:22,R:30,SR:35,SSR:46,UR:49},TC_RB={N:.7,R:.4,SR:.25,SSR:.1,UR:0};
 const TC_RETREAT={N:1,R:1,SR:1,SSR:2,UR:2};
 const TC_PDESC={
  first:"わざに必要なエネルギーが1つ少ない",
  charge:"自分の番のはじめ、バトル場にいるとエネルギーが1つ自動で付く",
- regen:"自分の番のはじめ、バトル場にいるとHPが5%回復する",
+ regen:"自分の番のはじめ、バトル場にいるとHPが8%回復する",
  ambush:"バトル場に出て最初の攻撃は1.5倍",
  immune:"ダメージダウン・しびれ・やけどにならない",
+ dodge:"15%の確率で攻撃をよける",
  rage:"HPが40%以下になると、与えるダメージ40%アップ",
 };
 const TC_SDESC={
  jam:"1.2倍ダメージ＋相手のバトル場のヒーローのエネルギーを1つトラッシュ",
  stun:"1.0倍ダメージ＋60%の確率で相手をしびれさせる（相手は次の番、攻撃とにげるができない）",
  burn:"1.0倍ダメージ＋やけど（やけどしたヒーローの番の終わりに、最大HPの8%ダメージ・3回）",
- guard:"相手の番2回のあいだ、受けるダメージ50%カット",
- counter:"相手の番3回のあいだ、受けたダメージの50%を返す",
+ guard:"0.6倍ダメージ＋相手の番2回のあいだ、受けるダメージ50%カット",
+ counter:"0.6倍ダメージ＋相手の番3回のあいだ、受けたダメージの50%を返す",
  power:"0.8倍ダメージ＋このあと2回の攻撃はダメージ40%アップ",
  weaken:"1.2倍ダメージ＋相手の次の2回の攻撃はダメージ30%ダウン",
 };
@@ -4610,19 +4651,24 @@ function tcInfo(uid){
   if(TC.info[uid])return TC.info[uid];
   const c=TC.cards[uid];
   if(isItem(c)){const e=itemOf(c);return TC.info[uid]={uid,c,item:true,it:CUSTOM_ITEMS[c.it]?c.it:"potion",name:e.name,desc:e.desc,v:e.v}}
-  const p0=btProfile(c,1),pk=p0.passive&&p0.passive.k;
-  const p=Object.assign({},p0,{hp:Math.max(30,Math.round(TC_HP[c.r]*p0.hp/BT_HP[c.r]/10)*10),atk:TC_ATK[c.r]*p0.atk/BT_ATK[c.r]});
+  const p0=btProfile(c,1),pk=p0.passive&&p0.passive.k,ab=btCustomAbil(c),dw=ab.dw;
+  const p=Object.assign({},p0,{hp:Math.max(30,Math.round(TC_HP[c.r]*p0.hp/BT_HP[c.r]*(pk==="bulky"?1.25:1)/10)*10),atk:TC_ATK[c.r]*p0.atk/BT_ATK[c.r]});
   const skey=p.skill.key||"";
-  const supp=!p.skill.fx.some(f=>f.k==="hit");
+  const supp=!p.skill.fx.some(f=>TC_DMG.has(f.k));
   // every move has its own damage (multiples of 10); "1.7倍ダメージ" in the text becomes "50ダメージ"
   const r10=x=>Math.max(10,Math.round(x/10)*10);
   const basic=r10(p.atk),hits=p.skill.fx.filter(f=>f.k==="hit").map(f=>({d:r10(p.atk*f.m),n:f.n}));
   let sdesc=(TC_SDESC[skey]||p.skill.desc).replace(/(\d+(?:\.\d+)?)倍ダメージ/g,(m0,x)=>r10(p.atk*parseFloat(x))+"ダメージ");
   if(supp)sdesc+="（使うとエネルギーを"+p.skill.cost+"つトラッシュ）";
-  const skDmg=hits.length?hits.map(x=>x.n>1?`${x.d}×${x.n}`:`${x.d}`).join("+"):"";
+  const skDmg=p.skill.fx.map(f=>{const d=r10(p.atk*(f.m||1));
+    if(f.k==="hit")return f.n>1?`${d}×${f.n}`:`${d}`;
+    if(f.k==="exec")return `${d}/${r10(p.atk*f.m2)}`;if(f.k==="coin")return `${d}×表`;if(f.k==="grow")return `${d}+`;
+    if(f.k==="rev")return `${d}+`;if(f.k==="leech")return `${d}`;if(f.k==="bench")return `控え${d}`;return "";}).filter(Boolean).join("+");
+  const rb=TC_RB[c.r]||0; // low rarity bonus: more damage against higher-rarity heroes
   const passive=p.passive?Object.assign({},p.passive,{desc:TC_PDESC[pk]||p.passive.desc}):null;
-  return TC.info[uid]={uid,c,item:false,type:p.type,hp:p.hp,atk:p.atk,basic,skDmg,skill:Object.assign({},p.skill,{desc:sdesc}),supp,passive,
-    cost:Math.max(1,p.skill.cost-(pk==="first"?1:0)),ret:Math.max(0,Math.min(3,TC_RETREAT[c.r]+(btHash(String(c.id)+"|"+c.name+"#ret")%3-1)-(p.type===1?1:0))),prize:TC_PRIZE[c.r]||1};
+  const ret=pk==="light"?0:Math.max(0,Math.min(4,TC_RETREAT[c.r]+(btHash(String(c.id)+"|"+c.name+"#ret")%3-1)-(p.type===1?1:0)+(dw==="heavy"?1:0)));
+  return TC.info[uid]={uid,c,item:false,type:p.type,hp:p.hp,atk:p.atk,basic,skDmg,skill:Object.assign({},p.skill,{desc:sdesc}),supp,passive,dw,rb,rank:BT_RANK[c.r],
+    cost:Math.max(1,p.skill.cost-(pk==="first"?1:0)-(c.r==="N"?1:0)+(dw==="costly"?1:0)),ret,prize:TC_PRIZE[c.r]||1};
 }
 const tcPk=(u,k)=>{const p=tcInfo(u.uid).passive;return p&&p.k===k?p:null};
 function tcUnit(G,uid){const f=tcInfo(uid);return{uid,hp:f.hp,maxHp:f.hp,atk:f.atk,en:0,mods:[],stun:false,dot:null,gutsUsed:false,ambush:false,inTurn:G.turn}}
@@ -4658,11 +4704,19 @@ function tcStartTurn(G,s){
   else tcLog(G,`${tcWho(G,s)}の番！ 山札がないので引けない…`);
   const a=P.act;
   if(a){
-    const rg=tcPk(a,"regen");if(rg&&a.hp<a.maxHp){a.hp=Math.min(a.maxHp,a.hp+Math.round(a.maxHp*rg.v));tcEv(G,{s,uid:a.uid,txt:"REGEN",cls:"heal"})}
+    P.bench.forEach(b=>{
+      const ch=tcPk(b,"cheer");if(ch&&a.hp<a.maxHp){tcHeal(a,Math.round(a.maxHp*ch.v));tcEv(G,{s,uid:a.uid,txt:"CHEER",cls:"heal"})}
+      const sp=tcPk(b,"spark");if(sp&&Math.random()<sp.ch){a.en++;tcLog(G,`${tcName(G,s,b)} のスパーク！ ${esc(tcInfo(a.uid).c.name)} にエネルギー ⚡`);tcEv(G,{s,uid:a.uid,txt:"+⚡",cls:"heal"})}
+    });
+    const rg=tcPk(a,"regen");if(rg&&a.hp<a.maxHp){tcHeal(a,Math.round(a.maxHp*rg.v));tcEv(G,{s,uid:a.uid,txt:"REGEN",cls:"heal"})}
     if(tcPk(a,"charge")){a.en++;tcLog(G,`${tcName(G,s,a)} にエネルギーが自動で付いた！`);tcEv(G,{s,uid:a.uid,txt:"+⚡",cls:"heal"})}
   }
 }
-function tcSetActive(G,s,u){G[s].act=u;u.ambush=!!tcPk(u,"ambush")}
+function tcSetActive(G,s,u){G[s].act=u;u.ambush=!!tcPk(u,"ambush");u.actT=G.turn}
+const tcDw=(u,k)=>tcInfo(u.uid).dw===k;
+function tcHeal(u,amt){if(tcDw(u,"weakheal"))amt=Math.round(amt/2);const b=u.hp;u.hp=Math.min(u.maxHp,u.hp+Math.max(0,amt));return u.hp-b}
+// can this hero attack right now?
+function tcUnitCanAttack(G,s,u){if(!u||u.stun)return false;if(u.tired===2)return false;if(tcDw(u,"slow")&&u.actT===G.turn)return false;return tcCanAttack(G,s)}
 // damage from one hit
 function tcHit(G,s,att,def,m,pierce){
   const fs=tcFoe(s);
@@ -4672,11 +4726,14 @@ function tcHit(G,s,att,def,m,pierce){
   const ai=tcInfo(att.uid),di=tcInfo(def.uid);
   let mul=1;att.mods.forEach(x=>{if(x.k==="buff")mul+=x.v;if(x.k==="weaken")mul-=x.v});
   const rg=tcPk(att,"rage");if(rg&&att.hp<=att.maxHp*.4)mul+=rg.v;
+  if(di.rank>ai.rank){mul+=ai.rb;const ud=tcPk(att,"underdog");if(ud)mul+=ud.v}
+  const fc=tcPk(att,"focus");if(fc&&att.en>=2)mul+=fc.v;
+  const hs=tcPk(att,"hustle");if(hs)mul+=hs.v;
   mul=Math.max(.3,mul);
   if(att.ambush){mul*=tcPk(att,"ambush").v;att.ambush=false}
   const weak=!pierce&&btBeats(ai.type,di.type);
-  let grd=0;def.mods.forEach(x=>{if(x.k==="guard")grd+=x.v});const tg=tcPk(def,"tough");if(tg)grd+=tg.v;grd=Math.min(.8,grd);
-  let d=Math.max(1,Math.round(m*mul*(weak?TC_WEAK:1)*(1-grd)));
+  let grd=0;def.mods.forEach(x=>{if(x.k==="guard")grd+=x.v});const tg=tcPk(def,"tough");if(tg)grd+=tg.v;const dh=tcPk(def,"hustle");if(dh)grd-=dh.w;grd=Math.min(.8,grd);
+  let d=Math.max(1,Math.round(m*mul*(weak?(tcDw(def,"fragile")?2:TC_WEAK):1)*(1-grd)));
   def.hp-=d;
   if(def.hp<=0&&tcPk(def,"guts")&&!def.gutsUsed){def.hp=1;def.gutsUsed=true;tcLog(G,`${tcName(G,fs,def)} は${tcPk(def,"guts").name?`「${esc(tcPk(def,"guts").name)}」で`:""}踏みとどまった！`)}
   def.hp=Math.max(0,def.hp);
@@ -4684,6 +4741,7 @@ function tcHit(G,s,att,def,m,pierce){
   if(weak)tcEv(G,{s:fs,uid:def.uid,txt:"弱点！",cls:"eff"});
   const rf=def.mods.find(x=>x.k==="reflect");
   if(rf&&att.hp>0){const r=Math.max(1,Math.round(d*rf.v));att.hp=Math.max(0,att.hp-r);tcLog(G,`${tcName(G,fs,def)} が ${r} ダメージを跳ね返した！`);tcEv(G,{s,uid:att.uid,txt:"-"+r,cls:"dmg"})}
+  const th=tcPk(def,"thorn");if(th&&att.hp>0){att.hp=Math.max(0,att.hp-th.d);tcEv(G,{s,uid:att.uid,txt:"-"+th.d,cls:"dmg"})}
   return d;
 }
 function tcUseSkill(G,s,u){
@@ -4692,8 +4750,26 @@ function tcUseSkill(G,s,u){
   const team=[P.act].concat(P.bench).filter(x=>x&&x.hp>0);
   for(const x of f.skill.fx){
     const foe=G[fs].act;
-    if(x.k==="hit"){const dd=Math.max(10,Math.round(f.atk*x.m/10)*10);for(let i=0;i<x.n;i++){if(!foe||foe.hp<=0)break;tcHit(G,s,u,foe,dd,x.pierce)}}
-    else if(x.k==="heal"){(x.team?team:[u]).forEach(t=>{t.hp=Math.min(t.maxHp,t.hp+Math.round(t.maxHp*x.v))});tcLog(G,x.team?"味方全員のHPが回復した！":`${tcName(G,s,u)} のHPが回復した！`);tcEv(G,{s,uid:u.uid,txt:"HEAL",cls:"heal",sfx:"up"})}
+    const dd=tcR10(f.atk*(x.m||1));
+    if(x.k==="hit"){for(let i=0;i<x.n;i++){if(!foe||foe.hp<=0)break;tcHit(G,s,u,foe,dd,x.pierce)}}
+    else if(x.k==="exec"){if(foe)tcHit(G,s,u,foe,foe.hp<=foe.maxHp/2?tcR10(f.atk*x.m2):dd)}
+    else if(x.k==="coin"){let hd=0;for(let i=0;i<x.n;i++)if(Math.random()<.5)hd++;tcLog(G,`コイン${x.n}回… 表が ${hd} 回！`);tcEv(G,{s,uid:u.uid,txt:`表×${hd}`,cls:"eff"});if(hd&&foe)tcHit(G,s,u,foe,dd*hd)}
+    else if(x.k==="rev"){if(foe)tcHit(G,s,u,foe,dd+Math.round((u.maxHp-u.hp)*x.v/10)*10)}
+    else if(x.k==="grow"){if(foe)tcHit(G,s,u,foe,dd+(u.grow||0));u.grow=(u.grow||0)+x.add}
+    else if(x.k==="leech"){if(foe){const got=tcHit(G,s,u,foe,dd);if(got){tcHeal(u,Math.round(got*x.v));tcEv(G,{s,uid:u.uid,txt:"HEAL",cls:"heal"})}}}
+    else if(x.k==="bench"||x.k==="spread"){
+      const F=G[fs],ts=x.k==="bench"?F.bench.slice().sort((a,b)=>a.hp-b.hp).slice(0,1):F.bench.slice();
+      ts.forEach(t=>{t.hp=Math.max(0,t.hp-dd);tcEv(G,{s:fs,uid:t.uid,txt:"-"+dd,cls:"dmg",hit:true})});
+      if(ts.length)tcLog(G,`相手の控えに ${dd} ダメージ！`);else if(x.k==="bench")tcLog(G,"相手の控えにヒーローがいない…");
+    }
+    else if(x.k==="accel"){const t=P.bench.slice().sort((a,b)=>a.en-b.en)[0];if(t){t.en++;tcLog(G,`${tcName(G,s,t)} にエネルギーを付けた ⚡`);tcEv(G,{s,uid:t.uid,txt:"+⚡",cls:"heal"})}}
+    else if(x.k==="draw"){const n=tcDrawCards(G,s,x.n);tcLog(G,`カードを${n}枚引いた`)}
+    else if(x.k==="swapfoe"){const F=G[fs];if(F.act&&F.act.hp>0&&F.bench.length){const k=Math.floor(Math.random()*F.bench.length),nu=F.bench[k];F.bench[k]=F.act;tcSetActive(G,fs,nu);tcLog(G,`相手の ${esc(tcInfo(nu.uid).c.name)} がバトル場に引きずり出された！`);tcEv(G,{s:fs,uid:nu.uid,sfx:"flip"})}}
+    else if(x.k==="retreatself"){if(P.bench.length&&u.hp>0){let bi=0;P.bench.forEach((b,j)=>{if(b.hp>P.bench[bi].hp)bi=j});const nu=P.bench[bi];P.bench[bi]=u;tcSetActive(G,s,nu);nu.actT=-1;tcLog(G,`${tcName(G,s,u)} は控えにもどった！ ${esc(tcInfo(nu.uid).c.name)} がバトル場へ`);tcEv(G,{s,uid:nu.uid,sfx:"flip"})}}
+    else if(x.k==="tired"){u.tired=1}
+    else if(x.k==="dumpen"){u.en=0;tcLog(G,`${tcName(G,s,u)} のエネルギーが全部なくなった`)}
+    else if(x.k==="recoil"){const r=Math.round(u.maxHp*x.v);u.hp=Math.max(0,u.hp-r);tcLog(G,`${tcName(G,s,u)} は反動で ${r} ダメージ！`);tcEv(G,{s,uid:u.uid,txt:"-"+r,cls:"dmg"})}
+    else if(x.k==="heal"){(x.team?team:[u]).forEach(t=>tcHeal(t,Math.round(t.maxHp*x.v)));tcLog(G,x.team?"味方全員のHPが回復した！":`${tcName(G,s,u)} のHPが回復した！`);tcEv(G,{s,uid:u.uid,txt:"HEAL",cls:"heal",sfx:"up"})}
     else if(x.k==="buff"){u.mods.push({k:"buff",v:x.v,t:x.turns});tcLog(G,`${tcName(G,s,u)} のダメージがアップ！`);tcEv(G,{s,uid:u.uid,txt:"POWER UP",cls:"heal",sfx:"rankup"})}
     else if(x.k==="guard"){u.mods.push({k:"guard",v:x.v,t:x.turns});tcLog(G,`${tcName(G,s,u)} は守りをかためた！`);tcEv(G,{s,uid:u.uid,txt:"GUARD",cls:"heal",sfx:"tink"})}
     else if(x.k==="reflect"){u.mods.push({k:"reflect",v:x.v,t:x.turns});tcLog(G,`${tcName(G,s,u)} は反撃の構え！`);tcEv(G,{s,uid:u.uid,txt:"COUNTER",cls:"heal",sfx:"tink"})}
@@ -4710,16 +4786,24 @@ function tcUseSkill(G,s,u){
 // knocked-out heroes leave play; the other side scores
 function tcCheckKO(G){
   let any=false;
-  for(const s of ["A","B"]){
-    const P=G[s],u=P.act;
-    if(u&&u.hp<=0){
-      any=true;const f=tcInfo(u.uid);
-      P.disc.push(u.uid);P.act=null;
-      G[tcFoe(s)].pts+=f.prize;
-      tcLog(G,`${tcName(G,s,u)} はたおれた！ ${tcWho(G,tcFoe(s))}に ${f.prize} ポイント！`);
-      tcEv(G,{s,uid:u.uid,ko:true,sfx:"drop"});
-      if(P.bench.length)G.need[s]=true;
+  for(let loop=0;loop<4;loop++){
+    let hit=false;
+    for(const s of ["A","B"]){
+      const P=G[s],fs=tcFoe(s);
+      const ko=(u,front)=>{
+        any=hit=true;const f=tcInfo(u.uid);
+        P.disc.push(u.uid);G[fs].pts+=f.prize;
+        tcLog(G,`${tcName(G,s,u)} はたおれた！ ${tcWho(G,fs)}に ${f.prize} ポイント！`);
+        tcEv(G,{s,uid:u.uid,ko:true,sfx:"drop"});
+        const bm=front&&tcPk(u,"boom"),F=G[fs].act;
+        if(bm&&F&&F.hp>0){F.hp=Math.max(0,F.hp-bm.d);tcLog(G,`${tcName(G,s,u)} の「${esc(bm.name||"道づれ")}」！ ${bm.d} ダメージ！`);tcEv(G,{s:fs,uid:F.uid,txt:"-"+bm.d,cls:"dmg"})}
+      };
+      const dead=P.bench.filter(u=>u.hp<=0);if(dead.length){P.bench=P.bench.filter(u=>u.hp>0);dead.forEach(u=>ko(u,false))}
+      const u=P.act;
+      if(u&&u.hp<=0){P.act=null;ko(u,true)}
+      if(!P.act&&P.bench.length)G.need[s]=true;
     }
+    if(!hit)break;
   }
   // win check
   const out=s=>!G[s].act&&!G[s].bench.length;
@@ -4736,8 +4820,10 @@ function tcEndTurn(G){
   // check-up for the hero that just ended its turn
   if(a&&a.hp>0){
     if(a.dot){const d=Math.max(1,Math.round(a.maxHp*a.dot.v));a.hp=Math.max(0,a.hp-d);tcLog(G,`${tcName(G,s,a)} はやけどで ${d} ダメージ！`);tcEv(G,{s,uid:a.uid,txt:"-"+d,cls:"dmg"});if(--a.dot.t<=0)a.dot=null}
+    if(tcDw(a,"decay")&&a.hp>0){const d=Math.max(1,Math.round(a.maxHp*.04));a.hp=Math.max(0,a.hp-d);tcEv(G,{s,uid:a.uid,txt:"-"+d,cls:"dmg"})}
     a.stun=false;
   }
+  [a].concat(P.bench).forEach(u=>{if(u&&u.tired){u.tired=u.tired===1?2:0}}); // "next turn you can't attack"
   tcCheckKO(G);
   if(G.phase==="over")return;
   if(G.turn>=TC_MAXTURN){
@@ -4814,16 +4900,16 @@ function tcAct(G,s,a){
     if(it==="breaker"&&!(F.act&&F.act.en>=1))return "相手のバトル場にエネルギーがありません";
     P.hand.splice(a.h,1);P.disc.push(uid); // the item goes to the discard pile
     let msg="";
-    if(it==="potion"){act.hp=Math.min(act.maxHp,act.hp+Math.round(act.maxHp*f.v/100));msg=`${tcName(G,s,act)} のHPが回復！`;tcEv(G,{s,uid:act.uid,txt:"HEAL",cls:"heal",sfx:"up"})}
-    else if(it==="team"){[act].concat(P.bench).forEach(u=>{if(u)u.hp=Math.min(u.maxHp,u.hp+Math.round(u.maxHp*f.v/100))});msg="味方全員のHPが回復！";if(act)tcEv(G,{s,uid:act.uid,txt:"HEAL",cls:"heal",sfx:"up"})}
+    if(it==="potion"){tcHeal(act,Math.round(act.maxHp*f.v/100));msg=`${tcName(G,s,act)} のHPが回復！`;tcEv(G,{s,uid:act.uid,txt:"HEAL",cls:"heal",sfx:"up"})}
+    else if(it==="team"){[act].concat(P.bench).forEach(u=>{if(u)tcHeal(u,Math.round(u.maxHp*f.v/100))});msg="味方全員のHPが回復！";if(act)tcEv(G,{s,uid:act.uid,txt:"HEAL",cls:"heal",sfx:"up"})}
     else if(it==="draw"){const n=tcDrawCards(G,s,f.v);msg=`カードを${n}枚引いた`;tcEv(G,{sfx:"flip"})}
     else if(it==="search"){const got=[];for(let q=0;q<f.v;q++){const k=P.deck.findIndex(u=>!tcInfo(u).item);if(k<0)break;const h2=P.deck.splice(k,1)[0];P.hand.push(h2);got.push(esc(tcInfo(h2).c.name))}P.deck=shuffled(P.deck);msg=`${got.join("・")} を手札に加えた`;tcEv(G,{sfx:"flip"})}
     else if(it==="battery"){const u=target(bt);u.en+=f.v;msg=`${tcName(G,s,u)} にエネルギーが${f.v}つ付いた ⚡`;tcEv(G,{s,uid:u.uid,txt:"+⚡"+(f.v>1?f.v:""),cls:"heal",sfx:"tink"})}
-    else if(it==="swap"){const u=P.bench[a.w];P.bench[a.w]=act;act.stun=false;act.dot=null;tcSetActive(G,s,u);if(f.v)u.hp=Math.min(u.maxHp,u.hp+Math.round(u.maxHp*f.v/100));msg=`${esc(tcInfo(u.uid).c.name)} とバトル場を入れ替えた！`;tcEv(G,{s,uid:u.uid,sfx:"flip"})}
+    else if(it==="swap"){const u=P.bench[a.w];P.bench[a.w]=act;act.stun=false;act.dot=null;tcSetActive(G,s,u);if(f.v)tcHeal(u,Math.round(u.maxHp*f.v/100));msg=`${esc(tcInfo(u.uid).c.name)} とバトル場を入れ替えた！`;tcEv(G,{s,uid:u.uid,sfx:"flip"})}
     else if(it==="gust"){const u=F.bench[a.w];F.bench[a.w]=F.act;tcSetActive(G,tcFoe(s),u);msg=`相手の ${esc(tcInfo(u.uid).c.name)} を引っぱり出した！`;tcEv(G,{s:tcFoe(s),uid:u.uid,sfx:"flip"});if(f.v){const dd=Math.min(f.v,u.hp-1);if(dd>0){u.hp-=dd;tcEv(G,{s:tcFoe(s),uid:u.uid,txt:"-"+dd,cls:"dmg",sfx:"crash",hit:true})}}}
     else if(it==="boost"){act.mods.push({k:"buff",v:f.v/100,t:1});msg=`${tcName(G,s,act)} の攻撃がパワーアップ！`;tcEv(G,{s,uid:act.uid,txt:"POWER UP",cls:"heal",sfx:"rankup"})}
     else if(it==="shield"){act.mods.push({k:"guard",v:f.v/100,t:1});msg=`${tcName(G,s,act)} にシールド！`;tcEv(G,{s,uid:act.uid,txt:"GUARD",cls:"heal",sfx:"tink"})}
-    else if(it==="cure"){act.stun=false;act.dot=null;act.mods=act.mods.filter(m=>m.k!=="weaken");if(f.v)act.hp=Math.min(act.maxHp,act.hp+Math.round(act.maxHp*f.v/100));msg=`${tcName(G,s,act)} は元気になった！`;tcEv(G,{s,uid:act.uid,txt:"CURE",cls:"heal",sfx:"up"})}
+    else if(it==="cure"){act.stun=false;act.dot=null;act.mods=act.mods.filter(m=>m.k!=="weaken");if(f.v)tcHeal(act,Math.round(act.maxHp*f.v/100));msg=`${tcName(G,s,act)} は元気になった！`;tcEv(G,{s,uid:act.uid,txt:"CURE",cls:"heal",sfx:"up"})}
     else if(it==="breaker"){const u=F.act;const nb=Math.min(f.v,u.en);u.en-=nb;msg=`相手の ${esc(tcInfo(u.uid).c.name)} のエネルギーを${nb}つトラッシュ！`;tcEv(G,{s:tcFoe(s),uid:u.uid,txt:"-⚡",cls:"weak",sfx:"crash"})}
     tcLog(G,`${tcPre(G,s)}サポート「${esc(f.name)}」！ ${msg}`);
     return null;
@@ -4852,6 +4938,8 @@ function tcAct(G,s,a){
     if(!act)return "バトル場にヒーローがいません";
     if(!tcCanAttack(G,s))return "先攻の最初の番は攻撃できません";
     if(act.stun)return "しびれていて攻撃できない！";
+    if(act.tired===2)return "つかれていて、この番は攻撃できない！";
+    if(tcDw(act,"slow")&&act.actT===G.turn)return "出おくれ：バトル場に出た番は攻撃できない！";
     const f=tcInfo(act.uid),foe=F.act;
     if(a.w==="skill"){if(act.en<f.cost)return `わざにはエネルギーが${f.cost}つ必要です`;tcUseSkill(G,s,act)}
     else{
@@ -4870,7 +4958,9 @@ function tcPredict(G,s,att,def,w){
   if(!att||!def)return 0;
   const ai=tcInfo(att.uid),di=tcInfo(def.uid);
   let m=ai.basic;
-  if(w==="skill"){m=ai.skill.fx.filter(f=>f.k==="hit").reduce((t,f)=>t+Math.max(10,Math.round(ai.atk*f.m/10)*10)*f.n,0)}
+  if(w==="skill"){m=ai.skill.fx.reduce((t,f)=>{const d=tcR10(ai.atk*(f.m||1));
+    if(f.k==="hit")return t+d*f.n;if(f.k==="exec")return t+(def.hp<=def.maxHp/2?tcR10(ai.atk*f.m2):d);if(f.k==="coin")return t+d*f.n/2;
+    if(f.k==="rev")return t+d+Math.round((att.maxHp-att.hp)*f.v);if(f.k==="grow")return t+d+(att.grow||0);if(f.k==="leech")return t+d;return t},0)}
   let mul=1;att.mods.forEach(x=>{if(x.k==="buff")mul+=x.v;if(x.k==="weaken")mul-=x.v});
   const weak=btBeats(ai.type,di.type)&&!(w==="skill"&&ai.skill.fx.some(f=>f.pierce));
   return Math.max(.3,mul)*m*(weak?TC_WEAK:1);
@@ -4884,7 +4974,7 @@ function tcAIStep(G,s){
   const hh=P.hand.findIndex(u=>!tcInfo(u).item);
   if(hh>=0&&P.bench.length<TC_BENCH)return{k:"bench",h:hh};
   const fa=a&&tcInfo(a.uid),ratio=a?a.hp/a.maxHp:1;
-  const can=tcCanAttack(G,s)&&a&&!a.stun;
+  const can=a&&tcUnitCanAttack(G,s,a);
   // 2. items
   const itemAt=k=>P.hand.findIndex(u=>{const f=tcInfo(u);return f.item&&f.it===k});
   let i;
@@ -5007,7 +5097,7 @@ function tcRender(){
   const lg=$("tcLog");lg.innerHTML=G.log.map((m,i)=>`<div class="${i?"old":""}">${m}</div>`).join("");
   // commands
   const a=P.act,fa=a&&tcInfo(a.uid);
-  const canAtk=myTurn&&a&&tcCanAttack(G,me)&&!a.stun;
+  const canAtk=myTurn&&a&&tcUnitCanAttack(G,me,a);
   $("tcAtk").disabled=!canAtk||a.en<1;
   $("tcAtk").querySelector("small").textContent=a?`⚡1 ・ ${fa.basic}ダメージ`:"⚡1";
   const sk=$("tcSkill");sk.disabled=!canAtk||a.en<fa.cost;
@@ -5084,7 +5174,7 @@ function tcShowUnit(s,u,btns){
     <div class="bt-chips">${tcChips(u)}</div>
     <div class="bt-abil-sk"><small>こうげき ・ ⚡1</small><b>ふつうの攻撃</b><span>${f.basic}ダメージ</span></div>
     <div class="bt-abil-sk"><small>わざ ・ ⚡${f.cost}</small><b>${esc(f.skill.name)}</b><span>${esc(f.skill.desc)}</span></div>
-    ${f.passive?`<div class="bt-abil-sk ps"><small>とくせい</small><b>${esc(f.passive.name)}</b><span>${esc(f.passive.desc)}</span></div>`:""}
+    ${f.passive?`<div class="bt-abil-sk ps"><small>とくせい</small><b>${esc(f.passive.name)}</b><span>${esc(f.passive.desc)}</span></div>`:""}${tcExtraHTML(f)}
     <p class="tc-note">たおされると相手に ${f.prize} ポイント</p>`);
   const m=$("btInfo");m.hidden=false;
   const shut=()=>{m.hidden=true};close.onclick=shut;m.onclick=e=>{if(e.target===m)shut()};
@@ -5232,12 +5322,19 @@ function tcNetBuild(role,me,foe,myName,foeName){
 // card detail text for an original hero (these rules)
 function tcStatic(c){const save0=TC;TC={cards:{x:c},info:{},me:"A"};try{return tcInfo("x")}finally{TC=save0}}
 function tcStatsHTML(c){const f=tcStatic(c);return `<span class="bt-type t${f.type}">${BT_TYPES[f.type]}</span><span>HP <b>${f.hp}</b></span><span>こうげき <b>${f.basic}</b></span><span>わざ <b>⚡${f.cost}</b></span>`}
+// extra lines: low-rarity bonus and the weak point of strong heroes
+function tcExtraHTML(f){
+  let x="";
+  if(f.rb)x+=`<div class="bt-abil-sk rb"><small>レア度ボーナス（${f.c.r}）</small><b>${f.c.r==="N"?"がんばり屋":"負けん気"}</b><span>${f.c.r==="N"?"わざに必要なエネルギー-1。":""}相手のレアリティが自分より上なら、与えるダメージ+${Math.round(f.rb*100)}%</span></div>`;
+  if(f.dw&&CUSTOM_DRAWBACKS[f.dw])x+=`<div class="bt-abil-sk dw"><small>欠点（${f.c.r}）</small><b>${esc(CUSTOM_DRAWBACKS[f.dw].name)}</b><span>${esc(CUSTOM_DRAWBACKS[f.dw].desc)}</span></div>`;
+  return x;
+}
 function tcAbilityHTML(c){
   const save0=TC;TC={cards:{x:c},info:{},me:"A"};let f;try{f=tcInfo("x")}finally{TC=save0}
   return `<div class="bt-abil"><div class="bt-abil-row"><span class="bt-type t${f.type}">${BT_TYPES[f.type]}</span><b>${BT_TNAME[f.type]}</b><span>HP ${f.hp}</span><span>にげる ⚡${f.ret}</span></div>
     <div class="bt-abil-sk"><small>こうげき ・ エネルギー ⚡1</small><b>ふつうの攻撃</b><span>${f.basic}ダメージ</span></div>
     <div class="bt-abil-sk"><small>わざ ・ エネルギー ⚡${f.cost}（自作カードバトル）</small><b>${esc(f.skill.name)}</b><span>${esc(f.skill.desc)}</span></div>
-    ${f.passive?`<div class="bt-abil-sk ps"><small>とくせい</small><b>${esc(f.passive.name)}</b><span>${esc(f.passive.desc)}</span></div>`:""}</div>`;
+    ${f.passive?`<div class="bt-abil-sk ps"><small>とくせい</small><b>${esc(f.passive.name)}</b><span>${esc(f.passive.desc)}</span></div>`:""}${tcExtraHTML(f)}</div>`;
 }
 // start an original-card battle against the computer
 function tcStart(mode){
@@ -5272,7 +5369,7 @@ function tcBegin(mode,aList,bList,online,aName,bName,me){
 }
 $("tcAtk").onclick=()=>tcDo({k:"attack",w:"basic"});
 $("tcSkill").onclick=()=>tcDo({k:"attack",w:"skill"});
-$("tcEnd").onclick=()=>{if(!TC||TC.busy)return;const G=TC.G,P=G[TC.me];if(G.phase==="main"&&G.cur===TC.me&&P.act&&tcCanAttack(G,TC.me)&&!P.act.stun&&P.act.en>=1&&!confirm("攻撃しないで番を終わりますか？"))return;tcDo({k:"end"})};
+$("tcEnd").onclick=()=>{if(!TC||TC.busy)return;const G=TC.G,P=G[TC.me];if(G.phase==="main"&&G.cur===TC.me&&P.act&&tcUnitCanAttack(G,TC.me,P.act)&&P.act.en>=1&&!confirm("攻撃しないで番を終わりますか？"))return;tcDo({k:"end"})};
 $("tcEnergy").onclick=()=>{if(!TC||TC.busy)return;const P=TC.G[TC.me];if(!P.bench.length&&P.act){tcDo({k:"energy",w:"a"});return}TCU.sel=TCU.sel&&TCU.sel.k==="energy"?null:{k:"energy"};tcRender()};
 $("tcRetreat").onclick=()=>{if(!TC||TC.busy)return;TCU.sel=TCU.sel&&TCU.sel.k==="retreat"?null:{k:"retreat"};tcRender()};
 $("tcGiveUp").onclick=()=>{
