@@ -439,8 +439,6 @@ nav button span{font-family:var(--body);font-size:13px;font-weight:700}
 
 /* custom art */
 .art.photo{background-position:center 18%}
-.art{position:relative;overflow:hidden}
-.art-vid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
 .art.hero{background:none;overflow:hidden;position:relative}
 .art.hero svg{position:absolute;inset:0;width:100%;height:100%;display:block}
 .art{flex:1;margin:6px 0;border:3px solid var(--ink);background:#fff center/cover no-repeat;box-shadow:3px 3px 0 var(--ink);min-height:0}
@@ -1389,9 +1387,9 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
           <div class="hint">プレビュー</div>
         </div>
         <form class="fields" id="mkForm" novalidate>
-          <label class="drop" id="mkDrop" for="mkFile">画像・動画をえらぶ・ここにドロップ
-            <small id="mkFileName">JPG / PNG / GIF・動画など。カードの形（縦長）に合わせて自動で切り抜きます。動画は最初の5秒がループ再生されます</small>
-            <input type="file" id="mkFile" accept="image/*,video/*">
+          <label class="drop" id="mkDrop" for="mkFile">画像をえらぶ・ここにドロップ
+            <small id="mkFileName">JPG / PNG / GIF など。カードの形（縦長）に合わせて自動で切り抜きます</small>
+            <input type="file" id="mkFile" accept="image/*">
           </label>
           <div class="row2">
             <div class="field"><label for="mkName">ヒーロー名（英語）</label><input type="text" id="mkName" maxlength="22" placeholder="Captain Yokohama"></div>
@@ -1610,7 +1608,7 @@ function load(){
     if(p.cloud&&typeof p.cloud.code==="string")o.cloud={code:p.cloud.code.slice(0,6),sig:p.cloud.sig&&typeof p.cloud.sig==="object"?p.cloud.sig:{},metaSig:String(p.cloud.metaSig||"")};
     if(p.friend&&typeof p.friend==="object"){o.friend={from:String(p.friend.from||"").slice(0,12),uid:String(p.friend.uid||"").slice(0,40)};if(typeof p.friend.code==="string")o.friend.code=p.friend.code.slice(0,6);o.friend.ver=Math.max(0,Number(p.friend.ver)||0)}return o});
   s.custom=s.custom.filter(c=>c&&typeof c.id==="string"&&typeof c.img==="string"&&/^data:image\/(jpeg|png|webp|gif);base64,[A-Za-z0-9+/=]+$/.test(c.img)&&ORDER.includes(c.r))
-    .map(c=>({id:c.id,r:c.r,name:String(c.name||"").slice(0,22),kana:String(c.kana||"").slice(0,20),flavor:String(c.flavor||"").slice(0,60),h:Number(c.h)||0,shape:"shield",img:c.img,m:"?",pack:typeof c.pack==="string"?c.pack:"",bt:cleanBt(c.bt),...(c.friend?{friend:true}:{}),...(c.vid?{vid:true}:{})}));
+    .map(c=>({id:c.id,r:c.r,name:String(c.name||"").slice(0,22),kana:String(c.kana||"").slice(0,20),flavor:String(c.flavor||"").slice(0,60),h:Number(c.h)||0,shape:"shield",img:c.img,m:"?",pack:typeof c.pack==="string"?c.pack:"",bt:cleanBt(c.bt),...(c.friend?{friend:true}:{})}));
   if(!s.pityBy||typeof s.pityBy!=="object")s.pityBy={};
   // migrate the single "MY PACK" from the previous version
   if(!s.packs.some(p=>!p.friend)){
@@ -1702,42 +1700,6 @@ function drawOne(minSR,pool,bid){
   if(r==="PU")return pu;
   const list=pool[r];return list[Math.floor(Math.random()*list.length)];
 }
-/* ---- moving pictures for original cards: a 5-second clip kept on this device (IndexedDB, too big for the normal save) ---- */
-var VID_URL={},vidDB=null,vidIO=null;
-function vidOpen(){
-  if(vidDB)return vidDB;
-  vidDB=new Promise((res,rej)=>{try{const q=indexedDB.open("cch-media",1);q.onupgradeneeded=()=>q.result.createObjectStore("vid");q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)}catch(e){rej(e)}});
-  return vidDB;
-}
-async function vidTx(mode,fn){const db=await vidOpen();return new Promise((res,rej)=>{const t=db.transaction("vid",mode),st=t.objectStore("vid");const r=fn(st);t.oncomplete=()=>res(r&&r.result);t.onerror=()=>rej(t.error)})}
-const vidPut=(id,blob)=>vidTx("readwrite",st=>st.put(blob,id));
-async function vidLoadAll(){
-  if(typeof indexedDB==="undefined")return;
-  try{
-    const keys=await vidTx("readonly",st=>st.getAllKeys())||[];
-    const want=new Set(S.custom.filter(c=>c.vid).map(c=>c.id));
-    for(const k of keys){
-      if(!want.has(k)){vidTx("readwrite",st=>st.delete(k)).catch(()=>{});continue} // the card was deleted
-      if(VID_URL[k])continue;
-      const b=await vidTx("readonly",st=>st.get(k));
-      if(b)VID_URL[k]=URL.createObjectURL(b);
-    }
-    render();
-  }catch(e){console.warn("video store",e)}
-}
-// only clips on screen play, so a page full of moving cards stays light
-function vidWatch(v){
-  if(typeof IntersectionObserver==="undefined"){v.play().catch(()=>{});return}
-  if(!vidIO)vidIO=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.play().catch(()=>{});else e.target.pause()}),{threshold:.05});
-  vidIO.observe(v);
-}
-function vidEl(url){
-  const v=document.createElement("video");
-  v.className="art-vid";v.muted=true;v.defaultMuted=true;v.loop=true;v.playsInline=true;v.autoplay=true;
-  v.setAttribute("muted","");v.setAttribute("playsinline","");v.setAttribute("webkit-playsinline","");
-  v.ontimeupdate=()=>{if(v.currentTime>=5)v.currentTime=0}; // at most 5 seconds, then back to the start
-  v.src=url;vidWatch(v);return v;
-}
 function cardEl(c,{flipped=false,isNew=false,sfx=false}={}){
   const d=document.createElement("div");
   d.className="card"+(flipped?" flipped":"");d.dataset.r=c.r;d.dataset.shape=c.shape;d.style.setProperty("--h",c.h);
@@ -1745,7 +1707,6 @@ function cardEl(c,{flipped=false,isNew=false,sfx=false}={}){
   const art=(c.img||c.photo)?`<div class="art${c.photo?" photo":""}"></div>`:((c.look||(typeof c.id==="number"&&LOOKS[c.id]))?`<div class="art hero">${heroSVG(c.look||LOOKS[c.id],c.h)}</div>`:`<div class="emblem"><span>${c.m}</span></div>`);
   d.innerHTML=`<div class="inner"><div class="face back"></div><div class="face front"><div class="top"><span class="rar">${c.r}</span>${tag}</div>${art}<div class="name"><b>${esc(c.name||"???")}</b><small>${esc(c.kana||"")}</small></div></div></div>${sfx&&SFX[c.r]?`<span class="sfx">${SFX[c.r]}</span>`:""}${isNew?'<span class="new">NEW!</span>':""}`;
   if(c.img||c.photo)d.querySelector(".art").style.backgroundImage=`url("${c.img||c.photo}")`;
-  if(c.img&&c.vid&&VID_URL[c.id])d.querySelector(".art").appendChild(vidEl(VID_URL[c.id]));
   return d;
 }
 
@@ -2975,7 +2936,7 @@ function renderShop(){
 $("tab-home").onclick=()=>tab("home");$("tab-gacha").onclick=()=>tab("gacha");$("tab-dex").onclick=()=>{dexSel=null;closeDetail();dexStale=true;tab("dex")};$("tab-make").onclick=()=>tab("make");$("tab-shop").onclick=()=>tab("shop");$("tab-games").onclick=()=>tab("games");
 
 /* ---- card maker ---- */
-let mkImg=null,mkVid=null; // mkVid: the 5-second clip (Blob) when a video was chosen
+let mkImg=null;
 function fillPackSelect(){
   const sel=$("mkPack"),cur=sel.value;sel.innerHTML="";
   S.packs.filter(p=>!p.friend).forEach(p=>{const o=document.createElement("option");o.value=p.id;o.textContent=pname(p);sel.appendChild(o)});
@@ -2986,7 +2947,7 @@ function fillPackSelect(){
 }
 function syncNewField(){$("mkNewWrap").hidden=$("mkPack").value!=="__new";updatePreview()}
 $("mkPack").addEventListener("change",syncNewField);
-function draft(){return{id:"preview",r:$("mkRar").value,name:$("mkName").value.trim()||"Your Hero",kana:$("mkKana").value.trim(),flavor:$("mkFlavor").value.trim(),h:+$("mkHue").value,shape:"shield",img:mkImg,m:"?",vid:!!mkVid}}
+function draft(){return{id:"preview",r:$("mkRar").value,name:$("mkName").value.trim()||"Your Hero",kana:$("mkKana").value.trim(),flavor:$("mkFlavor").value.trim(),h:+$("mkHue").value,shape:"shield",img:mkImg,m:"?"}}
 function updatePreview(){
   const d=draft();
   const box=$("mkPreview");box.innerHTML="";
@@ -2994,64 +2955,8 @@ function updatePreview(){
   box.appendChild(cardEl(d,{flipped:true}));
   $("mkAdd").disabled=!(mkImg&&$("mkName").value.trim());
 }
-function mkSetVid(blob){
-  if(VID_URL.preview)URL.revokeObjectURL(VID_URL.preview);
-  mkVid=blob||null;VID_URL.preview=blob?URL.createObjectURL(blob):null;
-}
-// cut a video down to its first 5 seconds at card size (re-recorded so it stays small)
-function vidClip(file){
-  return new Promise((res,rej)=>{
-    const src=URL.createObjectURL(file),v=document.createElement("video");
-    v.muted=true;v.playsInline=true;v.setAttribute("playsinline","");v.preload="auto";v.src=src;
-    const fail=m=>{URL.revokeObjectURL(src);rej(new Error(m))};
-    v.onerror=()=>fail("read");
-    v.onloadedmetadata=()=>{
-      const dur=Math.min(5,isFinite(v.duration)&&v.duration>0?v.duration:5);
-      const draw=(cv,W,H)=>{const x=cv.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,W,H);const s=Math.max(W/v.videoWidth,H/v.videoHeight),w=v.videoWidth*s,h=v.videoHeight*s;x.drawImage(v,(W-w)/2,(H-h)/2,w,h)};
-      v.onseeked=()=>{
-        v.onseeked=null;
-        const pc=document.createElement("canvas");pc.width=360;pc.height=420;draw(pc,360,420);
-        const poster=pc.toDataURL("image/jpeg",0.82);
-        const canRec=typeof MediaRecorder!=="undefined"&&HTMLCanvasElement.prototype.captureStream;
-        if(!canRec){ // old browsers: keep the file itself (the player stops it at 5 seconds)
-          if(file.size>25e6)return fail("big");
-          URL.revokeObjectURL(src);return res({poster,blob:file});
-        }
-        const W=300,H=350,cv=document.createElement("canvas");cv.width=W;cv.height=H;draw(cv,W,H);
-        const types=["video/mp4;codecs=avc1","video/mp4","video/webm;codecs=vp9","video/webm;codecs=vp8","video/webm"];
-        const pv=document.createElement("video"),playable=t=>pv.canPlayType(t.startsWith("video/mp4")?'video/mp4; codecs="avc1.42E01E"':t.replace(/;codecs=(.*)/,'; codecs="$1"'))!=="";
-        const type=types.find(t=>MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(t)&&playable(t))||types.find(t=>MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(t))||"";
-        let rec;try{rec=new MediaRecorder(cv.captureStream(30),Object.assign({videoBitsPerSecond:900000},type?{mimeType:type}:{}))}catch(e){return fail("rec")}
-        const parts=[];rec.ondataavailable=e=>{if(e.data&&e.data.size)parts.push(e.data)};
-        rec.onstop=()=>{URL.revokeObjectURL(src);const b=new Blob(parts,{type:(rec.mimeType||type||"video/webm").split(";")[0]});b.size?res({poster,blob:b}):rej(new Error("empty"))};
-        let done=false;const stop=()=>{if(done)return;done=true;try{v.pause()}catch(e){}try{rec.stop()}catch(e){}};
-        const tick=()=>{if(done)return;draw(cv,W,H);if(v.currentTime>=dur-.02||v.ended){stop();return}v.requestVideoFrameCallback?v.requestVideoFrameCallback(tick):requestAnimationFrame(tick)};
-        v.currentTime=0;rec.start(250);
-        v.play().then(tick).catch(()=>{stop();fail("play")});
-        v.onended=stop;setTimeout(stop,(dur+3)*1000);
-      };
-      v.currentTime=Math.min(.1,dur/2);
-    };
-  });
-}
-async function loadVideo(file){
-  $("mkMsg").textContent="動画を5秒のカード用にまとめています…（そのまま待ってね）";$("mkAdd").disabled=true;
-  try{
-    const {poster,blob}=await vidClip(file);
-    mkImg=poster;mkSetVid(blob);
-    $("mkFileName").textContent=file.name+"（動画・5秒ループ）";
-    $("mkMsg").textContent=$("mkName").value.trim()?"準備OK！":"ヒーロー名を入れてください。";
-    updatePreview();
-  }catch(e){
-    console.warn(e);
-    $("mkMsg").textContent=e.message==="big"?"この動画は大きすぎます。短い動画を選んでください。":"この動画は読み込めませんでした。別の動画を試してください。";
-    updatePreview();
-  }
-}
 function loadImage(file){
-  if(file&&file.type.startsWith("video/"))return loadVideo(file);
-  if(!file||!file.type.startsWith("image/")){$("mkMsg").textContent="画像か動画のファイルを選んでください。";return}
-  mkSetVid(null);
+  if(!file||!file.type.startsWith("image/")){$("mkMsg").textContent="画像ファイルを選んでください。";return}
   const reader=new FileReader();
   reader.onload=()=>{
     const img=new Image();
@@ -3077,7 +2982,7 @@ const drop=$("mkDrop");
 ["dragenter","dragover"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add("over")}));
 ["dragleave","drop"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove("over")}));
 drop.addEventListener("drop",e=>loadImage(e.dataTransfer.files[0]));
-document.addEventListener("paste",e=>{if($("view-make").hidden)return;const f=[...(e.clipboardData?.files||[])].find(f=>f.type.startsWith("image/")||f.type.startsWith("video/"));if(f)loadImage(f)});
+document.addEventListener("paste",e=>{if($("view-make").hidden)return;const f=[...(e.clipboardData?.files||[])].find(f=>f.type.startsWith("image/"));if(f)loadImage(f)});
 ["mkName","mkKana","mkFlavor","mkHue","mkRar"].forEach(id=>$(id).addEventListener("input",()=>{updatePreview();if(mkImg&&$("mkName").value.trim())$("mkMsg").textContent="準備OK！"}));
 $("mkForm").addEventListener("submit",e=>{
   e.preventDefault();
@@ -3085,13 +2990,12 @@ $("mkForm").addEventListener("submit",e=>{
   let packId=$("mkPack").value,made=null;
   if(packId==="__new"){made=createPack($("mkNewPack").value);packId=made.id}
   const c=draft();c.id=newId("c");c.shape="shield";c.pack=packId;c.bt=Object.assign(btRandomBt(),abT.mk!==""&&abT.mk!=null?{t:+abT.mk}:{},{skn:$("mkSkn").value.trim().slice(0,14),psn:$("mkPsn").value.trim().slice(0,14)});
-  if(mkVid){const blob=mkVid;VID_URL[c.id]=URL.createObjectURL(blob);vidPut(c.id,blob).catch(()=>{delete c.vid;save();render();toast("動画を保存できませんでした。カードは画像で追加しました。")})}
   S.custom.push(c);
   if(!save()){S.custom.pop();if(made)S.packs.pop();$("mkMsg").textContent="保存容量がいっぱいです。作ったカードをいくつか削除してから追加してください。";return}
   render();fillPackSelect();$("mkPack").value=packId;syncNewField();$("mkNewPack").value="";
   $("mkMsg").textContent=`「${c.name}」を ${c.r} として ${pname(packOf(packId))} に追加しました！`;
-  mkImg=null;mkSetVid(null);$("mkFile").value="";$("mkName").value="";$("mkKana").value="";$("mkFlavor").value="";$("mkSkn").value="";$("mkPsn").value="";abTSet("mk","");
-  $("mkFileName").textContent="JPG / PNG / GIF・動画など。カードの形（縦長）に合わせて自動で切り抜きます。動画は最初の5秒がループ再生されます";
+  mkImg=null;$("mkFile").value="";$("mkName").value="";$("mkKana").value="";$("mkFlavor").value="";$("mkSkn").value="";$("mkPsn").value="";abTSet("mk","");
+  $("mkFileName").textContent="JPG / PNG / GIF など。カードの形（縦長）に合わせて自動で切り抜きます";
   updatePreview();
 });
 function drawBgm(){$("bgmBtn").textContent=S.bgm?"BGM ON":"BGM OFF";$("bgmBtn").setAttribute("aria-pressed",S.bgm)}
@@ -4781,7 +4685,7 @@ function gfDelete(id){
   if(S.banner===id)S.banner="std";
   save();render();toast("フレンドガチャを消しました");
 }
-setTimeout(vidLoadAll,0);
+try{indexedDB.deleteDatabase("cch-media")}catch(e){} // clean up clips from the removed video-card feature
 abBuild($("abEdit"),"ab");
 abBuild($("mkAb"),"mk");["mk","ab"].forEach(pre=>$(pre+"T").addEventListener("click",e=>{const b=e.target.closest("button");if(b){abTSet(pre,b.dataset.t);sfx("flip")}}));abFill("mk",null,$("mkRar").value);
 $("mkRar").addEventListener("change",()=>abRarity("mk",$("mkRar").value));
