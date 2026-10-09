@@ -371,6 +371,14 @@ nav button span{font-family:var(--body);font-size:13px;font-weight:700}
 .shop-rates{font-size:12px;color:var(--mute)}
 .custom-tag.ltd{background:#7a3cff;color:#fff}
 .custom-tag.msn{background:#e2231a;color:#ffd21f}
+.custom-tag.item{background:#1d9e5a;color:#fff}
+.it-badge{display:inline-block;padding:1px 6px;border:2px solid var(--ink);background:#1d9e5a;color:#fff;font:900 11px/1.4 var(--display);letter-spacing:.04em}
+.mk-kind{display:flex;gap:8px;margin-bottom:4px}
+.mk-kind button{flex:1;padding:8px 10px;border:3px solid var(--ink);border-radius:10px;background:#fff;font:900 15px var(--jp);cursor:pointer}
+.mk-kind button.sel{background:#ffd23f;box-shadow:3px 3px 0 var(--ink)}
+.it-choose{display:flex;flex-wrap:wrap;gap:6px}
+.it-choose button{padding:5px 10px;border:2px solid var(--ink);border-radius:999px;background:#fff;font:700 13px var(--jp);cursor:pointer}
+.it-choose button.sel{background:#ffd23f;box-shadow:2px 2px 0 var(--ink)}
 
 /* per-pack dex reset */
 .resetbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;border:3px dashed var(--ink);padding:8px 12px;font-size:13px}
@@ -591,6 +599,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
 .bt-intro p{margin:0}
 .bt-rules{display:flex;flex-wrap:wrap;gap:8px 12px;margin:0;padding:0;list-style:none}
 .bt-rules li{display:flex;align-items:center;gap:4px;background:#fff;border:3px solid var(--ink);padding:4px 10px;box-shadow:3px 3px 0 var(--ink)}
+.tc-rules{flex-direction:column;gap:6px}.tc-rules li{display:block;font-size:13px;line-height:1.5;padding:4px 10px;box-shadow:2px 2px 0 var(--ink)}
 .bt-type{display:inline-grid;place-items:center;width:24px;height:24px;border:2px solid var(--ink);border-radius:50%;color:#fff;font:700 13px/1 var(--jp);flex:none}
 .bt-type.t0{background:#e2231a}.bt-type.t1{background:#1d5fd6}.bt-type.t2{background:#1d9e5a}
 .bt-need{color:var(--red)}
@@ -844,6 +853,44 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
 .bt-bench.pick .bt-bu.can{animation:ts-float 1.6s ease-in-out infinite}
 .bt-bench.pick .bt-bu.can .bt-face{outline:3px solid var(--yellow);outline-offset:1px}
 .bt-bname{font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tc-field{gap:8px}
+.tc-meta{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;font-size:12px;font-weight:700}
+.tc-meta b{font-family:var(--display);font-weight:400;font-size:18px;letter-spacing:.04em}
+.tc-pts{display:inline-flex;gap:2px}
+.tc-pts i{font-style:normal;font-size:16px;line-height:1;color:rgba(20,20,20,.25);-webkit-text-stroke:1px var(--ink)}
+.tc-pts i.on{color:var(--yellow)}
+.tc-bench{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;min-height:40px}
+.tc-bench.foe{max-width:340px}
+.tc-bench .bt-bu{font-size:11px}
+.tc-bu{position:relative}
+.tc-bu.can{animation:ts-float 1.6s ease-in-out infinite}
+.tc-bu.can .bt-face{outline:3px solid var(--yellow);outline-offset:1px}
+.tc-ben{position:absolute;top:4px;right:4px;background:var(--ink);color:var(--yellow);font:700 11px/1.3 var(--jp);padding:0 4px;border-radius:4px}
+.tc-slot{display:grid;place-items:center;aspect-ratio:6/7;border:3px dashed rgba(20,20,20,.3);font-size:11px;font-weight:700;color:rgba(20,20,20,.4)}
+.tc-none{font-size:12px;font-weight:700;opacity:.6;align-self:center}
+.tc-bu .bt-pop,.bt-act .bt-cardwrap .bt-pop{left:50%;transform:translateX(-50%)}
+.tc-bu.hit .bt-face,.bt-act.hit .bt-cardwrap{animation:bt-shake .35s}
+.bt-cardwrap.tc-can .bt-face{outline:4px solid var(--yellow);outline-offset:2px;animation:ts-float 1.6s ease-in-out infinite}
+.tc-en i{width:16px;height:12px;border-radius:50%;transform:none}
+.tc-en i.on{background:#ffd21f;box-shadow:0 0 6px #ffd21f}
+.tc-who{font-size:15px;padding:0 8px;border:2px solid var(--ink);background:#fff}
+.tc-who.me{background:var(--yellow)}
+.tc-hint{margin:0;min-height:1.4em;font-size:13px;font-weight:700;background:#fff;border:2px solid var(--ink);padding:6px 10px}
+.tc-cancel{font-size:12px;padding:1px 10px;margin-left:6px}
+.tc-cmds{grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
+.tc-cmds .bt-cmd{grid-column:span 2;padding:6px 2px}
+.tc-cmds .bt-cmd.atk,.tc-cmds .bt-cmd.sk{grid-column:span 3}
+.tc-cmds .bt-cmd b{font-size:16px;white-space:nowrap}
+.bt-cmd.en{background:#e0a800}.bt-cmd.en.on{background:var(--yellow);color:var(--ink)}.bt-cmd.en.on b{text-shadow:none}
+.bt-cmd.end{background:#4a4a5a}
+.tc-deckinfo{margin-left:10px;font-family:var(--jp);font-size:12px;letter-spacing:0}
+.tc-hand{display:flex;gap:10px;overflow-x:auto;padding:4px 2px 10px;scroll-snap-type:x proximity}
+.tc-card{position:relative;flex:0 0 112px;display:flex;flex-direction:column;gap:4px;padding:0;border:0;background:none;color:inherit;cursor:pointer;scroll-snap-align:start}
+.tc-card .card{width:112px;font-size:9px}
+.tc-cap{display:flex;align-items:center;gap:4px;font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tc-hv{width:min(200px,60%);margin:0 auto}
+.tc-note{margin:0;font-size:12px;font-weight:700;opacity:.8}
+@media (max-width:640px){.tc-cmds .bt-cmd b{font-size:14px}.tc-cmds .bt-cmd small{font-size:11px}.tc-card{flex-basis:96px}.tc-card .card{width:96px}}
 .bt-iv .mission{width:min(440px,100%);display:flex;flex-direction:column;gap:8px}
 .bt-iv-top{display:grid;grid-template-columns:140px 1fr;gap:12px;align-items:center;padding-right:36px}
 .bt-iv-head{display:flex;flex-direction:column;gap:3px;min-width:0}
@@ -1262,7 +1309,16 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
         </div>
         <div class="cb-panel">
           <div class="dk-head"><b>ORIGINAL BATTLE</b><small>自作カードバトル</small></div>
-          <p class="dk-note">自分で作ったカードだけで戦うモード。自作デッキ（コスト15以内・UR と SSR は1枚まで）か、持っている自作カードからランダム5枚で戦います。敵も自作カードから選ばれます。自作カードの能力（タイプ・わざ・とくせいの効果）はカードを作ったときにランダムで決まり、わざととくせいの名前は自分で付けられます。勝ち負けのコインは同じですが、ランクと経験値には入りません。</p>
+          <p class="dk-note">自分で作ったカードで戦う、カードゲームのルールのモード。デッキはヒーロー5枚（コスト15以内・UR と SSR は1枚まで）＋アイテムカード（10枚まで）。勝ち負けのコインは同じですが、ランクと経験値には入りません。</p>
+          <ul class="bt-rules tc-rules">
+            <li>山札をシャッフルして<b>5枚引く</b>。手札のヒーローを1体バトル場に出してスタート（先攻・後攻はコイントス）</li>
+            <li>自分の番のはじめにカードを<b>1枚引く</b>。ヒーローは控えに4体まで出せる</li>
+            <li><b>エネルギー</b>は1ターンに1回、好きなヒーロー（控えも）に1つ付けられる</li>
+            <li><b>こうげき</b>はエネルギー1つ、<b>わざ</b>はカードごとの数が必要（付けたエネルギーはなくならない。回復・守りのわざだけ使うとトラッシュ）。攻撃すると番が終わる</li>
+            <li><b>アイテム</b>は手札から何枚でも使える。<b>にげる</b>はエネルギーをトラッシュして控えと入れ替え</li>
+            <li>相手のヒーローをたおすと<b>1ポイント</b>（SSR・UR は<b>2ポイント</b>）。<b>先に3ポイント</b>取るか、相手の場のヒーローがいなくなったら勝ち！</li>
+            <li>弱点のタイプ（力→技→速→力）で攻撃するとダメージ1.5倍。先攻の最初の番は攻撃できない</li>
+          </ul>
           <div class="dk-head"><span class="dk-tabs" id="cdkTabs" role="tablist"></span></div>
           <div class="dk-row" id="cdkRow"></div>
           <div class="dk-caps" id="cdkCaps"></div>
@@ -1272,7 +1328,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
         </div>
         <div class="on-panel">
           <div class="dk-head"><b>ONLINE BATTLE</b><small>リアルタイムでほかの人と対戦</small></div>
-          <p class="dk-note">片方が「部屋を作る」と<b>ルームコード</b>が出るので、相手に伝えよう。相手がそのコードで「参加する」と、同時に対戦が始まります。お互いが自分の番に行動を選び、両方そろうとターンが進みます。相手には「あなたの名前」が表示されます。コイン・BP・経験値は増減しません。</p>
+          <p class="dk-note">片方が「部屋を作る」と<b>ルームコード</b>が出るので、相手に伝えよう。相手がそのコードで「参加する」と、同時に対戦が始まります。お互いが自分の番に行動を選び、両方そろうとターンが進みます。相手には「あなたの名前」が表示されます。<b>自作カードの部屋は、自作カードバトルと同じカードゲームのルール</b>で、交代で1人ずつ番をすすめます。コイン・BP・経験値は増減しません。</p>
           <div class="fr-row"><label for="frNick">あなたの名前</label><input type="text" id="frNick" maxlength="12" placeholder="なまえ"></div>
           <div class="dk-btns"><button type="button" class="btn-main" id="onHostStd">デッキで部屋を作る</button><button type="button" class="ghost" id="onHostCus">自作カードで部屋を作る</button></div>
           <div class="on-room" id="onRoom" hidden><small>ルームコード</small><b id="onCode">-----</b><span id="onRoomInfo">相手を待っています…</span><button type="button" class="ghost" id="onCancel">やめる</button></div>
@@ -1296,6 +1352,28 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
         <p class="bt-skinfo" id="btSkillInfo"></p>
         <div class="bt-benchhead" id="btBenchHead">ひかえ</div>
         <div class="bt-bench" id="btPBench"></div>
+      </div>
+      <div class="bt-arena tc-arena" id="tcArena" hidden>
+        <div class="bt-bar"><b class="bt-turn" id="tcTurn">SETUP</b><span class="tc-who" id="tcWho"></span><span class="bt-net" id="tcNet" hidden></span><button type="button" class="ghost bt-giveup" id="tcGiveUp">降参</button></div>
+        <div class="bt-field tc-field">
+          <div class="tc-meta foe" id="tcFMeta"></div>
+          <div class="tc-bench foe" id="tcFBench"></div>
+          <div class="bt-act foe" id="tcFAct"></div>
+          <div class="bt-log" id="tcLog" role="status" aria-live="polite"></div>
+          <div class="bt-act me" id="tcPAct"></div>
+          <div class="tc-bench me" id="tcPBench"></div>
+          <div class="tc-meta me" id="tcPMeta"></div>
+        </div>
+        <p class="tc-hint" id="tcHint"></p>
+        <div class="bt-cmds tc-cmds">
+          <button type="button" class="bt-cmd atk" id="tcAtk"><b>こうげき</b><small>⚡1</small></button>
+          <button type="button" class="bt-cmd sk" id="tcSkill"><b>わざ</b><small></small></button>
+          <button type="button" class="bt-cmd en" id="tcEnergy"><b>エネルギー</b><small>1ターン1回</small></button>
+          <button type="button" class="bt-cmd sw" id="tcRetreat"><b>にげる</b><small></small></button>
+          <button type="button" class="bt-cmd end" id="tcEnd"><b>番を終える</b><small>END</small></button>
+        </div>
+        <div class="bt-benchhead">手札<small class="tc-deckinfo" id="tcDeckInfo"></small></div>
+        <div class="tc-hand" id="tcHand"></div>
       </div>
     </div>
   </section>
@@ -1366,6 +1444,11 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
       <div class="dk-sec">CARDS<small>タップで入れる</small></div>
       <div class="dk-filter" id="dkFilter" role="tablist"></div>
       <div class="dk-grid" id="dkGrid"></div>
+      <div id="dkItemsWrap" hidden>
+        <div class="dk-sec">ITEMS<small>アイテムカード（10枚まで・タップで入れる／外す）</small></div>
+        <p class="dk-note">アイテムはデッキに入れなくても戦えます。山札にまぜて、引いたら手札から使えます。</p>
+        <div class="dk-grid" id="dkItems"></div>
+      </div>
     </div>
   </section>
 
@@ -1387,12 +1470,13 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
           <div class="hint">プレビュー</div>
         </div>
         <form class="fields" id="mkForm" novalidate>
+          <div class="mk-kind" id="mkKind" role="tablist"><button type="button" data-k="hero" class="sel">ヒーローカード</button><button type="button" data-k="item">アイテムカード</button></div>
           <label class="drop" id="mkDrop" for="mkFile">画像をえらぶ・ここにドロップ
             <small id="mkFileName">JPG / PNG / GIF など。カードの形（縦長）に合わせて自動で切り抜きます</small>
             <input type="file" id="mkFile" accept="image/*">
           </label>
           <div class="row2">
-            <div class="field"><label for="mkName">ヒーロー名（英語）</label><input type="text" id="mkName" maxlength="22" placeholder="Captain Yokohama"></div>
+            <div class="field"><label for="mkName" id="mkNameLbl">ヒーロー名（英語）</label><input type="text" id="mkName" maxlength="22" placeholder="Captain Yokohama"></div>
             <div class="field"><label for="mkKana">よみ・サブタイトル</label><input type="text" id="mkKana" maxlength="20" placeholder="キャプテン・ヨコハマ"></div>
           </div>
           <div class="row2">
@@ -1402,6 +1486,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
             <div class="field"><label for="mkHue">カードの色</label><input type="range" id="mkHue" min="0" max="359" value="210"></div>
           </div>
           <div class="field"><label for="mkFlavor">説明文</label><textarea id="mkFlavor" maxlength="60" placeholder="港の風を味方にして街を守る。"></textarea></div>
+          <fieldset class="ab-set" id="mkItem" hidden><legend>アイテムの効果（自作カードバトルで手札から使う）</legend><div class="it-choose" id="mkItChoose"></div><p class="ab-note" id="mkItInfo"></p></fieldset>
           <fieldset class="ab-set" id="mkAb"><legend>バトルの能力（自作カードバトル用・効果はランダム）</legend></fieldset>
           <div class="row2">
             <div class="field"><label for="mkPack">入れるガチャ</label><select id="mkPack"></select></div>
@@ -1409,7 +1494,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
           </div>
           <div class="actions">
             <button type="submit" class="btn-main" id="mkAdd" disabled>ADD TO PACK!</button>
-            <span class="maker-msg" id="mkMsg" role="status">画像とヒーロー名を入れると追加できます。</span>
+            <span class="maker-msg" id="mkMsg" role="status">画像と名前を入れると追加できます。</span>
           </div>
         </form>
       </div>
@@ -1608,7 +1693,7 @@ function load(){
     if(p.cloud&&typeof p.cloud.code==="string")o.cloud={code:p.cloud.code.slice(0,6),sig:p.cloud.sig&&typeof p.cloud.sig==="object"?p.cloud.sig:{},metaSig:String(p.cloud.metaSig||"")};
     if(p.friend&&typeof p.friend==="object"){o.friend={from:String(p.friend.from||"").slice(0,12),uid:String(p.friend.uid||"").slice(0,40)};if(typeof p.friend.code==="string")o.friend.code=p.friend.code.slice(0,6);o.friend.ver=Math.max(0,Number(p.friend.ver)||0)}return o});
   s.custom=s.custom.filter(c=>c&&typeof c.id==="string"&&typeof c.img==="string"&&/^data:image\/(jpeg|png|webp|gif);base64,[A-Za-z0-9+/=]+$/.test(c.img)&&ORDER.includes(c.r))
-    .map(c=>({id:c.id,r:c.r,name:String(c.name||"").slice(0,22),kana:String(c.kana||"").slice(0,20),flavor:String(c.flavor||"").slice(0,60),h:Number(c.h)||0,shape:"shield",img:c.img,m:"?",pack:typeof c.pack==="string"?c.pack:"",bt:cleanBt(c.bt),...(c.friend?{friend:true}:{})}));
+    .map(c=>({id:c.id,r:c.r,name:String(c.name||"").slice(0,22),kana:String(c.kana||"").slice(0,20),flavor:String(c.flavor||"").slice(0,60),h:Number(c.h)||0,shape:"shield",img:c.img,m:"?",pack:typeof c.pack==="string"?c.pack:"",bt:c.kind==="item"?null:cleanBt(c.bt),...(c.friend?{friend:true}:{}),...(c.kind==="item"?{kind:"item",it:/^[a-z]{2,12}$/.test(c.it)?c.it:"potion"}:{})}));
   if(!s.pityBy||typeof s.pityBy!=="object")s.pityBy={};
   // migrate the single "MY PACK" from the previous version
   if(!s.packs.some(p=>!p.friend)){
@@ -1645,6 +1730,8 @@ function load(){
   if(!Array.isArray(s.cdecks))s.cdecks=[];
   s.cdecks=[0,1,2].map(k=>Array.isArray(s.cdecks[k])?s.cdecks[k].filter(x=>typeof x==="string").map(x=>x.slice(0,40)).filter((x,i,a)=>a.indexOf(x)===i).slice(0,5):[]);
   s.cdeckSel=num(s.cdeckSel,0,0,2);
+  if(!Array.isArray(s.citems))s.citems=[];
+  s.citems=[0,1,2].map(k=>Array.isArray(s.citems[k])?s.citems[k].filter(x=>typeof x==="string").map(x=>x.slice(0,40)).filter((x,i,a)=>a.indexOf(x)===i).slice(0,10):[]);
   s.nick=typeof s.nick==="string"?s.nick.slice(0,12):"";
   if(s.cloudAuth&&typeof s.cloudAuth==="object"&&typeof s.cloudAuth.refresh==="string")s.cloudAuth={uid:String(s.cloudAuth.uid||""),refresh:s.cloudAuth.refresh,token:String(s.cloudAuth.token||""),exp:num(s.cloudAuth.exp,0,0,9e15)};else s.cloudAuth=null;
   {const L=s.lv&&typeof s.lv==="object"&&!Array.isArray(s.lv)?s.lv:{};s.lv={};Object.keys(L).slice(0,500).forEach(k=>{const e=L[k];if(e&&typeof e==="object")s.lv[String(k).slice(0,60)]={lv:num(e.lv,1,1,100),xp:num(e.xp,0,0,1e6)}})}
@@ -1700,10 +1787,27 @@ function drawOne(minSR,pool,bid){
   if(r==="PU")return pu;
   const list=pool[r];return list[Math.floor(Math.random()*list.length)];
 }
+/* ---- item cards (original cards only): used from the hand in original-card battles ---- */
+var CUSTOM_ITEMS={
+ potion:{name:"回復ドリンク",desc:"バトル場のヒーローのHPを30%回復する"},
+ team:{name:"みんなの救急箱",desc:"自分のヒーロー全員（控えも）のHPを15%回復する"},
+ draw:{name:"作戦ノート",desc:"山札からカードを2枚引く"},
+ search:{name:"ヒーロー召集",desc:"山札からヒーローを1枚、手札に加える"},
+ battery:{name:"パワーバッテリー",desc:"自分のヒーロー1体にエネルギーを1つ付ける（1ターン1回のエネルギーとは別）"},
+ swap:{name:"テレポート装置",desc:"バトル場のヒーローと控えのヒーローを入れ替える（エネルギーはいらない）"},
+ gust:{name:"おびき寄せの笛",desc:"相手の控えのヒーローを1体えらんで、相手のバトル場に引っぱり出す"},
+ boost:{name:"ブーストドリンク",desc:"この番、バトル場のヒーローの攻撃のダメージ1.5倍"},
+ shield:{name:"防御シールド",desc:"次の相手の番、バトル場のヒーローが受けるダメージ50%カット"},
+ cure:{name:"万能薬",desc:"バトル場のヒーローのしびれ・やけど・攻撃力ダウンを治す"},
+ breaker:{name:"エネルギーブレイカー",desc:"相手のバトル場のヒーローのエネルギーを1つトラッシュする"},
+};
+const isItem=c=>!!c&&c.kind==="item";
+function itemOf(c){return CUSTOM_ITEMS[c&&c.it]||CUSTOM_ITEMS.potion}
+function itemHTML(c){const e=itemOf(c);return `<div class="bt-abil it-abil"><div class="bt-abil-row"><span class="it-badge">ITEM</span><b>アイテムカード</b><span>自作カードバトル用</span></div><div class="bt-abil-sk"><small>効果 ・ 手札から使う</small><b>${esc(e.name)}</b><span>${esc(e.desc)}</span></div></div>`}
 function cardEl(c,{flipped=false,isNew=false,sfx=false}={}){
   const d=document.createElement("div");
   d.className="card"+(flipped?" flipped":"");d.dataset.r=c.r;d.dataset.shape=c.shape;d.style.setProperty("--h",c.h);
-  const tag=c.unlock?`<span class="custom-tag msn">${stdNoText(c)} UNLOCK</span>`:c.reward?`<span class="custom-tag msn">${stdNoText(c)} MISSION</span>`:c.shop?`<span class="custom-tag ltd">${stdNoText(c)} LIMITED</span>`:c.img?`<span class="custom-tag">ORIGINAL</span>`:`<span class="no">${stdNoText(c)}</span>`;
+  const tag=c.unlock?`<span class="custom-tag msn">${stdNoText(c)} UNLOCK</span>`:c.reward?`<span class="custom-tag msn">${stdNoText(c)} MISSION</span>`:c.shop?`<span class="custom-tag ltd">${stdNoText(c)} LIMITED</span>`:isItem(c)?`<span class="custom-tag item">ITEM</span>`:c.img?`<span class="custom-tag">ORIGINAL</span>`:`<span class="no">${stdNoText(c)}</span>`;
   const art=(c.img||c.photo)?`<div class="art${c.photo?" photo":""}"></div>`:((c.look||(typeof c.id==="number"&&LOOKS[c.id]))?`<div class="art hero">${heroSVG(c.look||LOOKS[c.id],c.h)}</div>`:`<div class="emblem"><span>${c.m}</span></div>`);
   d.innerHTML=`<div class="inner"><div class="face back"></div><div class="face front"><div class="top"><span class="rar">${c.r}</span>${tag}</div>${art}<div class="name"><b>${esc(c.name||"???")}</b><small>${esc(c.kana||"")}</small></div></div></div>${sfx&&SFX[c.r]?`<span class="sfx">${SFX[c.r]}</span>`:""}${isNew?'<span class="new">NEW!</span>':""}`;
   if(c.img||c.photo)d.querySelector(".art").style.backgroundImage=`url("${c.img||c.photo}")`;
@@ -2517,7 +2621,7 @@ function drawDetail(){
     <button type="button" class="ghost fav-detail ${isFav(c)?"on":""}" id="dFav">${isFav(c)?"★ お気に入り登録中":"☆ お気に入りに登録"}</button>
     ${detailMode==="cards"?lvFuseHTML(c):""}
     ${btAbilityHTML(c,detailMode!=="cards")}
-    ${c.img&&detailMode==="cards"?`<button type="button" class="ghost" id="dAb">わざ・とくせいの名前を変える</button>`:""}
+    ${c.img&&!isItem(c)&&detailMode==="cards"?`<button type="button" class="ghost" id="dAb">わざ・とくせいの名前を変える</button>`:""}
     <div class="nav"><button type="button" class="ghost" id="dPrev">← 前のカード</button><span style="align-self:center;font-weight:700;font-variant-numeric:tabular-nums">${detailIdx+1} / ${detailList.length}</span><button type="button" class="ghost" id="dNext">次のカード →</button></div>`;
   const close=document.createElement("button");close.type="button";close.className="close";close.textContent="×";close.setAttribute("aria-label","閉じる");close.onclick=closeDetail;
   box.append(close,cw,t);d.appendChild(box);
@@ -2849,7 +2953,7 @@ function renderMine(){
           sel.value=c.pack;sel.onchange=()=>{c.pack=sel.value;save();render()};
           tools.appendChild(sel);
         }
-        const ab=document.createElement("button");ab.className="ghost";ab.textContent="能力";ab.type="button";ab.onclick=()=>abOpen(c);tools.appendChild(ab);
+        if(!isItem(c)){const ab=document.createElement("button");ab.className="ghost";ab.textContent="能力";ab.type="button";ab.onclick=()=>abOpen(c);tools.appendChild(ab)}
         const del=document.createElement("button");del.className="ghost";del.textContent="削除";del.type="button";
         armed(del,"削除","もう一度押すと削除",()=>{S.custom=S.custom.filter(x=>x.id!==c.id);delete S.owned[c.id];save();render()});
         tools.appendChild(del);s.appendChild(tools);g.appendChild(s);
@@ -2936,7 +3040,20 @@ function renderShop(){
 $("tab-home").onclick=()=>tab("home");$("tab-gacha").onclick=()=>tab("gacha");$("tab-dex").onclick=()=>{dexSel=null;closeDetail();dexStale=true;tab("dex")};$("tab-make").onclick=()=>tab("make");$("tab-shop").onclick=()=>tab("shop");$("tab-games").onclick=()=>tab("games");
 
 /* ---- card maker ---- */
-let mkImg=null;
+let mkImg=null,mkK="hero",mkIt=""; // mkK: making a hero card or an item card; mkIt: chosen item effect ("" = random)
+function mkKindSet(k){
+  mkK=k==="item"?"item":"hero";
+  $("mkKind").querySelectorAll("button").forEach(b=>b.classList.toggle("sel",b.dataset.k===mkK));
+  $("mkItem").hidden=mkK!=="item";$("mkAb").hidden=mkK==="item";
+  $("mkNameLbl").textContent=mkK==="item"?"アイテム名（英語）":"ヒーロー名（英語）";
+  $("mkName").placeholder=mkK==="item"?"Mega Potion":"Captain Yokohama";
+  mkItDraw();updatePreview();
+}
+function mkItDraw(){
+  const box=$("mkItChoose");box.innerHTML="";
+  [["","？ランダム"]].concat(Object.keys(CUSTOM_ITEMS).map(k=>[k,CUSTOM_ITEMS[k].name])).forEach(([k,n])=>{const b=document.createElement("button");b.type="button";b.textContent=n;b.classList.toggle("sel",mkIt===k);b.onclick=()=>{mkIt=k;sfx("flip");mkItDraw();updatePreview()};box.appendChild(b)});
+  $("mkItInfo").textContent=mkIt?CUSTOM_ITEMS[mkIt].desc:"効果はカードを追加したときにランダムで決まります。";
+}
 function fillPackSelect(){
   const sel=$("mkPack"),cur=sel.value;sel.innerHTML="";
   S.packs.filter(p=>!p.friend).forEach(p=>{const o=document.createElement("option");o.value=p.id;o.textContent=pname(p);sel.appendChild(o)});
@@ -2947,7 +3064,7 @@ function fillPackSelect(){
 }
 function syncNewField(){$("mkNewWrap").hidden=$("mkPack").value!=="__new";updatePreview()}
 $("mkPack").addEventListener("change",syncNewField);
-function draft(){return{id:"preview",r:$("mkRar").value,name:$("mkName").value.trim()||"Your Hero",kana:$("mkKana").value.trim(),flavor:$("mkFlavor").value.trim(),h:+$("mkHue").value,shape:"shield",img:mkImg,m:"?"}}
+function draft(){return{id:"preview",r:$("mkRar").value,name:$("mkName").value.trim()||"Your Hero",kana:$("mkKana").value.trim(),flavor:$("mkFlavor").value.trim(),h:+$("mkHue").value,shape:"shield",img:mkImg,m:"?",...(mkK==="item"?{kind:"item",it:mkIt||"potion"}:{})}}
 function updatePreview(){
   const d=draft();
   const box=$("mkPreview");box.innerHTML="";
@@ -2969,7 +3086,7 @@ function loadImage(file){
       ctx.drawImage(img,(W-w)/2,(H-h)/2,w,h);
       mkImg=cv.toDataURL("image/jpeg",0.82);
       $("mkFileName").textContent=file.name;
-      $("mkMsg").textContent=$("mkName").value.trim()?"準備OK！":"ヒーロー名を入れてください。";
+      $("mkMsg").textContent=$("mkName").value.trim()?"準備OK！":"名前を入れてください。";
       updatePreview();
     };
     img.onerror=()=>{$("mkMsg").textContent="この画像は読み込めませんでした。別の画像を試してください。"};
@@ -2978,6 +3095,7 @@ function loadImage(file){
   reader.readAsDataURL(file);
 }
 $("mkFile").onchange=e=>loadImage(e.target.files[0]);
+$("mkKind").addEventListener("click",e=>{const b=e.target.closest("button");if(b){mkKindSet(b.dataset.k);sfx("flip")}});mkItDraw();
 const drop=$("mkDrop");
 ["dragenter","dragover"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add("over")}));
 ["dragleave","drop"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove("over")}));
@@ -2989,7 +3107,9 @@ $("mkForm").addEventListener("submit",e=>{
   if(!mkImg||!$("mkName").value.trim())return;
   let packId=$("mkPack").value,made=null;
   if(packId==="__new"){made=createPack($("mkNewPack").value);packId=made.id}
-  const c=draft();c.id=newId("c");c.shape="shield";c.pack=packId;c.bt=Object.assign(btRandomBt(),abT.mk!==""&&abT.mk!=null?{t:+abT.mk}:{},{skn:$("mkSkn").value.trim().slice(0,14),psn:$("mkPsn").value.trim().slice(0,14)});
+  const c=draft();c.id=newId("c");c.shape="shield";c.pack=packId;
+  if(mkK==="item"){c.kind="item";c.it=mkIt||Object.keys(CUSTOM_ITEMS)[Math.floor(Math.random()*Object.keys(CUSTOM_ITEMS).length)]}
+  else c.bt=Object.assign(btRandomBt(),abT.mk!==""&&abT.mk!=null?{t:+abT.mk}:{},{skn:$("mkSkn").value.trim().slice(0,14),psn:$("mkPsn").value.trim().slice(0,14)});
   S.custom.push(c);
   if(!save()){S.custom.pop();if(made)S.packs.pop();$("mkMsg").textContent="保存容量がいっぱいです。作ったカードをいくつか削除してから追加してください。";return}
   render();fillPackSelect();$("mkPack").value=packId;syncNewField();$("mkNewPack").value="";
@@ -3614,7 +3734,7 @@ var BT_ABIL={ // var: may be read by early renders on startup
 function btHash(str){let h=2166136261;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
 // only STAR LIGHT cards have battle abilities; original (custom) cards have none
 function btStdOK(c){return !!(c&&!c.img&&BT_ABIL&&BT_ABIL[c.name])}   // STAR LIGHT card with a battle ability
-function btHasAbility(c){return !!c&&(btStdOK(c)||!!c.img)}    // original cards have abilities too (used only in custom battles)
+function btHasAbility(c){return !!c&&!isItem(c)&&(btStdOK(c)||!!c.img)}    // original cards have abilities too (used only in custom battles)
 // effects you can pick for an original card's skill (わざ) and passive (とくせい); the names are up to you
 const CUSTOM_SKILLS={
  strike:{name:"必殺の一撃",cost:3,desc:"1.7倍ダメージ",fx:[btH(1.7)]},
@@ -3648,7 +3768,7 @@ function btCustomAbil(c){
   const sks=Object.keys(CUSTOM_SKILLS),pss=Object.keys(CUSTOM_PASSIVES);
   const t=[0,1,2].includes(b.t)?b.t:h%3;
   const sk=CUSTOM_SKILLS[b.sk]?b.sk:sks[h%sks.length];
-  const skill=Object.assign({},CUSTOM_SKILLS[sk],{name:(b.skn||"").trim()||CUSTOM_SKILLS[sk].name});
+  const skill=Object.assign({},CUSTOM_SKILLS[sk],{key:sk,name:(b.skn||"").trim()||CUSTOM_SKILLS[sk].name});
   let p=null;
   if(customHasPassive(c.r)){const ps=CUSTOM_PASSIVES[b.ps]?b.ps:pss[(h>>>4)%pss.length];p=Object.assign({},CUSTOM_PASSIVES[ps],{name:(b.psn||"").trim()||CUSTOM_PASSIVES[ps].name})}
   return{t,s:skill,p};
@@ -3747,6 +3867,8 @@ function btProfile(c,lv){
 }
 const btBeats=(a,b)=>(a===0&&b===2)||(a===2&&b===1)||(a===1&&b===0);
 function btAbilityHTML(c,base){
+  if(isItem(c))return itemHTML(c);
+  if(c&&c.img&&typeof tcAbilityHTML==="function")return tcAbilityHTML(c);
   const p=btProfile(c,base?1:undefined);if(!p)return "";
   return `<div class="bt-abil"><div class="bt-abil-row"><span class="bt-type t${p.type}">${BT_TYPES[p.type]}</span><b>${BT_TNAME[p.type]}</b><span>HP ${p.hp}</span><span>ATK ${p.atk}</span><span>SPD ${p.spd}</span></div>
     <div class="bt-abil-sk"><small>わざ ・ チャージ${p.skill.cost}（わざの威力はレベルで変わりません）</small><b>${esc(p.skill.name)}</b><span>${esc(p.skill.desc)}</span></div>
@@ -3757,7 +3879,8 @@ let BT=null,BT_FAST=false;
 const btWait=ms=>BT_FAST?Promise.resolve():new Promise(r=>setTimeout(r,ms));
 // battles use STAR LIGHT cards only (gacha, shop and mission cards) - original cards are left out
 function btPool(){return CARDS.concat(SHOP_CARDS,REWARD_CARDS).filter(c=>S.owned[c.id]&&btStdOK(c))}
-function btCustomPool(){return S.custom.filter(c=>S.owned[c.id])} // custom battles: your own cards only
+function btCustomPool(){return S.custom.filter(c=>S.owned[c.id]&&!isItem(c))}
+function btItemPool(){return S.custom.filter(c=>S.owned[c.id]&&isItem(c))} // custom battles: your own cards only
 function btMake(c,side,lv){
   const p=btProfile(c,lv);
   // skills (わざ) do not grow with level: their damage uses the Lv 1 attack
@@ -4036,6 +4159,8 @@ function renderBattle(){
   if(btSeasonCheck())toast("新しいシーズンが始まりました！ ランクがリセットされました");
   $("btRecord").textContent=`RANK ${btRankOf(rec.bp)} ・ ${rec.w}勝 ${rec.l}敗 ${rec.d}分`;
   $("btRankBox").innerHTML=btRankHTML();
+  if(TC&&!TC.ended){$("btIntro").hidden=true;$("btArena").hidden=true;$("tcArena").hidden=false;tcRender();return}
+  $("tcArena").hidden=true;
   if(BT&&!BT.over){$("btIntro").hidden=true;$("btArena").hidden=false;btDraw();return}
   $("btIntro").hidden=false;$("btArena").hidden=true;
   const n=btPool().length;
@@ -4102,7 +4227,8 @@ function cdkRender(){
   $("cdkCaps").innerHTML=dkCapsHTML(list);
   const ok=dkValid(list),cost=dkCost(list);
   $("btStartCDeck").disabled=!ok;
-  $("cdkNote").textContent=ok?`この自作デッキで戦えます！（コスト ${cost}/${DK_MAXCOST}）`:cost>DK_MAXCOST?`コストオーバー！（${cost}/${DK_MAXCOST}）`:list.length===DK_SIZE?"UR と SSR はそれぞれ1枚までです。":list.length?`あと ${DK_SIZE-list.length} 枚入れるとバトルできます。`:"「DECK」から、自作カードを5枚（コスト15以内）えらんで自作デッキを作ろう。";
+  const nIt=dkItems(S.cdeckSel).length;
+  $("cdkNote").textContent=ok?`この自作デッキで戦えます！（コスト ${cost}/${DK_MAXCOST} ・ アイテム ${nIt}/${DK_ITEMS}枚）`:cost>DK_MAXCOST?`コストオーバー！（${cost}/${DK_MAXCOST}）`:list.length===DK_SIZE?"UR と SSR はそれぞれ1枚までです。":list.length?`あと ${DK_SIZE-list.length} 枚入れるとバトルできます。`:"「DECK」から、自作カードを5枚（コスト15以内）えらんで自作デッキを作ろう。";
 }
 let dkFilterR="ALL";
 function dkOpen(k,book){dkBook=book==="custom"?"custom":"std";dkSetSel(dkBook,k);dkEditK=k;dkFilterR="ALL";tab("deck");window.scrollTo({top:0,behavior:"smooth"})}
@@ -4171,6 +4297,33 @@ function dkDrawEdit(){
     w.appendChild(more);
     g.appendChild(w);
   });
+  dkItemsDraw();
+}
+// items for an original-card deck (separate from the 5 heroes; no cost)
+const DK_ITEMS=10;
+function dkItems(k){return (S.citems[k]||[]).map(id=>S.custom.find(c=>c.id===id)).filter(c=>c&&isItem(c)&&S.owned[c.id])}
+function dkItemsDraw(){
+  const wrap=$("dkItemsWrap");wrap.hidden=dkBook!=="custom";if(wrap.hidden)return;
+  S.citems[dkEditK]=dkItems(dkEditK).map(c=>c.id);
+  const inList=dkItems(dkEditK),pool=btItemPool();
+  wrap.querySelector(".dk-sec small").textContent=`アイテムカード ${inList.length}/${DK_ITEMS}（タップで入れる／外す）`;
+  const g=$("dkItems");g.innerHTML="";
+  if(!pool.length){g.innerHTML=`<div class="empty">アイテムカードをまだ持っていません。MAKE で「アイテムカード」を作って、自分のガチャで引いてみよう！</div>`;return}
+  pool.forEach(c=>{
+    const on=inList.includes(c);
+    const w=document.createElement("div");w.className="dk-card"+(on?" in":"")+(!on&&inList.length>=DK_ITEMS?" off":"");
+    const b=document.createElement("button");b.type="button";b.className="dk-pick";b.setAttribute("aria-label",`${c.name} を${on?"外す":"入れる"}`);
+    b.appendChild(cardEl(c,{flipped:true}));if(on)b.insertAdjacentHTML("beforeend",`<span class="dk-in">IN</span>`);
+    b.onclick=()=>{
+      const ids=S.citems[dkEditK],at=ids.indexOf(c.id);
+      if(at>=0){ids.splice(at,1);sfx("tink")}else{if(ids.length>=DK_ITEMS){toast(`アイテムは${DK_ITEMS}枚までです`);return}ids.push(c.id);sfx("flip")}
+      save();dkItemsDraw();
+    };
+    w.appendChild(b);
+    w.insertAdjacentHTML("beforeend",`<div class="dk-st"><span class="it-badge">ITEM</span><span><b>${esc(itemOf(c).name)}</b></span></div>`);
+    const more=document.createElement("button");more.type="button";more.className="dk-more";more.textContent="詳しく";more.onclick=()=>{toast(`${itemOf(c).name}：${itemOf(c).desc}`)};
+    w.appendChild(more);g.appendChild(w);
+  });
 }
 function dkInfo(c){
   const box=$("btInfoBox");box.innerHTML="";
@@ -4204,6 +4357,7 @@ $("dkAuto").onclick=dkAuto;
 $("dkClear").onclick=()=>{dkArr(dkBook)[dkEditK]=[];save();dkDrawEdit()};
 
 function btStart(mode){
+  if(mode==="custom"||mode==="cdeck")return tcStart(mode); // original cards: card-game rules
   mode=["deck","custom","cdeck"].includes(mode)?mode:"random";
   const isCus=mode==="custom"||mode==="cdeck";
   const pool=isCus?btCustomPool():btPool();
@@ -4275,6 +4429,661 @@ $("rkClose").onclick=btHideRanks;
 $("rkModal").addEventListener("click",e=>{if(e.target===$("rkModal"))btHideRanks()});
 $("btStartDeck").onclick=()=>btStart("deck");
 $("btStartCustom").onclick=()=>btStart("custom");
+
+/* ==== ORIGINAL BATTLE (card-game rules) ====
+   Your deck (5 heroes + items) is shuffled, you draw a hand, and play turn by turn:
+   draw 1 → put heroes on the bench, attach ONE energy to any hero, use items, retreat → attack (ends the turn).
+   Knock out a hero to score points (SSR / UR = 2); the first to 3 points wins.
+   The rules engine (tcAct) is plain data in, plain data out, so online play can run it on the host and send the state. */
+const TC_WIN=3,TC_BENCH=4,TC_HAND0=5,TC_MAXTURN=60,TC_WEAK=1.5;
+const TC_PRIZE={N:1,R:1,SR:1,SSR:2,UR:2};
+const TC_RETREAT={N:1,R:1,SR:1,SSR:2,UR:2};
+const TC_PDESC={
+ first:"わざに必要なエネルギーが1つ少ない",
+ charge:"自分の番のはじめ、バトル場にいるとエネルギーが1つ自動で付く",
+ regen:"自分の番のはじめ、バトル場にいるとHPが5%回復する",
+ ambush:"バトル場に出て最初の攻撃は1.5倍",
+ immune:"攻撃力ダウン・しびれ・やけどにならない",
+};
+const TC_SDESC={
+ jam:"1.2倍ダメージ＋相手のバトル場のヒーローのエネルギーを1つトラッシュ",
+ stun:"1.0倍ダメージ＋60%の確率で相手をしびれさせる（相手は次の番、攻撃とにげるができない）",
+ burn:"1.0倍ダメージ＋やけど（やけどしたヒーローの番の終わりに、最大HPの8%ダメージ・3回）",
+ guard:"相手の番2回のあいだ、受けるダメージ50%カット",
+ counter:"相手の番3回のあいだ、受けたダメージの50%を返す",
+ power:"0.8倍ダメージ＋このあと2回の攻撃は攻撃力40%アップ",
+ weaken:"1.2倍ダメージ＋相手の次の2回の攻撃は攻撃力30%ダウン",
+};
+var TC=null; // the battle on screen: {G, me, online, cards, info, busy, mode}
+var TCU={sel:null}; // what the player is choosing right now (energy target, retreat target, item target, ...)
+const tcFoe=s=>s==="A"?"B":"A";
+const tcWait=ms=>BT_FAST?Promise.resolve():new Promise(r=>setTimeout(r,ms));
+// static data of one card in the battle (same on both sides of an online match)
+function tcInfo(uid){
+  if(TC.info[uid])return TC.info[uid];
+  const c=TC.cards[uid];
+  if(isItem(c)){const e=itemOf(c);return TC.info[uid]={uid,c,item:true,it:CUSTOM_ITEMS[c.it]?c.it:"potion",name:e.name,desc:e.desc}}
+  const p=btProfile(c,1),pk=p.passive&&p.passive.k;
+  const skey=p.skill.key||"";
+  const supp=!p.skill.fx.some(f=>f.k==="hit");
+  let sdesc=TC_SDESC[skey]||p.skill.desc;if(supp)sdesc+="（使うとエネルギーを"+p.skill.cost+"つトラッシュ）";
+  const passive=p.passive?Object.assign({},p.passive,{desc:TC_PDESC[pk]||p.passive.desc}):null;
+  return TC.info[uid]={uid,c,item:false,type:p.type,hp:p.hp,atk:p.atk,skill:Object.assign({},p.skill,{desc:sdesc}),supp,passive,
+    cost:Math.max(1,p.skill.cost-(pk==="first"?1:0)),ret:Math.max(0,TC_RETREAT[c.r]-(p.type===1?1:0)),prize:TC_PRIZE[c.r]||1};
+}
+const tcPk=(u,k)=>{const p=tcInfo(u.uid).passive;return p&&p.k===k?p:null};
+function tcUnit(G,uid){const f=tcInfo(uid);return{uid,hp:f.hp,maxHp:f.hp,atk:f.atk,en:0,mods:[],stun:false,dot:null,gutsUsed:false,ambush:false,inTurn:G.turn}}
+// names in the log: online games name both players (the same text is shown on both screens)
+function tcName(G,s,u){return `${TC.online?esc(G[s].name)+"の ":s===TC.me?"":"敵の "}${esc(tcInfo(u.uid).c.name)}`}
+function tcWho(G,s){return TC.online?esc(G[s].name):s===TC.me?"あなた":"敵"}
+function tcPre(G,s){return TC.online||s!==TC.me?esc(G[s].name)+"：":""}
+function tcLog(G,m){G.log.unshift(m);G.log.length=Math.min(G.log.length,5)}
+function tcEv(G,o){G.ev.push(o)}
+function tcDrawCards(G,s,n){
+  const P=G[s];let got=0;
+  for(let i=0;i<n;i++){if(!P.deck.length)break;P.hand.push(P.deck.shift());got++}
+  return got;
+}
+// a new battle: decks are lists of uids (heroes and items); TC.cards must already hold the card for every uid
+function tcNewGame(aDeck,bDeck,aName,bName){
+  const side=(deck,name)=>{
+    const d=shuffled(deck);
+    let hand=d.slice(0,TC_HAND0),rest=d.slice(TC_HAND0);
+    if(!hand.some(u=>!tcInfo(u).item)){ // always start with at least one hero in hand
+      const hi=rest.findIndex(u=>!tcInfo(u).item);
+      if(hi>=0){const k=Math.floor(Math.random()*hand.length);[hand[k],rest[hi]]=[rest[hi],hand[k]];rest=shuffled(rest)}
+    }
+    return{name,deck:rest,hand,act:null,bench:[],disc:[],pts:0,en:false,ret:false};
+  };
+  return{turn:0,cur:null,first:null,phase:"setup",winner:null,need:{A:false,B:false},log:[],ev:[],A:side(aDeck,aName),B:side(bDeck,bName)};
+}
+function tcStartTurn(G,s){
+  G.cur=s;G.turn++;G.phase="main";
+  const P=G[s];P.en=false;P.ret=false;
+  [P.act].concat(P.bench).forEach(u=>{if(!u)return;u.mods.forEach(m=>m.t--);u.mods=u.mods.filter(m=>m.t>0)});
+  if(tcDrawCards(G,s,1))tcLog(G,`${tcWho(G,s)}の番！ カードを1枚引いた`);
+  else tcLog(G,`${tcWho(G,s)}の番！ 山札がないので引けない…`);
+  const a=P.act;
+  if(a){
+    const rg=tcPk(a,"regen");if(rg&&a.hp<a.maxHp){a.hp=Math.min(a.maxHp,a.hp+Math.round(a.maxHp*rg.v));tcEv(G,{s,uid:a.uid,txt:"REGEN",cls:"heal"})}
+    if(tcPk(a,"charge")){a.en++;tcLog(G,`${tcName(G,s,a)} にエネルギーが自動で付いた！`);tcEv(G,{s,uid:a.uid,txt:"+⚡",cls:"heal"})}
+  }
+}
+function tcSetActive(G,s,u){G[s].act=u;u.ambush=!!tcPk(u,"ambush")}
+// damage from one hit
+function tcHit(G,s,att,def,m,pierce){
+  const fs=tcFoe(s);
+  if(!att||!def||att.hp<=0||def.hp<=0)return 0;
+  const dg=tcPk(def,"dodge");
+  if(dg&&Math.random()<dg.v){tcLog(G,`${tcName(G,fs,def)} は「${esc(dg.name)}」で攻撃をよけた！`);tcEv(G,{s:fs,uid:def.uid,txt:"MISS",cls:"miss",sfx:"tink"});return 0}
+  const ai=tcInfo(att.uid),di=tcInfo(def.uid);
+  let mul=1;att.mods.forEach(x=>{if(x.k==="buff")mul+=x.v;if(x.k==="weaken")mul-=x.v});
+  const rg=tcPk(att,"rage");if(rg&&att.hp<=att.maxHp*.4)mul+=rg.v;
+  mul=Math.max(.3,mul);
+  if(att.ambush){mul*=tcPk(att,"ambush").v;att.ambush=false}
+  const weak=!pierce&&btBeats(ai.type,di.type);
+  let grd=0;def.mods.forEach(x=>{if(x.k==="guard")grd+=x.v});const tg=tcPk(def,"tough");if(tg)grd+=tg.v;grd=Math.min(.8,grd);
+  let d=Math.max(1,Math.round(att.atk*mul*m*(weak?TC_WEAK:1)*(1-grd)));
+  def.hp-=d;
+  if(def.hp<=0&&tcPk(def,"guts")&&!def.gutsUsed){def.hp=1;def.gutsUsed=true;tcLog(G,`${tcName(G,fs,def)} は「${esc(tcPk(def,"guts").name)}」で踏みとどまった！`)}
+  def.hp=Math.max(0,def.hp);
+  tcEv(G,{s:fs,uid:def.uid,txt:"-"+d,cls:"dmg",sfx:weak?"boom":"crash",hit:true});
+  if(weak)tcEv(G,{s:fs,uid:def.uid,txt:"弱点！",cls:"eff"});
+  const rf=def.mods.find(x=>x.k==="reflect");
+  if(rf&&att.hp>0){const r=Math.max(1,Math.round(d*rf.v));att.hp=Math.max(0,att.hp-r);tcLog(G,`${tcName(G,fs,def)} が ${r} ダメージを跳ね返した！`);tcEv(G,{s,uid:att.uid,txt:"-"+r,cls:"dmg"})}
+  return d;
+}
+function tcUseSkill(G,s,u){
+  const f=tcInfo(u.uid),fs=tcFoe(s),P=G[s];
+  tcLog(G,`<b>${tcName(G,s,u)} のわざ「${esc(f.skill.name)}」！</b>`);tcEv(G,{s,uid:u.uid,cast:true,sfx:"rare"});
+  const team=[P.act].concat(P.bench).filter(x=>x&&x.hp>0);
+  for(const x of f.skill.fx){
+    const foe=G[fs].act;
+    if(x.k==="hit"){for(let i=0;i<x.n;i++){if(!foe||foe.hp<=0)break;tcHit(G,s,u,foe,x.m,x.pierce)}}
+    else if(x.k==="heal"){(x.team?team:[u]).forEach(t=>{t.hp=Math.min(t.maxHp,t.hp+Math.round(t.maxHp*x.v))});tcLog(G,x.team?"味方全員のHPが回復した！":`${tcName(G,s,u)} のHPが回復した！`);tcEv(G,{s,uid:u.uid,txt:"HEAL",cls:"heal",sfx:"up"})}
+    else if(x.k==="buff"){u.mods.push({k:"buff",v:x.v,t:x.turns});tcLog(G,`${tcName(G,s,u)} の攻撃力がアップ！`);tcEv(G,{s,uid:u.uid,txt:"ATK UP",cls:"heal",sfx:"rankup"})}
+    else if(x.k==="guard"){u.mods.push({k:"guard",v:x.v,t:x.turns});tcLog(G,`${tcName(G,s,u)} は守りをかためた！`);tcEv(G,{s,uid:u.uid,txt:"GUARD",cls:"heal",sfx:"tink"})}
+    else if(x.k==="reflect"){u.mods.push({k:"reflect",v:x.v,t:x.turns});tcLog(G,`${tcName(G,s,u)} は反撃の構え！`);tcEv(G,{s,uid:u.uid,txt:"COUNTER",cls:"heal",sfx:"tink"})}
+    else if(foe&&foe.hp>0){
+      if(tcPk(foe,"immune")&&(x.k==="weaken"||x.k==="stun"||x.k==="dot")){tcLog(G,`${tcName(G,fs,foe)} には効かない！`);continue}
+      if(x.k==="weaken"){foe.mods.push({k:"weaken",v:x.v,t:x.turns});tcLog(G,`${tcName(G,fs,foe)} の攻撃力がダウン！`);tcEv(G,{s:fs,uid:foe.uid,txt:"ATK DOWN",cls:"weak"})}
+      else if(x.k==="stun"){if(Math.random()<x.ch){foe.stun=true;tcLog(G,`${tcName(G,fs,foe)} はしびれた！`);tcEv(G,{s:fs,uid:foe.uid,txt:"STUN",cls:"weak",sfx:"thunder"})}else tcLog(G,`${tcName(G,fs,foe)} はしびれなかった`)}
+      else if(x.k==="dot"){foe.dot={v:x.v,t:x.turns};tcLog(G,`${tcName(G,fs,foe)} はやけどした！`);tcEv(G,{s:fs,uid:foe.uid,txt:"BURN",cls:"weak"})}
+      else if(x.k==="drain"){if(foe.en>0){foe.en--;tcLog(G,`${tcName(G,fs,foe)} のエネルギーを1つトラッシュ！`);tcEv(G,{s:fs,uid:foe.uid,txt:"-⚡",cls:"weak"})}}
+    }
+  }
+  if(f.supp)u.en=Math.max(0,u.en-f.skill.cost);
+}
+// knocked-out heroes leave play; the other side scores
+function tcCheckKO(G){
+  let any=false;
+  for(const s of ["A","B"]){
+    const P=G[s],u=P.act;
+    if(u&&u.hp<=0){
+      any=true;const f=tcInfo(u.uid);
+      P.disc.push(u.uid);P.act=null;
+      G[tcFoe(s)].pts+=f.prize;
+      tcLog(G,`${tcName(G,s,u)} はたおれた！ ${tcWho(G,tcFoe(s))}に ${f.prize} ポイント！`);
+      tcEv(G,{s,uid:u.uid,ko:true,sfx:"drop"});
+      if(P.bench.length)G.need[s]=true;
+    }
+  }
+  // win check
+  const out=s=>!G[s].act&&!G[s].bench.length;
+  const wa=G.A.pts>=TC_WIN||out("B"),wb=G.B.pts>=TC_WIN||out("A");
+  if(wa||wb){
+    G.phase="over";
+    G.winner=wa&&wb?(G.A.pts>G.B.pts?"A":G.B.pts>G.A.pts?"B":"draw"):wa?"A":"B";
+    G.need={A:false,B:false};
+  }
+  return any;
+}
+function tcEndTurn(G){
+  const s=G.cur,P=G[s],a=P.act;
+  // check-up for the hero that just ended its turn
+  if(a&&a.hp>0){
+    if(a.dot){const d=Math.max(1,Math.round(a.maxHp*a.dot.v));a.hp=Math.max(0,a.hp-d);tcLog(G,`${tcName(G,s,a)} はやけどで ${d} ダメージ！`);tcEv(G,{s,uid:a.uid,txt:"-"+d,cls:"dmg"});if(--a.dot.t<=0)a.dot=null}
+    a.stun=false;
+  }
+  tcCheckKO(G);
+  if(G.phase==="over")return;
+  if(G.turn>=TC_MAXTURN){
+    G.phase="over";
+    const hp=x=>[x.act].concat(x.bench).filter(Boolean).reduce((t,u)=>t+u.hp/u.maxHp,0);
+    G.winner=G.A.pts!==G.B.pts?(G.A.pts>G.B.pts?"A":"B"):Math.abs(hp(G.A)-hp(G.B))<.01?"draw":hp(G.A)>hp(G.B)?"A":"B";
+    tcLog(G,`${TC_MAXTURN}ターン経過！ ポイントと残りHPで判定…`);return;
+  }
+  if(G.need.A||G.need.B){G.phase="promote";G.next=tcFoe(s);return}
+  tcStartTurn(G,tcFoe(s));
+}
+const tcCanAttack=(G,s)=>!(G.turn===1&&G.first===s);
+function tcItemTargets(G,s,it){
+  const P=G[s],F=G[tcFoe(s)];
+  if(it==="swap")return P.bench.length&&P.act?"mybench":null;
+  if(it==="gust")return F.bench.length&&F.act?"foebench":null;
+  if(it==="battery")return P.act||P.bench.length?"mine":null;
+  return "none";
+}
+// apply one action; returns an error message, or null when it worked
+function tcAct(G,s,a){
+  if(!G||!a||G.phase==="over")return "バトルは終わっています";
+  const P=G[s],F=G[tcFoe(s)];
+  G.ev=[];
+  if(G.phase==="setup"){
+    if(a.k!=="setup")return "最初にバトル場に出すヒーローを選んでね";
+    if(P.act)return "もう選んでいます";
+    const uid=P.hand[a.h];if(!uid||tcInfo(uid).item)return "ヒーローを選んでね";
+    P.hand.splice(a.h,1);tcSetActive(G,s,tcUnit(G,uid));
+    if(G.A.act&&G.B.act){
+      G.first=Math.random()<.5?"A":"B";
+      tcLog(G,`コイントス！ ${tcWho(G,G.first)}が先攻！（先攻の最初の番は攻撃できません）`);
+      tcEv(G,{sfx:"up"});
+      tcStartTurn(G,G.first);
+    }
+    return null;
+  }
+  if(G.phase==="promote"){
+    if(a.k!=="promote"||!G.need[s])return "相手が選ぶのを待っています";
+    const u=P.bench[a.b];if(!u)return "控えのヒーローを選んでね";
+    P.bench.splice(a.b,1);tcSetActive(G,s,u);G.need[s]=false;
+    tcLog(G,`${tcPre(G,s)}ゆけ、${esc(tcInfo(u.uid).c.name)}！`);tcEv(G,{s,uid:u.uid,sfx:"flip"});
+    if(!G.need.A&&!G.need.B)tcStartTurn(G,G.next);
+    return null;
+  }
+  if(G.cur!==s)return "相手の番です";
+  const act=P.act;
+  if(a.k==="bench"){
+    const uid=P.hand[a.h];if(!uid||tcInfo(uid).item)return "ヒーローを選んでね";
+    if(P.bench.length>=TC_BENCH)return `控えは${TC_BENCH}体までです`;
+    P.hand.splice(a.h,1);P.bench.push(tcUnit(G,uid));
+    tcLog(G,`${tcPre(G,s)}${esc(tcInfo(uid).c.name)} を控えに出した`);tcEv(G,{sfx:"flip"});
+    return null;
+  }
+  const target=w=>w==="a"?P.act:P.bench[w];
+  if(a.k==="energy"){
+    if(P.en)return "エネルギーはこの番もう付けました（1ターン1回）";
+    const u=target(a.w);if(!u)return "エネルギーを付けるヒーローを選んでね";
+    u.en++;P.en=true;
+    tcLog(G,`${tcName(G,s,u)} にエネルギーを付けた ⚡`);tcEv(G,{s,uid:u.uid,txt:"+⚡",cls:"heal",sfx:"tink"});
+    return null;
+  }
+  if(a.k==="item"){
+    const uid=P.hand[a.h];if(!uid||!tcInfo(uid).item)return "アイテムを選んでね";
+    const f=tcInfo(uid),it=f.it,tg=tcItemTargets(G,s,it);
+    if(!tg)return "いまは使えません";
+    const bt=a.w==null?"a":a.w;
+    if(["potion","boost","shield","cure"].includes(it)&&!act)return "いまは使えません";
+    if(it==="search"&&!P.deck.some(u=>!tcInfo(u).item))return "山札にヒーローがいません";
+    if(it==="battery"&&!target(bt))return "エネルギーを付けるヒーローを選んでね";
+    if(it==="swap"&&!P.bench[a.w])return "入れ替えるヒーローを選んでね";
+    if(it==="gust"&&!F.bench[a.w])return "相手の控えから選んでね";
+    if(it==="breaker"&&!(F.act&&F.act.en>=1))return "相手のバトル場にエネルギーがありません";
+    P.hand.splice(a.h,1);P.disc.push(uid); // the item goes to the discard pile
+    let msg="";
+    if(it==="potion"){act.hp=Math.min(act.maxHp,act.hp+Math.round(act.maxHp*.3));msg=`${tcName(G,s,act)} のHPが回復！`;tcEv(G,{s,uid:act.uid,txt:"HEAL",cls:"heal",sfx:"up"})}
+    else if(it==="team"){[act].concat(P.bench).forEach(u=>{if(u)u.hp=Math.min(u.maxHp,u.hp+Math.round(u.maxHp*.15))});msg="味方全員のHPが回復！";if(act)tcEv(G,{s,uid:act.uid,txt:"HEAL",cls:"heal",sfx:"up"})}
+    else if(it==="draw"){const n=tcDrawCards(G,s,2);msg=`カードを${n}枚引いた`;tcEv(G,{sfx:"flip"})}
+    else if(it==="search"){const k=P.deck.findIndex(u=>!tcInfo(u).item);const h2=P.deck.splice(k,1)[0];P.hand.push(h2);P.deck=shuffled(P.deck);msg=`${esc(tcInfo(h2).c.name)} を手札に加えた`;tcEv(G,{sfx:"flip"})}
+    else if(it==="battery"){const u=target(bt);u.en++;msg=`${tcName(G,s,u)} にエネルギーが付いた ⚡`;tcEv(G,{s,uid:u.uid,txt:"+⚡",cls:"heal",sfx:"tink"})}
+    else if(it==="swap"){const u=P.bench[a.w];P.bench[a.w]=act;act.stun=false;act.dot=null;tcSetActive(G,s,u);msg=`${esc(tcInfo(u.uid).c.name)} とバトル場を入れ替えた！`;tcEv(G,{s,uid:u.uid,sfx:"flip"})}
+    else if(it==="gust"){const u=F.bench[a.w];F.bench[a.w]=F.act;tcSetActive(G,tcFoe(s),u);msg=`相手の ${esc(tcInfo(u.uid).c.name)} を引っぱり出した！`;tcEv(G,{s:tcFoe(s),uid:u.uid,sfx:"flip"})}
+    else if(it==="boost"){act.mods.push({k:"buff",v:.5,t:1});msg=`${tcName(G,s,act)} の攻撃がパワーアップ！`;tcEv(G,{s,uid:act.uid,txt:"ATK UP",cls:"heal",sfx:"rankup"})}
+    else if(it==="shield"){act.mods.push({k:"guard",v:.5,t:1});msg=`${tcName(G,s,act)} にシールド！`;tcEv(G,{s,uid:act.uid,txt:"GUARD",cls:"heal",sfx:"tink"})}
+    else if(it==="cure"){act.stun=false;act.dot=null;act.mods=act.mods.filter(m=>m.k!=="weaken");msg=`${tcName(G,s,act)} は元気になった！`;tcEv(G,{s,uid:act.uid,txt:"CURE",cls:"heal",sfx:"up"})}
+    else if(it==="breaker"){const u=F.act;u.en--;msg=`相手の ${esc(tcInfo(u.uid).c.name)} のエネルギーを1つトラッシュ！`;tcEv(G,{s:tcFoe(s),uid:u.uid,txt:"-⚡",cls:"weak",sfx:"crash"})}
+    tcLog(G,`${tcPre(G,s)}アイテム「${esc(f.name)}」！ ${msg}`);
+    return null;
+  }
+  if(a.k==="retreat"){
+    if(!act)return "バトル場にヒーローがいません";
+    if(P.ret)return "にげるのはこの番もうしました";
+    if(act.stun)return "しびれていて、にげられない！";
+    const u=P.bench[a.b];if(!u)return "入れ替えるヒーローを選んでね";
+    const cost=tcInfo(act.uid).ret;if(act.en<cost)return `にげるにはエネルギーが${cost}つ必要です`;
+    act.en-=cost;act.stun=false;act.dot=null;P.bench[a.b]=act;tcSetActive(G,s,u);P.ret=true;
+    tcLog(G,`${tcPre(G,s)}${esc(tcInfo(act.uid).c.name)} もどれ！ ゆけ、${esc(tcInfo(u.uid).c.name)}！`);tcEv(G,{s,uid:u.uid,sfx:"flip"});
+    return null;
+  }
+  if(a.k==="attack"){
+    if(!act)return "バトル場にヒーローがいません";
+    if(!tcCanAttack(G,s))return "先攻の最初の番は攻撃できません";
+    if(act.stun)return "しびれていて攻撃できない！";
+    const f=tcInfo(act.uid),foe=F.act;
+    if(a.w==="skill"){if(act.en<f.cost)return `わざにはエネルギーが${f.cost}つ必要です`;tcUseSkill(G,s,act)}
+    else{
+      if(act.en<1)return "こうげきにはエネルギーが1つ必要です";
+      tcLog(G,`${tcName(G,s,act)} のこうげき！`);tcHit(G,s,act,foe,1);
+    }
+    tcEndTurn(G);
+    return null;
+  }
+  if(a.k==="end"){tcLog(G,`${tcWho(G,s)}は番を終えた`);tcEndTurn(G);return null}
+  return "その行動はできません";
+}
+
+/* ---- the computer opponent ---- */
+function tcPredict(G,s,att,def,w){
+  if(!att||!def)return 0;
+  const ai=tcInfo(att.uid),di=tcInfo(def.uid);
+  let m=1;
+  if(w==="skill"){m=ai.skill.fx.filter(f=>f.k==="hit").reduce((t,f)=>t+f.m*f.n,0)}
+  let mul=1;att.mods.forEach(x=>{if(x.k==="buff")mul+=x.v;if(x.k==="weaken")mul-=x.v});
+  const weak=btBeats(ai.type,di.type)&&!(w==="skill"&&ai.skill.fx.some(f=>f.pierce));
+  return att.atk*Math.max(.3,mul)*m*(weak?TC_WEAK:1);
+}
+function tcAIStep(G,s){
+  const P=G[s],F=G[tcFoe(s)],a=P.act,foe=F.act;
+  const score=uid=>{const f=tcInfo(uid);return f.hp+f.atk*3+(foe&&btBeats(f.type,tcInfo(foe.uid).type)?60:0)};
+  if(G.phase==="setup"){let best=-1,bi=0;P.hand.forEach((u,i)=>{if(!tcInfo(u).item&&score(u)>best){best=score(u);bi=i}});return{k:"setup",h:bi}}
+  if(G.phase==="promote"){let best=-1,bi=0;P.bench.forEach((u,i)=>{const v=score(u.uid)*(u.hp/u.maxHp)+u.en*25;if(v>best){best=v;bi=i}});return{k:"promote",b:bi}}
+  // 1. heroes from hand onto the bench
+  const hh=P.hand.findIndex(u=>!tcInfo(u).item);
+  if(hh>=0&&P.bench.length<TC_BENCH)return{k:"bench",h:hh};
+  const fa=a&&tcInfo(a.uid),ratio=a?a.hp/a.maxHp:1;
+  const can=tcCanAttack(G,s)&&a&&!a.stun;
+  // 2. items
+  const itemAt=k=>P.hand.findIndex(u=>{const f=tcInfo(u);return f.item&&f.it===k});
+  let i;
+  if(a&&(a.stun||a.dot||a.mods.some(m=>m.k==="weaken"))&&(i=itemAt("cure"))>=0)return{k:"item",h:i};
+  if(a&&ratio<.5&&(i=itemAt("potion"))>=0)return{k:"item",h:i};
+  if([a].concat(P.bench).filter(u=>u&&u.hp<u.maxHp*.7).length>=2&&(i=itemAt("team"))>=0)return{k:"item",h:i};
+  if(P.hand.length<=3&&P.deck.length&&(i=itemAt("draw"))>=0)return{k:"item",h:i};
+  if(!P.bench.length&&P.deck.some(u=>!tcInfo(u).item)&&(i=itemAt("search"))>=0)return{k:"item",h:i};
+  if(foe&&foe.en>=Math.min(tcInfo(foe.uid).cost,2)&&(i=itemAt("breaker"))>=0)return{k:"item",h:i};
+  if(can&&F.bench.length&&(i=itemAt("gust"))>=0){
+    const w=a.en>=fa.cost&&!fa.supp?"skill":"basic";
+    const ko=F.bench.findIndex(u=>tcPredict(G,s,a,u,w)>=u.hp);
+    if(ko>=0)return{k:"item",h:i,w:ko};
+  }
+  if(a&&a.en<fa.cost&&(i=itemAt("battery"))>=0)return{k:"item",h:i,w:"a"};
+  if(a&&ratio<.3&&P.bench.length&&(i=itemAt("swap"))>=0){
+    let best=-1,bi=-1;P.bench.forEach((u,j)=>{const v=u.hp/u.maxHp;if(v>.6&&v>best){best=v;bi=j}});
+    if(bi>=0)return{k:"item",h:i,w:bi};
+  }
+  if(a&&foe&&ratio<.6&&!a.mods.some(m=>m.k==="guard")&&(i=itemAt("shield"))>=0)return{k:"item",h:i};
+  // 3. energy (once a turn): the hero in front first, then the bench
+  if(!P.en&&(a||P.bench.length)){
+    if(a&&a.en<fa.cost)return{k:"energy",w:"a"};
+    let low=-1,bi=-1;P.bench.forEach((u,j)=>{const need=tcInfo(u.uid).cost-u.en;if(need>low){low=need;bi=j}});
+    if(bi>=0&&low>0)return{k:"energy",w:bi};
+    if(a)return{k:"energy",w:"a"};
+  }
+  // 4. retreat a hero that is about to fall
+  if(a&&!P.ret&&!a.stun&&ratio<.25&&a.en>=fa.ret){
+    let best=-1,bi=-1;P.bench.forEach((u,j)=>{const v=u.hp/u.maxHp;if(v>.5&&v>best){best=v;bi=j}});
+    if(bi>=0)return{k:"retreat",b:bi};
+  }
+  // 5. attack
+  if(can&&foe){
+    const skillOK=a.en>=fa.cost;
+    let useSkill=false;
+    if(skillOK){
+      if(!fa.supp)useSkill=tcPredict(G,s,a,foe,"skill")>=tcPredict(G,s,a,foe,"basic")||fa.skill.fx.some(f=>f.k!=="hit");
+      else{const fx=fa.skill.fx;useSkill=(fx.some(f=>f.k==="heal")&&ratio<.55)||(fx.some(f=>f.k==="guard"||f.k==="reflect")&&ratio<.8&&!a.mods.some(m=>m.k==="guard"||m.k==="reflect"))||(fx.some(f=>f.k==="buff")&&!a.mods.some(m=>m.k==="buff"))}
+    }
+    const dmgPlanned=useSkill?!fa.supp:a.en>=1;
+    if(dmgPlanned&&!a.mods.some(m=>m.k==="buff")&&(i=itemAt("boost"))>=0)return{k:"item",h:i};
+    if(useSkill)return{k:"attack",w:"skill"};
+    if(a.en>=1)return{k:"attack",w:"basic"};
+  }
+  return{k:"end"};
+}
+
+/* ---- screen ---- */
+function tcBox(uid){return document.querySelector(`[data-tcuid="${uid}"]`)}
+function tcPopEl(el,txt,cls){if(!el)return;const s=document.createElement("span");s.className="bt-pop "+(cls||"");s.textContent=txt;el.appendChild(s);setTimeout(()=>s.remove(),1100)}
+async function tcPlay(){
+  const G=TC.G,evs=G.ev.slice();G.ev=[];
+  tcRender();
+  for(const e of evs){
+    if(e.sfx)sfx(e.sfx);
+    const el=e.uid?tcBox(e.uid):null;
+    if(el&&e.cast){el.classList.remove("cast");void el.offsetWidth;el.classList.add("cast")}
+    if(el&&e.hit){el.classList.remove("hit");void el.offsetWidth;el.classList.add("hit")}
+    if(el&&e.txt)tcPopEl(el,e.txt,e.cls);
+    await tcWait(e.txt||e.cast||e.ko?380:120);
+  }
+}
+function tcPips(n,max){let h="";for(let k=0;k<Math.max(n,max);k++)h+=`<i class="${k<n?"on":""}"></i>`;return h}
+function tcChips(u){
+  const ch=[];let atk=0,grd=0;u.mods.forEach(x=>{if(x.k==="buff")atk+=x.v;if(x.k==="weaken")atk-=x.v;if(x.k==="guard")grd+=x.v});
+  if(atk>0)ch.push(`<i class="up">ATK↑</i>`);if(atk<0)ch.push(`<i class="dn">ATK↓</i>`);if(grd>0)ch.push(`<i class="up">GUARD</i>`);
+  if(u.mods.some(x=>x.k==="reflect"))ch.push(`<i class="up">反撃</i>`);if(u.stun)ch.push(`<i class="dn">しびれ</i>`);if(u.dot)ch.push(`<i class="dn">やけど</i>`);
+  return ch.join("");
+}
+function tcActHTML(G,s,u){
+  const f=tcInfo(u.uid);
+  return `<div class="bt-info">
+    <div class="bt-nm"><span class="bt-type t${f.type}">${BT_TYPES[f.type]}</span><b>${esc(f.c.name)}</b><small>${f.c.r}</small></div>
+    ${btBar(u)}<div class="bt-hpn">HP ${u.hp} / ${u.maxHp} ・ ATK ${f.atk}</div>
+    <div class="bt-ch tc-en" title="エネルギー">${tcPips(u.en,f.cost)}<span>⚡${u.en}</span></div>
+    <div class="bt-chips">${tcChips(u)}</div></div>`;
+}
+function tcPtsHTML(n){let h="";for(let k=0;k<TC_WIN;k++)h+=`<i class="${k<n?"on":""}">★</i>`;return `<span class="tc-pts">${h}</span>`}
+function tcMeta(G,s){
+  const P=G[s];const me=s===TC.me;
+  return `<b>${me?"YOU":esc(TC.online?P.name:"ENEMY")}</b>${tcPtsHTML(P.pts)}<span>手札 ${P.hand.length}</span><span>山札 ${P.deck.length}</span>`;
+}
+function tcUnitBtn(G,s,u,i,pickable){
+  const f=tcInfo(u.uid);
+  const b=document.createElement("button");b.type="button";b.className="bt-bu tc-bu"+(pickable?" can":"");b.dataset.tcuid=u.uid;
+  b.appendChild(btFace(f.c));
+  b.insertAdjacentHTML("beforeend",`<span class="bt-bstat"><span class="bt-type t${f.type}">${BT_TYPES[f.type]}</span>${u.hp}/${u.maxHp}</span>${btBar(u)}<span class="tc-ben">⚡${u.en}</span>`);
+  b.onclick=()=>tcTapUnit(s,i);
+  return b;
+}
+function tcRender(){
+  if(!TC)return;
+  const G=TC.G,me=TC.me,fo=tcFoe(me),P=G[me],F=G[fo],sel=TCU.sel;
+  const myTurn=G.phase==="main"&&G.cur===me&&!TC.busy;
+  $("tcTurn").textContent=G.phase==="setup"?"SETUP":`TURN ${Math.max(1,G.turn)}`;
+  $("tcWho").textContent=G.phase==="over"?"":G.phase==="setup"?"準備":G.phase==="promote"?(G.need[me]?"ヒーローを選んでね":"相手が選んでいます"):G.cur===me?"あなたの番":"相手の番";
+  $("tcWho").className="tc-who "+(G.cur===me&&G.phase==="main"?"me":"");
+  $("tcFMeta").innerHTML=tcMeta(G,fo);$("tcPMeta").innerHTML=tcMeta(G,me);
+  // bench rows
+  const fb=$("tcFBench");fb.innerHTML="";
+  F.bench.forEach((u,i)=>fb.appendChild(tcUnitBtn(G,fo,u,i,sel&&sel.k==="item"&&sel.need==="foebench")));
+  if(!F.bench.length)fb.innerHTML=`<span class="tc-none">控えなし</span>`;
+  const pb=$("tcPBench");pb.innerHTML="";
+  const pickMine=sel&&(sel.k==="energy"||sel.k==="retreat"||(sel.k==="item"&&(sel.need==="mybench"||sel.need==="mine")))||(G.phase==="promote"&&G.need[me]);
+  P.bench.forEach((u,i)=>pb.appendChild(tcUnitBtn(G,me,u,i,pickMine)));
+  for(let k=P.bench.length;k<TC_BENCH;k++)pb.insertAdjacentHTML("beforeend",`<span class="tc-slot">控え</span>`);
+  // the heroes in front
+  for(const [s,id] of [[fo,"tcFAct"],[me,"tcPAct"]]){
+    const box=$(id),u=G[s].act;
+    if(!u){box.dataset.tcuid="";box.innerHTML=`<div class="bt-cardwrap"><div class="bt-empty">${G.phase==="setup"?(s===me?"手札から<br>えらんでね":"相手が<br>えらんでいます"):"――"}</div></div><div class="bt-infowrap"><div class="bt-info"><div class="bt-nm"><b>${s===me?"YOU":esc(TC.online?G[s].name:"ENEMY")}</b></div><p class="bt-hint">${G.phase==="setup"&&s===me?"下の手札から、最初にバトル場に出すヒーローをタップしてね。":G.phase==="promote"&&s===me?"控えから、次にバトル場に出すヒーローを選んでね。":""}</p></div></div>`;continue}
+    box.dataset.tcuid=u.uid;
+    const can=s===me&&sel&&(sel.k==="energy"||(sel.k==="item"&&sel.need==="mine"));
+    box.innerHTML=`<button type="button" class="bt-cardwrap${can?" tc-can":""}" aria-label="${esc(tcInfo(u.uid).c.name)} のステータス"></button><div class="bt-infowrap">${tcActHTML(G,s,u)}</div>`;
+    const w=box.querySelector(".bt-cardwrap");w.appendChild(btFace(tcInfo(u.uid).c));w.onclick=()=>tcTapUnit(s,"a");
+  }
+  const lg=$("tcLog");lg.innerHTML=G.log.map((m,i)=>`<div class="${i?"old":""}">${m}</div>`).join("");
+  // commands
+  const a=P.act,fa=a&&tcInfo(a.uid);
+  const canAtk=myTurn&&a&&tcCanAttack(G,me)&&!a.stun;
+  $("tcAtk").disabled=!canAtk||a.en<1;
+  $("tcAtk").querySelector("small").textContent="⚡1";
+  const sk=$("tcSkill");sk.disabled=!canAtk||a.en<fa.cost;
+  sk.innerHTML=`<b>わざ</b><small>${a?`${esc(fa.skill.name)} ⚡${fa.cost}`:"-"}</small>`;
+  sk.classList.toggle("ready",!!(canAtk&&a.en>=fa.cost));
+  $("tcEnergy").disabled=!myTurn||P.en||(!a&&!P.bench.length);
+  $("tcEnergy").classList.toggle("on",!!(sel&&sel.k==="energy"));
+  $("tcEnergy").querySelector("small").textContent=P.en&&G.cur===me?"この番は付けた":"1ターン1回";
+  $("tcRetreat").disabled=!myTurn||P.ret||!a||a.stun||!P.bench.length||a.en<fa.ret;
+  $("tcRetreat").classList.toggle("on",!!(sel&&sel.k==="retreat"));
+  $("tcRetreat").querySelector("small").textContent=a?`⚡${fa.ret}`:"";
+  $("tcEnd").disabled=!myTurn;
+  // hint line
+  let hint="";
+  if(G.phase==="setup")hint=P.act?"相手の準備を待っています…":"手札から、最初にバトル場に出すヒーローをタップしてね。";
+  else if(G.phase==="promote")hint=G.need[me]?"控えから、次にバトル場に出すヒーローをタップしてね。":"相手が次のヒーローを選んでいます…";
+  else if(sel&&sel.k==="energy")hint="エネルギーを付けるヒーロー（バトル場か控え）をタップしてね。";
+  else if(sel&&sel.k==="retreat")hint=`入れ替える控えのヒーローをタップしてね（エネルギー${fa?fa.ret:0}つをトラッシュ）。`;
+  else if(sel&&sel.k==="item")hint=sel.need==="foebench"?"相手の控えから、引っぱり出すヒーローをタップしてね。":sel.need==="mybench"?"入れ替える控えのヒーローをタップしてね。":"エネルギーを付けるヒーローをタップしてね。";
+  else if(G.phase==="main"&&G.cur!==me)hint=TC.online?"相手の番です…":"敵が考えています…";
+  else if(myTurn)hint=!tcCanAttack(G,me)?"先攻の最初の番は攻撃できません。控えに出したり、エネルギーを付けたりしよう。":"手札を使ったり、エネルギーを付けたりしてから攻撃しよう（攻撃すると番が終わります）。";
+  $("tcHint").innerHTML=esc(hint)+(sel?` <button type="button" class="ghost tc-cancel" id="tcCancel">やめる</button>`:"");
+  const cc=document.getElementById("tcCancel");if(cc)cc.onclick=()=>{TCU.sel=null;tcRender()};
+  {const n=$("tcNet");n.hidden=!TC.online;if(TC.online)n.textContent=TC.busy&&G.phase!=="over"?"通信中…":""}
+  // hand
+  const hand=$("tcHand");hand.innerHTML="";
+  P.hand.forEach((uid,i)=>{
+    const f=tcInfo(uid);
+    const b=document.createElement("button");b.type="button";b.className="tc-card"+(f.item?" item":"");
+    b.appendChild(cardEl(f.c,{flipped:true}));
+    b.insertAdjacentHTML("beforeend",`<span class="tc-cap">${f.item?`<span class="it-badge">ITEM</span>${esc(f.name)}`:`<span class="bt-type t${f.type}">${BT_TYPES[f.type]}</span>HP${f.hp}`}</span>`);
+    b.onclick=()=>tcTapHand(i);
+    hand.appendChild(b);
+  });
+  if(!P.hand.length)hand.innerHTML=`<span class="tc-none">手札なし</span>`;
+  $("tcDeckInfo").textContent=`手札 ${P.hand.length} 枚 ・ 山札 ${P.deck.length} 枚 ・ トラッシュ ${P.disc.length} 枚`;
+}
+// tapping a hero on the field
+function tcTapUnit(s,w){
+  if(!TC)return;
+  const G=TC.G,me=TC.me,sel=TCU.sel;
+  const u=w==="a"?G[s].act:G[s].bench[w];if(!u)return;
+  if(s===me&&G.phase==="promote"&&G.need[me]&&w!=="a")return tcDo({k:"promote",b:w});
+  if(sel&&s===me){
+    if(sel.k==="energy")return tcDo({k:"energy",w});
+    if(sel.k==="retreat"&&w!=="a")return tcDo({k:"retreat",b:w});
+    if(sel.k==="item"&&sel.need==="mine")return tcDo({k:"item",h:sel.h,w});
+    if(sel.k==="item"&&sel.need==="mybench"&&w!=="a")return tcDo({k:"item",h:sel.h,w});
+  }
+  if(sel&&s!==me&&sel.k==="item"&&sel.need==="foebench"&&w!=="a")return tcDo({k:"item",h:sel.h,w});
+  tcShowUnit(s,u);
+}
+function tcShowUnit(s,u){
+  const G=TC.G,f=tcInfo(u.uid),mine=s===TC.me;
+  const box=$("btInfoBox");box.innerHTML="";
+  const close=document.createElement("button");close.type="button";close.className="close";close.textContent="×";close.setAttribute("aria-label","閉じる");
+  const top=document.createElement("div");top.className="bt-iv-top";
+  const face=btFace(f.c);face.classList.add("big");top.appendChild(face);
+  const foe=G[tcFoe(s)].act,ft=foe&&tcInfo(foe.uid).type;
+  const match=foe?(btBeats(f.type,ft)?`<span class="bt-match good">${esc(tcInfo(foe.uid).c.name)} の弱点をつける！</span>`:btBeats(ft,f.type)?`<span class="bt-match bad">${esc(tcInfo(foe.uid).c.name)} が弱点…</span>`:""):"";
+  top.insertAdjacentHTML("beforeend",`<div class="bt-iv-head"><small>${mine?"YOUR HERO":"ENEMY"} ・ ${f.c.r}</small><b>${esc(f.c.name)}</b><span>${esc(f.c.kana||"")}</span><div class="bt-nm"><span class="bt-type t${f.type}">${BT_TYPES[f.type]}</span>${BT_TNAME[f.type]}</div>${match}</div>`);
+  box.append(close,top);
+  box.insertAdjacentHTML("beforeend",`${btBar(u)}<div class="bt-iv-stats"><div><small>HP</small><b>${u.hp}<i>/${u.maxHp}</i></b></div><div><small>ATK</small><b>${f.atk}</b></div><div><small>にげる</small><b>⚡${f.ret}</b></div></div>
+    <div class="bt-ch tc-en">${tcPips(u.en,f.cost)}<span>エネルギー ${u.en}</span></div>
+    <div class="bt-chips">${tcChips(u)}</div>
+    <div class="bt-abil-sk"><small>こうげき ・ ⚡1</small><b>ふつうの攻撃</b><span>1.0倍ダメージ</span></div>
+    <div class="bt-abil-sk"><small>わざ ・ ⚡${f.cost}</small><b>${esc(f.skill.name)}</b><span>${esc(f.skill.desc)}</span></div>
+    ${f.passive?`<div class="bt-abil-sk ps"><small>とくせい</small><b>${esc(f.passive.name)}</b><span>${esc(f.passive.desc)}</span></div>`:""}
+    <p class="tc-note">たおされると相手に ${f.prize} ポイント</p>`);
+  const m=$("btInfo");m.hidden=false;
+  const shut=()=>{m.hidden=true};close.onclick=shut;m.onclick=e=>{if(e.target===m)shut()};
+}
+// tapping a card in your hand
+function tcTapHand(i){
+  if(!TC)return;
+  const G=TC.G,me=TC.me,P=G[me],uid=P.hand[i];if(!uid)return;
+  const f=tcInfo(uid);
+  if(G.phase==="setup"&&!P.act&&!f.item&&!TC.busy)return tcDo({k:"setup",h:i});
+  const myTurn=G.phase==="main"&&G.cur===me&&!TC.busy;
+  const box=$("btInfoBox");box.innerHTML="";
+  const close=document.createElement("button");close.type="button";close.className="close";close.textContent="×";close.setAttribute("aria-label","閉じる");
+  const top=document.createElement("div");top.className="tc-hv";top.appendChild(cardEl(f.c,{flipped:true}));
+  box.append(close,top);
+  let btn="",why="";
+  if(f.item){
+    box.insertAdjacentHTML("beforeend",itemHTML(f.c));
+    const tg=tcItemTargets(G,me,f.it);
+    if(myTurn&&tg)btn="このアイテムを使う";else why=myTurn?"いまは使えません":"自分の番に使えます";
+  }else{
+    box.insertAdjacentHTML("beforeend",tcAbilityHTML(f.c));
+    if(G.phase==="setup"&&!P.act)btn="バトル場に出す";
+    else if(myTurn&&P.bench.length<TC_BENCH)btn="控えに出す";else why=myTurn?`控えは${TC_BENCH}体までです`:"自分の番に出せます";
+  }
+  box.insertAdjacentHTML("beforeend",`<div class="bt-iv-btn">${btn?`<button type="button" class="btn-main" id="tcHandGo">${btn}</button>`:`<p class="tc-note">${why}</p>`}</div>`);
+  const m=$("btInfo");m.hidden=false;
+  const shut=()=>{m.hidden=true};close.onclick=shut;m.onclick=e=>{if(e.target===m)shut()};
+  const go=document.getElementById("tcHandGo");
+  if(go)go.onclick=()=>{
+    shut();
+    if(!f.item)return tcDo(G.phase==="setup"?{k:"setup",h:i}:{k:"bench",h:i});
+    const tg=tcItemTargets(G,me,f.it);
+    if(tg==="none")return tcDo({k:"item",h:i});
+    if(tg==="mine"&&!P.bench.length)return tcDo({k:"item",h:i,w:"a"});
+    TCU.sel={k:"item",h:i,need:tg};sfx("tink");tcRender();
+  };
+}
+// the player does something
+async function tcDo(a){
+  if(!TC||TC.busy)return;
+  const G=TC.G;
+  if(TC.online==="guest"){TCU.sel=null;TC.busy=true;tcRender();netSend({t:"tact",a});return}
+  const err=tcAct(G,TC.me,a);
+  if(err){toast(err);sfx("tink");return}
+  TCU.sel=null;
+  TC.busy=true;
+  await tcPlay();
+  TC.busy=false;
+  if(TC.online==="host")tcSnap();
+  await tcAfter();
+}
+// let the computer play, and finish the battle when it is over
+async function tcAfter(){
+  if(!TC)return;
+  if(!TC.online){
+    if(TC.ai)return;TC.ai=true;
+    TC.busy=true;tcRender();
+    let n=0;
+    while(TC&&TC.G.phase!=="over"&&n++<300){
+      const G=TC.G;
+      const go=()=>(G.phase==="setup"&&!G.B.act)||(G.phase==="promote"&&G.need.B)||(G.phase==="main"&&G.cur==="B");
+      if(!go())break;
+      await tcWait(G.phase==="main"?520:300);
+      if(!TC||TC.G!==G||!go())break;
+      const a=tcAIStep(G,"B");
+      let err=tcAct(G,"B",a);
+      if(err&&a.k!=="end"&&G.phase==="main"){console.warn("AI",err,a);err=tcAct(G,"B",{k:"end"})}
+      if(err)break;
+      await tcPlay();
+    }
+    if(!TC)return;
+    TC.busy=false;TC.ai=false;
+  }
+  tcRender();
+  if(TC.G.phase==="over"&&!TC.ended){tcFinish();if(TC&&TC.online==="host")setTimeout(()=>netLeave(),1500)}
+}
+function tcResult(){const w=TC.G.winner;return w==="draw"?"draw":w===TC.me?"win":"lose"}
+function tcFinish(r){
+  if(!TC||TC.ended)return;
+  TC.ended=true;r=r||tcResult();
+  const online=!!TC.online,G=TC.G;
+  const coins=online?0:Math.max(BT_REWARD[r],-S.gems);
+  S.gems+=coins;
+  if(online){S.battle.ow=(S.battle.ow||0)+(r==="win"?1:0);S.battle.ol=(S.battle.ol||0)+(r==="lose"?1:0)}
+  else{S.battle.cw=(S.battle.cw||0)+(r==="win"?1:0);S.battle.cl=(S.battle.cl||0)+(r==="lose"?1:0)}
+  save();render();
+  const me=G[TC.me],fo=G[tcFoe(TC.me)];
+  const box=$("btResBox");box.className="mission bt-res "+r;
+  box.innerHTML=`<div class="bt-big">${r==="win"?"YOU WIN!":r==="lose"?"YOU LOSE…":"DRAW!"}</div>
+    <p>ポイント ${me.pts} vs ${fo.pts} ・ ${Math.max(1,G.turn)} ターン${online?"":` ・ ${coins>=0?`ごほうび ${coins} コイン`:`${-coins} コイン失った…`}`}</p>
+    <p class="bt-bpgot">${online?`オンライン対戦 vs ${esc(fo.name)}`:"自作カードバトル（ランクと経験値には入りません）"}</p>
+    <p>${online?`オンライン対戦 通算 ${S.battle.ow||0}勝 ${S.battle.ol||0}敗`:`自作カードバトル 通算 ${S.battle.cw||0}勝 ${S.battle.cl||0}敗`}</p>
+    <div class="bt-btns"><button type="button" class="btn-main" id="btAgain">もう一度！</button><button type="button" class="ghost" id="btHome">ホームへ</button></div>`;
+  sfx(r==="win"?"ur":r==="lose"?"shake":"rare");
+  $("btResult").hidden=false;document.body.style.overflow="hidden";
+  const close=()=>{$("btResult").hidden=true;document.body.style.overflow=""};
+  const again=TC.mode;
+  $("btAgain").hidden=online;
+  $("btAgain").onclick=()=>{close();TC=null;tcStart(again)};
+  $("btHome").onclick=()=>{close();TC=null;renderBattle();tab("home");window.scrollTo({top:0})};
+}
+/* ---- online: the room host runs the rules, the guest sends its moves and gets the state back ---- */
+function tcSnap(){if(TC&&TC.online==="host")netSend({t:"tsnap",g:TC.G})}
+async function tcOnSnap(g){
+  if(!TC||TC.online!=="guest"||!g||!g.A||!g.B)return;
+  TC.G=g;TC.busy=false;TCU.sel=null;
+  await tcPlay();
+  if(TC&&TC.G.phase==="over"&&!TC.ended){tcFinish();netLeave()}
+}
+async function tcOnRemote(a){
+  for(let k=0;k<60&&TC&&TC.busy;k++)await new Promise(r=>setTimeout(r,100)); // finish my own animation first
+  if(!TC||TC.online!=="host"||TC.ended||TC.busy)return netSend({t:"terr",m:"ちょっと待ってね"});
+  const err=tcAct(TC.G,"B",a&&typeof a==="object"?a:{});
+  if(err){netSend({t:"terr",m:err});return}
+  TC.busy=true;await tcPlay();if(!TC)return;TC.busy=false;
+  tcSnap();await tcAfter();
+}
+// both players build the same card list from the two team codes: the host's cards are "A", the guest's are "B"
+function tcNetBuild(role,me,foe,myName,foeName){
+  const host=role==="host"?me:foe,guest=role==="host"?foe:me;
+  const list=t=>t.team.map(x=>x.c).concat(t.items||[]);
+  tcBegin("online",list(host),list(guest),role,role==="host"?myName:foeName,role==="host"?foeName:myName,role==="host"?"A":"B");
+  if(role==="host")tcSnap();else TC.busy=true; // the guest waits for the host's first state
+  tcRender();
+  return true;
+}
+// card detail text for an original hero (these rules)
+function tcAbilityHTML(c){
+  const save0=TC;TC={cards:{x:c},info:{},me:"A"};let f;try{f=tcInfo("x")}finally{TC=save0}
+  return `<div class="bt-abil"><div class="bt-abil-row"><span class="bt-type t${f.type}">${BT_TYPES[f.type]}</span><b>${BT_TNAME[f.type]}</b><span>HP ${f.hp}</span><span>ATK ${f.atk}</span><span>にげる ⚡${f.ret}</span></div>
+    <div class="bt-abil-sk"><small>わざ ・ エネルギー ⚡${f.cost}（自作カードバトル）</small><b>${esc(f.skill.name)}</b><span>${esc(f.skill.desc)}</span></div>
+    ${f.passive?`<div class="bt-abil-sk ps"><small>とくせい</small><b>${esc(f.passive.name)}</b><span>${esc(f.passive.desc)}</span></div>`:""}</div>`;
+}
+// start an original-card battle against the computer
+function tcStart(mode){
+  mode=mode==="cdeck"?"cdeck":"custom";
+  let heroes,items;
+  if(mode==="cdeck"){heroes=dkCards(S.cdeckSel,"custom");if(!dkValid(heroes)){toast("デッキが完成していません");return}heroes=heroes.slice();items=dkItems(S.cdeckSel)}
+  else{const pool=btCustomPool();if(pool.length<5)return;heroes=shuffled(pool).slice(0,5);items=shuffled(btItemPool()).slice(0,6)}
+  // the enemy: heroes of similar rarity from every original card you have made, plus as many items as you have
+  const foes=S.custom.filter(c=>!isItem(c)),used=new Set(heroes.map(c=>c.id)),eIds=new Set();
+  const eHeroes=heroes.map(m=>{
+    let opts=[];
+    for(let d=0;d<ORDER.length&&!opts.length;d++)opts=foes.filter(c=>Math.abs(BT_RANK[c.r]-BT_RANK[m.r])===d&&!used.has(c.id));
+    if(!opts.length)opts=foes.filter(c=>!eIds.has(c.id));
+    const c=opts[Math.floor(Math.random()*opts.length)];used.add(c.id);eIds.add(c.id);return c;
+  });
+  const allItems=S.custom.filter(isItem);
+  const eItems=allItems.length?Array.from({length:items.length},()=>allItems[Math.floor(Math.random()*allItems.length)]):[];
+  tcBegin(mode,heroes.concat(items),eHeroes.concat(eItems),null,"あなた","敵");
+}
+// set up TC for a battle; aList / bList are card objects
+function tcBegin(mode,aList,bList,online,aName,bName,me){
+  BT=null;
+  const cards={};
+  aList.forEach((c,i)=>cards["A"+i]=c);bList.forEach((c,i)=>cards["B"+i]=c);
+  TC={mode,online:online||null,me:me||"A",cards,info:{},busy:false,ended:false,G:null};
+  TCU={sel:null};
+  TC.G=tcNewGame(aList.map((c,i)=>"A"+i),bList.map((c,i)=>"B"+i),aName,bName);
+  tcLog(TC.G,online?`${esc(me==="B"?aName:bName)} とオンライン対戦！ 手札から最初のヒーローを選んでね。`:"山札をシャッフルして5枚引いた！ 手札から最初にバトル場に出すヒーローを選んでね。");
+  sfx("up");tab("battle");renderBattle();
+  if(!online)tcAfter();
+}
+$("tcAtk").onclick=()=>tcDo({k:"attack",w:"basic"});
+$("tcSkill").onclick=()=>tcDo({k:"attack",w:"skill"});
+$("tcEnd").onclick=()=>{if(!TC||TC.busy)return;const G=TC.G,P=G[TC.me];if(G.phase==="main"&&G.cur===TC.me&&P.act&&tcCanAttack(G,TC.me)&&!P.act.stun&&P.act.en>=1&&!confirm("攻撃しないで番を終わりますか？"))return;tcDo({k:"end"})};
+$("tcEnergy").onclick=()=>{if(!TC||TC.busy)return;const P=TC.G[TC.me];if(!P.bench.length&&P.act){tcDo({k:"energy",w:"a"});return}TCU.sel=TCU.sel&&TCU.sel.k==="energy"?null:{k:"energy"};tcRender()};
+$("tcRetreat").onclick=()=>{if(!TC||TC.busy)return;TCU.sel=TCU.sel&&TCU.sel.k==="retreat"?null:{k:"retreat"};tcRender()};
+$("tcGiveUp").onclick=()=>{
+  if(!TC||TC.ended)return;if(!confirm("降参しますか？（負け扱いになります）"))return;
+  if(TC.online){netSend({t:"giveup"});netLeave(false)}
+  TC.G.phase="over";TC.G.winner=tcFoe(TC.me);tcRender();tcFinish("lose");
+};
+
 /* ---- team codes: a team packed into a string, used to send your team to the online opponent ---- */
 const FR_PREFIX="SLB1-";
 const FR_BLANK="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==";
@@ -4316,7 +5125,12 @@ function frParse(code){
       const nm=String(e.n||"???").slice(0,22);
       return{c:{id:"friend-"+i,r,name:nm,kana:String(e.k||"").slice(0,20),flavor:"",h:Number(e.h)||0,shape:"shield",img,m:nm.slice(0,2),bt:cleanBt(e.bt)||{t:0,sk:"strike",skn:"",ps:"tough",psn:""},friend:true},lv:1};
     });
-    return{kind:"custom",name,team};
+    const items=(Array.isArray(o.it)?o.it:[]).slice(0,10).map((e,i)=>{
+      const r=ORDER.includes(e&&e.r)?e.r:"N",nm=String(e&&e.n||"???").slice(0,22);
+      const img=e&&typeof e.i==="string"&&/^data:image\/(jpeg|png|gif|webp);base64,[A-Za-z0-9+/=]+$/.test(e.i)&&e.i.length<40000?e.i:FR_BLANK;
+      return{id:"friend-it"+i,r,name:nm,kana:String(e&&e.k||"").slice(0,20),flavor:"",h:Number(e&&e.h)||0,shape:"shield",img,m:"?",kind:"item",it:CUSTOM_ITEMS[e&&e.e]?e.e:"potion",friend:true};
+    });
+    return{kind:"custom",name,team,items};
   }
   return{err:"コードの中身が正しくありません。"};
 }
@@ -4350,12 +5164,14 @@ async function netMyTeam(kind){
   if(pool.length<5)return{err:"自作カードで対戦するには、自作カードが5種類以上必要です。"};
   const list=dkValid(deck)?deck.slice():shuffled(pool).slice(0,5),cards=[]; // your custom deck if it is complete, otherwise 5 at random
   for(const c of list)cards.push({n:c.name,k:c.kana||"",r:c.r,h:c.h||0,bt:c.bt||btCustomDefaults(c),i:await frThumb(c.img)});
-  return{code:frEncode({k:"c",n:frNick(),c:cards})};
+  const items=[],itl=dkValid(deck)?dkItems(S.cdeckSel):shuffled(btItemPool()).slice(0,6);
+  for(const c of itl)items.push({n:c.name,k:c.kana||"",r:c.r,h:c.h||0,e:c.it,i:await frThumb(c.img)});
+  return{code:frEncode({k:"c",n:frNick(),c:cards,it:items})};
 }
 function netWire(conn){
   NET.conn=conn;
   conn.on("data",d=>{try{netOnData(d)}catch(e){console.error(e)}});
-  conn.on("close",()=>{if(!NET)return;const inBattle=BT&&BT.online&&!BT.over;netLeave("相手との通信が切れました。");if(inBattle){toast("相手との通信が切れました");BT=null;renderBattle()}});
+  conn.on("close",()=>{if(!NET)return;if(TC&&TC.online&&!TC.ended){netLeave("相手との通信が切れました。");toast("相手との通信が切れました");TC=null;renderBattle();return}const inBattle=BT&&BT.online&&!BT.over;netLeave("相手との通信が切れました。");if(inBattle){toast("相手との通信が切れました");BT=null;renderBattle()}});
   conn.on("error",()=>{});
 }
 async function netHost(kind){
@@ -4388,6 +5204,7 @@ async function netJoin(code){
 function netBuild(role,myCode,foeCode,myName,foeName){
   const me=frParse(myCode),foe=frParse(foeCode);
   if(me.err||foe.err)return false;
+  if(me.kind==="custom"&&foe.kind==="custom")return tcNetBuild(role,me,foe,myName,foeName); // original cards: card-game rules
   BT={mode:"online",online:role,pName:myName,eName:foeName,eLv:1,
     p:{list:me.team.map(x=>btMake(x.c,"p",x.lv)),cur:null},e:{list:foe.team.map(x=>btMake(x.c,"e",x.lv)),cur:null},
     turn:0,busy:false,mustPick:true,foePick:true,switching:false,over:false,log:[],myAct:null,remoteAct:null};
@@ -4450,6 +5267,13 @@ function netOnData(d){
     return;
   }
   if(d.t==="bye"){netLeave("相手が部屋を出ました。");return}
+  if(d.t==="giveup"&&TC&&TC.online){if(!TC.ended){toast(`${TC.G[tcFoe(TC.me)].name} が降参しました！`);TC.G.phase="over";TC.G.winner=TC.me;tcRender();tcFinish("win")}netLeave();return}
+  if(TC&&TC.online){
+    if(d.t==="tsnap"&&NET.role==="guest"){tcOnSnap(d.g);return}
+    if(d.t==="terr"&&NET.role==="guest"){TC.busy=false;toast(String(d.m||"").slice(0,60));tcRender();return}
+    if(d.t==="tact"&&NET.role==="host"){tcOnRemote(d.a);return}
+    return;
+  }
   if(d.t==="giveup"){if(BT&&BT.online&&!BT.over){toast(`${BT.eName} が降参しました！`);BT.result="win";btEnd("win");if(BT&&BT.online==="host")netSnap()}netLeave();return}
   if(!BT||!BT.online)return;
   if(d.t==="snap"&&NET.role==="guest"){netApply(d.s);return}
@@ -4513,7 +5337,7 @@ function gsShrink(src){ // pictures are made smaller so a pack stays light for f
     im.onerror=()=>fin(src);im.src=src;
   });
 }
-const cardSig=c=>[c.r,c.name,c.kana,c.flavor,c.h,JSON.stringify(c.bt||null),c.img.length,c.img.slice(-40)].join("|");
+const cardSig=c=>[c.r,c.name,c.kana,c.flavor,c.h,JSON.stringify(c.bt||null),c.kind||"",c.it||"",c.img.length,c.img.slice(-40)].join("|");
 function packMeta(p,ver){
   return{fields:{owner:fsStr(S.cloudAuth.uid),uid:fsStr(p.shareUid),name:fsStr(pname(p)),color:fsStr(p.color),from:fsStr(frNick()||"フレンド"),ver:{integerValue:String(ver)},count:{integerValue:String(cardsIn(p.id).length)}}};
 }
@@ -4526,7 +5350,7 @@ async function cloudSyncPack(p){
   for(const c of list){
     const sg=cardSig(c);now[c.id]=sg;
     if(old[c.id]===sg)continue;
-    const data={id:c.id,r:c.r,name:c.name,kana:c.kana||"",flavor:c.flavor||"",h:c.h||0,bt:c.bt||btCustomDefaults(c),img:await gsShrink(c.img)};
+    const data={id:c.id,r:c.r,name:c.name,kana:c.kana||"",flavor:c.flavor||"",h:c.h||0,bt:isItem(c)?null:(c.bt||btCustomDefaults(c)),...(isItem(c)?{kind:"item",it:c.it}:{}),img:await gsShrink(c.img)};
     const r=await fsReq("PATCH",`/packs/${code}/cards/${encodeURIComponent(c.id)}`,{fields:{owner:fsStr(S.cloudAuth.uid),data:fsStr(JSON.stringify(data))}},true);
     if(!r.ok)throw new Error("card "+r.status);
     changed=true;
@@ -4670,7 +5494,7 @@ function gfImport(pk,quiet){
   const keepIds=new Set();
   cards.forEach(c=>{
     const id="f-"+uid.slice(-12)+"-"+String(c.id||"").slice(-16);keepIds.add(id);
-    const card={id,r:c.r,name:String(c.name||"???").slice(0,22),kana:String(c.kana||"").slice(0,20),flavor:String(c.flavor||"").slice(0,60),h:Number(c.h)||0,shape:"shield",img:c.img,m:"?",pack:p.id,bt:cleanBt(c.bt),friend:true};
+    const card={id,r:c.r,name:String(c.name||"???").slice(0,22),kana:String(c.kana||"").slice(0,20),flavor:String(c.flavor||"").slice(0,60),h:Number(c.h)||0,shape:"shield",img:c.img,m:"?",pack:p.id,bt:c.kind==="item"?null:cleanBt(c.bt),friend:true,...(c.kind==="item"?{kind:"item",it:CUSTOM_ITEMS[c.it]?c.it:"potion"}:{})};
     const at=S.custom.findIndex(x=>x.id===id);if(at>=0)S.custom[at]=card;else S.custom.push(card);
   });
   S.custom=S.custom.filter(c=>c.pack!==p.id||keepIds.has(c.id)); // cards the friend removed disappear
