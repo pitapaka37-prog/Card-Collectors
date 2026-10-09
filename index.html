@@ -854,6 +854,10 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
 .bt-bench.pick .bt-bu.can .bt-face{outline:3px solid var(--yellow);outline-offset:1px}
 .bt-bname{font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tc-field{gap:8px}
+.tc-back{background:repeating-linear-gradient(45deg,#1d2a6b 0 10px,#24357f 10px 20px);border:4px solid var(--ink);color:var(--yellow);font-size:16px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:2px}
+.tc-back b{font-size:44px;line-height:1}
+.tc-reveal{animation:tc-reveal .7s cubic-bezier(.3,1.4,.5,1)}
+@keyframes tc-reveal{0%{transform:rotateY(90deg) scale(.9)}100%{transform:none}}
 .tc-meta{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;font-size:12px;font-weight:700}
 .tc-meta b{font-family:var(--display);font-weight:400;font-size:18px;letter-spacing:.04em}
 .tc-pts{display:inline-flex;gap:2px}
@@ -4658,6 +4662,7 @@ function tcAct(G,s,a){
     const uid=P.hand[a.h];if(!uid||tcInfo(uid).item)return "ヒーローを選んでね";
     P.hand.splice(a.h,1);tcSetActive(G,s,tcUnit(G,uid));
     if(G.A.act&&G.B.act){
+      tcLog(G,"<b>せーの、オープン！</b>");tcEv(G,{reveal:true,sfx:"rare"});
       G.first=Math.random()<.5?"A":"B";
       tcLog(G,`コイントス！ ${tcWho(G,G.first)}が先攻！（先攻の最初の番は攻撃できません）`);
       tcEv(G,{sfx:"up"});
@@ -4824,6 +4829,7 @@ async function tcPlay(){
     if(el&&e.cast){el.classList.remove("cast");void el.offsetWidth;el.classList.add("cast")}
     if(el&&e.hit){el.classList.remove("hit");void el.offsetWidth;el.classList.add("hit")}
     if(el&&e.txt)tcPopEl(el,e.txt,e.cls);
+    if(e.reveal){["tcFAct","tcPAct"].forEach(id=>{const w=$(id).querySelector(".bt-cardwrap");if(w){w.classList.remove("tc-reveal");void w.offsetWidth;w.classList.add("tc-reveal")}});await tcWait(700)}
     await tcWait(e.txt||e.cast||e.ko?380:120);
   }
 }
@@ -4874,6 +4880,8 @@ function tcRender(){
   // the heroes in front
   for(const [s,id] of [[fo,"tcFAct"],[me,"tcPAct"]]){
     const box=$(id),u=G[s].act;
+    if(u&&s===fo&&G.phase==="setup"){ // the opponent's first hero stays face down until both have chosen
+      box.dataset.tcuid="";box.innerHTML=`<div class="bt-cardwrap"><div class="bt-empty tc-back"><b>？</b>準備OK！</div></div><div class="bt-infowrap"><div class="bt-info"><div class="bt-nm"><b>${esc(TC.online?G[s].name:"ENEMY")}</b></div><p class="bt-hint">相手は最初のヒーローを決めました。あなたが選ぶと、同時にオープン！</p></div></div>`;continue}
     if(!u){box.dataset.tcuid="";box.innerHTML=`<div class="bt-cardwrap"><div class="bt-empty">${G.phase==="setup"?(s===me?"手札から<br>えらんでね":"相手が<br>えらんでいます"):"――"}</div></div><div class="bt-infowrap"><div class="bt-info"><div class="bt-nm"><b>${s===me?"YOU":esc(TC.online?G[s].name:"ENEMY")}</b></div><p class="bt-hint">${G.phase==="setup"&&s===me?"下の手札から、最初にバトル場に出すヒーローをタップしてね。":G.phase==="promote"&&s===me?"控えから、次にバトル場に出すヒーローを選んでね。":""}</p></div></div>`;continue}
     box.dataset.tcuid=u.uid;
     const can=s===me&&sel&&(sel.k==="energy"||(sel.k==="item"&&sel.need==="mine"));
@@ -4898,7 +4906,7 @@ function tcRender(){
   $("tcEnd").disabled=!myTurn;
   // hint line
   let hint="";
-  if(G.phase==="setup")hint=P.act?"相手の準備を待っています…":"手札から、最初にバトル場に出すヒーローをタップしてね。";
+  if(G.phase==="setup")hint=P.act?"相手が選ぶのを待っています…（そろったら同時にオープン！）":"手札から、最初にバトル場に出すヒーローをタップしてね。お互いに選んだら同時にオープン！";
   else if(G.phase==="promote")hint=G.need[me]?"控えから、次にバトル場に出すヒーローをタップしてね。":"相手が次のヒーローを選んでいます…";
   else if(sel&&sel.k==="energy")hint="エネルギーを付けるヒーロー（バトル場か控え）をタップしてね。";
   else if(sel&&sel.k==="retreat")hint=`入れ替える控えのヒーローをタップしてね（エネルギー${fa?fa.ret:0}つをトラッシュ）。`;
