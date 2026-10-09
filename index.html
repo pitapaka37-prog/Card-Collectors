@@ -1700,9 +1700,9 @@ function cleanBt(b){
   const str=(x,n)=>typeof x==="string"?x.slice(0,n):"";
   return{t:[0,1,2].includes(b.t)?b.t:0,sk:str(b.sk,12),skn:str(b.skn,14),ps:str(b.ps,12),psn:str(b.psn,14)};
 }
-function load(){
-  let v=null;
-  try{v=JSON.parse(localStorage.getItem(KEY)||"null")}catch(e){}
+function load(raw){
+  let v=raw||null;
+  if(!v)try{v=JSON.parse(localStorage.getItem(KEY)||"null")}catch(e){}
   if(!v||typeof v.gems!=="number")v={};
   const s=Object.assign(JSON.parse(JSON.stringify(DEFAULT)),v);
   if(!Array.isArray(s.custom))s.custom=[];
@@ -1716,7 +1716,7 @@ function load(){
     if(typeof p.shareUid==="string")o.shareUid=p.shareUid.slice(0,40);
     if(p.cloud&&typeof p.cloud.code==="string")o.cloud={code:p.cloud.code.slice(0,6),sig:p.cloud.sig&&typeof p.cloud.sig==="object"?p.cloud.sig:{},metaSig:String(p.cloud.metaSig||"")};
     if(p.friend&&typeof p.friend==="object"){o.friend={from:String(p.friend.from||"").slice(0,12),uid:String(p.friend.uid||"").slice(0,40)};if(typeof p.friend.code==="string")o.friend.code=p.friend.code.slice(0,6);o.friend.ver=Math.max(0,Number(p.friend.ver)||0)}return o});
-  s.custom=s.custom.filter(c=>c&&typeof c.id==="string"&&typeof c.img==="string"&&/^data:image\/(jpeg|png|webp|gif);base64,[A-Za-z0-9+/=]+$/.test(c.img)&&ORDER.includes(c.r))
+  s.custom=s.custom.filter(c=>c&&typeof c.id==="string"&&typeof c.img==="string"&&(c.img==="idb"||/^data:image\/(jpeg|png|webp|gif);base64,[A-Za-z0-9+/=]+$/.test(c.img))&&ORDER.includes(c.r))
     .map(c=>({id:c.id,r:c.r,name:String(c.name||"").slice(0,22),kana:String(c.kana||"").slice(0,20),flavor:String(c.flavor||"").slice(0,60),h:Number(c.h)||0,shape:"shield",img:c.img,m:"?",pack:typeof c.pack==="string"?c.pack:"",bt:c.kind==="item"?null:cleanBt(c.bt),...(c.friend?{friend:true}:{}),...(c.kind==="item"?{kind:"item",it:/^[a-z]{2,12}$/.test(c.it)?c.it:"potion"}:{})}));
   if(!s.pityBy||typeof s.pityBy!=="object")s.pityBy={};
   // migrate the single "MY PACK" from the previous version
@@ -1769,7 +1769,54 @@ function load(){
   if(!s.idleAt)s.idleAt=Date.now();
   return s;
 }
-function save(){try{localStorage.setItem(KEY,JSON.stringify(S));return true}catch(e){return false}}
+/* card pictures of original cards are kept in IndexedDB so you can make many more cards;
+   the normal save (localStorage, about 5 MB) only keeps the marker "idb" for pictures that are safely stored there */
+var imgDB=null,imgReady=false,imgOK=false,imgStored={},imgPending={};
+const imgSig=s=>s.length+":"+s.slice(-32);
+function imgOpen(){
+  if(imgDB)return imgDB;
+  imgDB=new Promise((res,rej)=>{try{const q=indexedDB.open("cch-img",1);q.onupgradeneeded=()=>q.result.createObjectStore("img");q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)}catch(e){rej(e)}});
+  return imgDB;
+}
+function imgPut(id,src){
+  const sg=imgSig(src);if(imgStored[id]===sg||imgPending[id]===sg)return;
+  imgPending[id]=sg;
+  imgOpen().then(db=>new Promise((res,rej)=>{const t=db.transaction("img","readwrite");t.objectStore("img").put(src,id);t.oncomplete=res;t.onerror=()=>rej(t.error)}))
+    .then(()=>{imgStored[id]=sg;delete imgPending[id];saveSoon()}).catch(()=>{delete imgPending[id]});
+}
+let saveTimer=0;function saveSoon(){clearTimeout(saveTimer);saveTimer=setTimeout(save,400)}
+function save(){
+  try{
+    const custom=S.custom.map(c=>{
+      if(imgReady&&imgOK&&typeof c.img==="string"&&c.img.startsWith("data:")){
+        if(imgStored[c.id]===imgSig(c.img))return Object.assign({},c,{img:"idb"}); // already safe in IndexedDB
+        imgPut(c.id,c.img); // not yet: keep it in the normal save this time
+      }
+      return c;
+    });
+    try{localStorage.setItem(KEY,JSON.stringify(Object.assign({},S,{custom})));return true}
+    catch(e){
+      // too big while new pictures are still on their way to IndexedDB (e.g. a big friend gacha): save markers now
+      if(!imgOK)return false;
+      const lite=S.custom.map(c=>typeof c.img==="string"&&c.img.startsWith("data:")?(imgPut(c.id,c.img),Object.assign({},c,{img:"idb"})):c);
+      localStorage.setItem(KEY,JSON.stringify(Object.assign({},S,{custom:lite})));return true;
+    }
+  }catch(e){return false}
+}
+// on start: put the pictures back into the cards, then let save() move the rest over
+async function imgHydrate(){
+  if(typeof indexedDB==="undefined"){imgReady=true;return}
+  try{
+    const db=await imgOpen();
+    const all=await new Promise((res,rej)=>{const t=db.transaction("img","readonly"),st=t.objectStore("img"),out={};const q=st.openCursor();q.onsuccess=()=>{const cur=q.result;if(cur){out[cur.key]=cur.value;cur.continue()}else res(out)};q.onerror=()=>rej(q.error)});
+    const ids=new Set(S.custom.map(c=>c.id));
+    S.custom.forEach(c=>{if(all[c.id]){imgStored[c.id]=imgSig(all[c.id]);if(c.img==="idb")c.img=all[c.id]}});
+    S.custom.forEach(c=>{if(c.img==="idb")c.img="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="}); // picture lost: blank
+    const gone=Object.keys(all).filter(k=>!ids.has(k));
+    if(gone.length){const t=db.transaction("img","readwrite");gone.forEach(k=>t.objectStore("img").delete(k))}
+    imgOK=true;imgReady=true;save();render();
+  }catch(e){console.warn("picture store",e);imgReady=true}
+}
 const esc=s=>String(s).replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
 const $=id=>document.getElementById(id);
 
@@ -2496,7 +2543,9 @@ function resetPackDex(id){
 /* ---- backup: export / import ---- */
 // ask the browser not to clear this site's storage on its own (granted mostly for installed apps)
 try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
+setTimeout(imgHydrate,0);
 $("exportBtn").onclick=()=>{
+  if(!imgReady){$("backupMsg").textContent="準備中です。少し待ってからもう一度押してね。";return}
   const data={app:"card-collectors",version:1,savedAt:new Date().toISOString(),state:S};
   const blob=new Blob([JSON.stringify(data)],{type:"application/json"});
   const a=document.createElement("a");
@@ -2529,10 +2578,8 @@ $("importFile").onchange=e=>{
 $("importGo").onclick=()=>{
   if(!pendingImport)return;
   const before=S;
-  try{localStorage.setItem(KEY,JSON.stringify(pendingImport))}catch(e){
-    $("backupMsg").textContent="保存容量が足りず、読み込めませんでした。";return;
-  }
-  S=load();
+  S=load(JSON.parse(JSON.stringify(pendingImport)));
+  if(S.custom.some(c=>c.img==="idb")){S=before;$("backupMsg").textContent="このファイルは読み込めませんでした。";return}
   if(!save()){S=before;save();$("backupMsg").textContent="保存容量が足りず、読み込めませんでした。";return}
   pendingImport=null;$("importGo").hidden=true;dexSel=null;closeDetail();
   fillPackSelect();render();
@@ -5492,6 +5539,7 @@ async function cloudSyncPack(p){
   p.cloud.sig=now;save();
 }
 async function cloudSyncAll(){
+  if(!imgReady){cloudSyncSoon();return}
   if(cloudBusy){cloudAgain=true;return}
   const packs=S.packs.filter(p=>!p.friend&&p.cloud&&p.cloud.code);
   if(!packs.length)return;
@@ -5502,6 +5550,7 @@ async function cloudSyncAll(){
 }
 function cloudSyncSoon(){clearTimeout(cloudTimer);cloudTimer=setTimeout(cloudSyncAll,2500)}
 async function gsOpen(p){
+  if(!imgReady){toast("準備中です。少し待ってからもう一度押してね");return}
   const list=cardsIn(p.id);if(!list.length)return;
   $("gsModal").hidden=false;document.body.style.overflow="hidden";
   $("gsName").textContent=pname(p);
