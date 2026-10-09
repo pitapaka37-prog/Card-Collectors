@@ -865,7 +865,45 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
 .bt-bench.pick .bt-bu.can{animation:ts-float 1.6s ease-in-out infinite}
 .bt-bench.pick .bt-bu.can .bt-face{outline:3px solid var(--yellow);outline-offset:1px}
 .bt-bname{font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tc-field{gap:8px}
+.tc-field{gap:8px;position:relative}
+/* cut-ins */
+.tc-cut{position:fixed;inset:0;z-index:60;display:none;place-items:center;pointer-events:none;overflow:hidden}
+.tc-cut.on{display:grid;background:rgba(10,10,30,.35)}
+.tc-cutin{animation:tc-cutin .45s cubic-bezier(.2,1.5,.4,1)}
+@keyframes tc-cutin{0%{transform:scale(.3) rotate(-8deg);opacity:0}100%{transform:none;opacity:1}}
+.tc-go{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 40px;background:linear-gradient(90deg,transparent,var(--yellow) 15%,var(--yellow) 85%,transparent);transform:skewX(-8deg)}
+.tc-go.foe{background:linear-gradient(90deg,transparent,#ff5c5c 15%,#ff5c5c 85%,transparent)}
+.tc-go b{font-family:var(--display);font-size:52px;line-height:1;color:#fff;-webkit-text-stroke:2px var(--ink);text-shadow:4px 4px 0 var(--ink)}
+.tc-go span{font-family:var(--display);font-size:22px;color:var(--ink)}
+.tc-go small{font-size:12px;font-weight:900;color:var(--ink)}
+.tc-sup{display:flex;align-items:center;gap:12px;padding:12px 14px;background:#fff;border:4px solid var(--ink);box-shadow:6px 6px 0 var(--ink);max-width:min(340px,92%)}
+.tc-sup.me{border-color:#1d9e5a}.tc-sup.foe{border-color:#e2231a}
+.tc-sup-card{flex:none;width:96px}.tc-sup-card .card{width:96px;font-size:8px;animation:tc-spin .6s ease-out}
+@keyframes tc-spin{0%{transform:rotateY(180deg) scale(.6)}100%{transform:none}}
+.tc-sup-txt{display:flex;flex-direction:column;gap:3px;min-width:0}
+.tc-sup-txt small{font-weight:900;font-size:11px;color:#1d9e5a}.tc-sup.foe .tc-sup-txt small{color:#e2231a}
+.tc-sup-txt b{font-size:18px;font-weight:900}
+.tc-sup-txt span{font-size:12px;font-weight:700;line-height:1.4}
+/* entering the battle spot */
+.bt-cardwrap.tc-enter{animation:tc-enter .6s cubic-bezier(.2,1.6,.4,1)}
+@keyframes tc-enter{0%{transform:translateY(-60px) scale(.6);opacity:0;filter:brightness(2)}60%{filter:brightness(1.6) drop-shadow(0 0 14px #ffd21f)}100%{transform:none;opacity:1;filter:none}}
+/* status marks */
+.tc-stx{position:absolute;left:2px;right:2px;bottom:3px;z-index:3;display:flex;flex-wrap:wrap;gap:2px;justify-content:center;pointer-events:none}
+.tc-stx i{font-style:normal;font-size:11px;font-weight:900;line-height:1.3;padding:0 4px;border:2px solid var(--ink);border-radius:6px;background:#fff;white-space:nowrap}
+.tc-bu .tc-stx i{font-size:9px;padding:0 2px;border-width:1.5px}
+.tc-stx .st-stun{background:#ffe14d}.tc-stx .st-burn{background:#ff7a3c;color:#fff}.tc-stx .st-tired{background:#c9d3ff}
+.tc-stx .st-down{background:#ffd9d6}.tc-stx .st-up{background:#d9f7df}.tc-stx .st-guard{background:#cfe6ff}
+.bt-face.is-stun{animation:tc-jitter .35s steps(2) infinite;box-shadow:0 0 0 3px #ffe14d,4px 4px 0 var(--ink)}
+@keyframes tc-jitter{0%{transform:translate(-1px,0)}50%{transform:translate(1px,1px)}100%{transform:translate(0,-1px)}}
+.tc-fx-stun{position:absolute;inset:0;z-index:2;pointer-events:none;background:repeating-linear-gradient(115deg,transparent 0 18px,rgba(255,230,60,.55) 18px 22px,transparent 22px 40px);animation:tc-zap .5s steps(2) infinite}
+@keyframes tc-zap{0%{opacity:.9}50%{opacity:.2}}
+.bt-face.is-burn{box-shadow:0 0 0 3px #ff7a3c,0 0 14px #ff5a1f,4px 4px 0 var(--ink)}
+.tc-fx-burn{position:absolute;left:0;right:0;bottom:0;height:60%;z-index:2;pointer-events:none;background:linear-gradient(0deg,rgba(255,90,20,.55),transparent)}
+.tc-fx-burn i{position:absolute;bottom:4px;font-style:normal;font-size:18px;animation:tc-flame 1s ease-in infinite}
+.tc-fx-burn i:nth-child(1){left:12%}.tc-fx-burn i:nth-child(2){left:44%;animation-delay:.33s}.tc-fx-burn i:nth-child(3){left:74%;animation-delay:.66s}
+@keyframes tc-flame{0%{transform:translateY(0) scale(1);opacity:1}100%{transform:translateY(-40px) scale(.5);opacity:0}}
+.bt-pop.st{font-size:22px;top:40%}.bt-pop.st.stun{color:#ffe14d}.bt-pop.st.burn{color:#ff8a3c}.bt-pop.st.down{color:#c9d3ff}
+.bt-pop.dmg.burn{color:#ff8a3c}
 .tc-back{background:repeating-linear-gradient(45deg,#1d2a6b 0 10px,#24357f 10px 20px);border:4px solid var(--ink);color:var(--yellow);font-size:16px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:2px}
 .tc-back b{font-size:44px;line-height:1}
 .tc-reveal{animation:tc-reveal .7s cubic-bezier(.3,1.4,.5,1)}
@@ -1375,6 +1413,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
       <div class="bt-arena tc-arena" id="tcArena" hidden>
         <div class="bt-bar"><b class="bt-turn" id="tcTurn">SETUP</b><span class="tc-who" id="tcWho"></span><span class="bt-net" id="tcNet" hidden></span><button type="button" class="ghost bt-giveup" id="tcGiveUp">降参</button></div>
         <div class="bt-field tc-field">
+          <div class="tc-cut" id="tcCut" aria-hidden="true"></div>
           <div class="tc-meta foe" id="tcFMeta"></div>
           <div class="tc-bench foe" id="tcFBench"></div>
           <div class="bt-act foe" id="tcFAct"></div>
@@ -4712,7 +4751,7 @@ function tcStartTurn(G,s){
     if(tcPk(a,"charge")){a.en++;tcLog(G,`${tcName(G,s,a)} にエネルギーが自動で付いた！`);tcEv(G,{s,uid:a.uid,txt:"+⚡",cls:"heal"})}
   }
 }
-function tcSetActive(G,s,u){G[s].act=u;u.ambush=!!tcPk(u,"ambush");u.actT=G.turn}
+function tcSetActive(G,s,u){G[s].act=u;u.ambush=!!tcPk(u,"ambush");u.actT=G.turn;if(G.phase!=="setup")tcEv(G,{s,uid:u.uid,enter:true})}
 const tcDw=(u,k)=>tcInfo(u.uid).dw===k;
 function tcHeal(u,amt){if(tcDw(u,"weakheal"))amt=Math.round(amt/2);const b=u.hp;u.hp=Math.min(u.maxHp,u.hp+Math.max(0,amt));return u.hp-b}
 // can this hero attack right now?
@@ -4775,9 +4814,9 @@ function tcUseSkill(G,s,u){
     else if(x.k==="reflect"){u.mods.push({k:"reflect",v:x.v,t:x.turns});tcLog(G,`${tcName(G,s,u)} は反撃の構え！`);tcEv(G,{s,uid:u.uid,txt:"COUNTER",cls:"heal",sfx:"tink"})}
     else if(foe&&foe.hp>0){
       if(tcPk(foe,"immune")&&(x.k==="weaken"||x.k==="stun"||x.k==="dot")){tcLog(G,`${tcName(G,fs,foe)} には効かない！`);continue}
-      if(x.k==="weaken"){foe.mods.push({k:"weaken",v:x.v,t:x.turns});tcLog(G,`${tcName(G,fs,foe)} のダメージがダウン！`);tcEv(G,{s:fs,uid:foe.uid,txt:"POWER DOWN",cls:"weak"})}
-      else if(x.k==="stun"){if(Math.random()<x.ch){foe.stun=true;tcLog(G,`${tcName(G,fs,foe)} はしびれた！`);tcEv(G,{s:fs,uid:foe.uid,txt:"STUN",cls:"weak",sfx:"thunder"})}else tcLog(G,`${tcName(G,fs,foe)} はしびれなかった`)}
-      else if(x.k==="dot"){foe.dot={v:x.v,t:x.turns};tcLog(G,`${tcName(G,fs,foe)} はやけどした！`);tcEv(G,{s:fs,uid:foe.uid,txt:"BURN",cls:"weak"})}
+      if(x.k==="weaken"){foe.mods.push({k:"weaken",v:x.v,t:x.turns});tcLog(G,`${tcName(G,fs,foe)} のダメージがダウン！`);tcEv(G,{s:fs,uid:foe.uid,txt:"▼パワーダウン",cls:"st down"})}
+      else if(x.k==="stun"){if(Math.random()<x.ch){foe.stun=true;tcLog(G,`${tcName(G,fs,foe)} はしびれた！`);tcEv(G,{s:fs,uid:foe.uid,txt:"⚡しびれた！",cls:"st stun",sfx:"thunder"})}else tcLog(G,`${tcName(G,fs,foe)} はしびれなかった`)}
+      else if(x.k==="dot"){foe.dot={v:x.v,t:x.turns};tcLog(G,`${tcName(G,fs,foe)} はやけどした！`);tcEv(G,{s:fs,uid:foe.uid,txt:"🔥やけど！",cls:"st burn",sfx:"boom"})}
       else if(x.k==="drain"){if(foe.en>0){foe.en--;tcLog(G,`${tcName(G,fs,foe)} のエネルギーを1つトラッシュ！`);tcEv(G,{s:fs,uid:foe.uid,txt:"-⚡",cls:"weak"})}}
     }
   }
@@ -4819,7 +4858,7 @@ function tcEndTurn(G){
   const s=G.cur,P=G[s],a=P.act;
   // check-up for the hero that just ended its turn
   if(a&&a.hp>0){
-    if(a.dot){const d=Math.max(1,Math.round(a.maxHp*a.dot.v));a.hp=Math.max(0,a.hp-d);tcLog(G,`${tcName(G,s,a)} はやけどで ${d} ダメージ！`);tcEv(G,{s,uid:a.uid,txt:"-"+d,cls:"dmg"});if(--a.dot.t<=0)a.dot=null}
+    if(a.dot){const d=Math.max(1,Math.round(a.maxHp*a.dot.v));a.hp=Math.max(0,a.hp-d);tcLog(G,`${tcName(G,s,a)} はやけどで ${d} ダメージ！`);tcEv(G,{s,uid:a.uid,txt:"🔥-"+d,cls:"dmg burn"});if(--a.dot.t<=0)a.dot=null}
     if(tcDw(a,"decay")&&a.hp>0){const d=Math.max(1,Math.round(a.maxHp*.04));a.hp=Math.max(0,a.hp-d);tcEv(G,{s,uid:a.uid,txt:"-"+d,cls:"dmg"})}
     a.stun=false;
   }
@@ -4899,6 +4938,7 @@ function tcAct(G,s,a){
     if(it==="gust"&&!F.bench[a.w])return "相手の控えから選んでね";
     if(it==="breaker"&&!(F.act&&F.act.en>=1))return "相手のバトル場にエネルギーがありません";
     P.hand.splice(a.h,1);P.disc.push(uid); // the item goes to the discard pile
+    tcEv(G,{s,item:uid,sfx:"rankup"});
     let msg="";
     if(it==="potion"){tcHeal(act,Math.round(act.maxHp*f.v/100));msg=`${tcName(G,s,act)} のHPが回復！`;tcEv(G,{s,uid:act.uid,txt:"HEAL",cls:"heal",sfx:"up"})}
     else if(it==="team"){[act].concat(P.bench).forEach(u=>{if(u)tcHeal(u,Math.round(u.maxHp*f.v/100))});msg="味方全員のHPが回復！";if(act)tcEv(G,{s,uid:act.uid,txt:"HEAL",cls:"heal",sfx:"up"})}
@@ -5036,8 +5076,43 @@ async function tcPlay(){
     if(el&&e.hit){el.classList.remove("hit");void el.offsetWidth;el.classList.add("hit")}
     if(el&&e.txt)tcPopEl(el,e.txt,e.cls);
     if(e.reveal){["tcFAct","tcPAct"].forEach(id=>{const w=$(id).querySelector(".bt-cardwrap");if(w){w.classList.remove("tc-reveal");void w.offsetWidth;w.classList.add("tc-reveal")}});await tcWait(700)}
+    if(e.enter){ // a hero comes into the battle spot
+      const w=el&&el.querySelector(".bt-cardwrap");if(w){w.classList.remove("tc-enter");void w.offsetWidth;w.classList.add("tc-enter")}
+      const c=tcInfo(e.uid).c;sfx("flip");
+      await tcCutIn(`<div class="tc-go ${e.s===TC.me?"me":"foe"}"><b>GO!</b><span>${esc(c.name||"")}</span><small>${e.s===TC.me?"バトル場に登場！":(TC.online?esc(G[e.s].name)+"の":"敵の")+"ヒーローが登場！"}</small></div>`,800);
+    }
+    if(e.item){ // a support card is used
+      const f=tcInfo(e.item),wrap=document.createElement("div");wrap.className="tc-sup "+(e.s===TC.me?"me":"foe");
+      const cw=document.createElement("div");cw.className="tc-sup-card";cw.appendChild(cardEl(f.c,{flipped:true}));
+      wrap.appendChild(cw);wrap.insertAdjacentHTML("beforeend",`<div class="tc-sup-txt"><small>${e.s===TC.me?"あなたの":(TC.online?esc(G[e.s].name)+"の":"敵の")}サポート</small><b>${esc(f.name)}</b><span>${esc(f.desc)}</span></div>`);
+      await tcCutIn(wrap,1300);
+    }
     await tcWait(e.txt||e.cast||e.ko?380:120);
   }
+}
+// a big picture over the field for a moment
+function tcCutIn(content,ms){
+  const box=document.getElementById("tcCut");if(!box||BT_FAST)return Promise.resolve();
+  box.innerHTML="";const inner=document.createElement("div");inner.className="tc-cutin";
+  if(typeof content==="string")inner.innerHTML=content;else inner.appendChild(content);
+  box.appendChild(inner);box.classList.add("on");
+  return new Promise(r=>setTimeout(()=>{box.classList.remove("on");box.innerHTML="";r()},ms));
+}
+// status marks drawn on a hero's picture (stun, burn, guard, ...)
+function tcDecor(el,u){
+  if(!el||!u)return;
+  const b=[];let atk=0;u.mods.forEach(x=>{if(x.k==="buff")atk+=x.v;if(x.k==="weaken")atk-=x.v});
+  if(u.stun)b.push(`<i class="st-stun">⚡しびれ</i>`);
+  if(u.dot)b.push(`<i class="st-burn">🔥やけど</i>`);
+  if(u.tired===2)b.push(`<i class="st-tired">💤つかれ</i>`);
+  if(atk<0)b.push(`<i class="st-down">▼パワー</i>`);
+  if(atk>0)b.push(`<i class="st-up">▲パワー</i>`);
+  if(u.mods.some(x=>x.k==="guard"))b.push(`<i class="st-guard">🛡ガード</i>`);
+  if(u.mods.some(x=>x.k==="reflect"))b.push(`<i class="st-guard">↩反撃</i>`);
+  el.classList.toggle("is-stun",!!u.stun);el.classList.toggle("is-burn",!!u.dot);
+  if(b.length)el.insertAdjacentHTML("beforeend",`<span class="tc-stx">${b.join("")}</span>`);
+  if(u.stun)el.insertAdjacentHTML("beforeend",`<span class="tc-fx-stun"></span>`);
+  if(u.dot)el.insertAdjacentHTML("beforeend",`<span class="tc-fx-burn"><i>🔥</i><i>🔥</i><i>🔥</i></span>`);
 }
 function tcPips(n,max){let h="";for(let k=0;k<Math.max(n,max);k++)h+=`<i class="${k<n?"on":""}"></i>`;return h}
 function tcChips(u){
@@ -5062,7 +5137,7 @@ function tcMeta(G,s){
 function tcUnitBtn(G,s,u,i,pickable){
   const f=tcInfo(u.uid);
   const b=document.createElement("button");b.type="button";b.className="bt-bu tc-bu"+(pickable?" can":"");b.dataset.tcuid=u.uid;
-  b.appendChild(btFace(f.c));
+  b.appendChild(btFace(f.c));tcDecor(b.querySelector(".bt-face"),u);
   b.insertAdjacentHTML("beforeend",`<span class="bt-bstat"><span class="bt-type t${f.type}">${BT_TYPES[f.type]}</span>${u.hp}/${u.maxHp}</span>${btBar(u)}<span class="tc-ben">⚡${u.en}</span>`);
   b.onclick=()=>tcTapUnit(s,i);
   return b;
@@ -5092,7 +5167,7 @@ function tcRender(){
     box.dataset.tcuid=u.uid;
     const can=s===me&&sel&&(sel.k==="energy"||(sel.k==="item"&&sel.need==="mine"));
     box.innerHTML=`<button type="button" class="bt-cardwrap${can?" tc-can":""}" aria-label="${esc(tcInfo(u.uid).c.name)} のステータス"></button><div class="bt-infowrap">${tcActHTML(G,s,u)}</div>`;
-    const w=box.querySelector(".bt-cardwrap");w.appendChild(btFace(tcInfo(u.uid).c));w.onclick=()=>tcTapUnit(s,"a");
+    const w=box.querySelector(".bt-cardwrap");w.appendChild(btFace(tcInfo(u.uid).c));tcDecor(w.querySelector(".bt-face"),u);w.onclick=()=>tcTapUnit(s,"a");
   }
   const lg=$("tcLog");lg.innerHTML=G.log.map((m,i)=>`<div class="${i?"old":""}">${m}</div>`).join("");
   // commands
