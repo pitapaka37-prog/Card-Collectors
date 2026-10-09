@@ -789,6 +789,8 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
 .dk-st .bt-type{width:18px;height:18px;font-size:10px}
 .dk-st b{font-size:13px}
 .dk-more{align-self:flex-start;font-size:12px;font-weight:700;border:2px solid var(--ink);background:#fff;padding:0 8px;box-shadow:2px 2px 0 var(--ink)}
+.dk-own{position:absolute;left:-6px;top:38%;z-index:4;font-family:var(--display);font-size:17px;line-height:1;background:var(--yellow);color:var(--ink);border:3px solid var(--ink);padding:3px 6px 2px;transform:rotate(-6deg);box-shadow:2px 2px 0 var(--ink)}
+.dk-own small{font-family:var(--jp);font-size:9px;font-weight:700}
 .dk-in{position:absolute;top:-8px;right:-6px;z-index:4;font-family:var(--display);font-size:18px;background:var(--red);color:#fff;border:3px solid var(--ink);padding:0 7px;transform:rotate(8deg);box-shadow:2px 2px 0 var(--ink)}
 .dk-lock{position:absolute;left:50%;top:45%;z-index:4;transform:translate(-50%,-50%) rotate(-8deg);font-family:var(--display);font-size:16px;white-space:nowrap;background:var(--ink);color:#fff;padding:0 8px}
 @media (max-width:640px){.dk-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px 8px}.dk-top{padding:10px}.dk-filter button{font-size:16px;padding:2px 9px}}
@@ -4358,6 +4360,7 @@ function dkDrawEdit(){
     if(inDeck)b.insertAdjacentHTML("beforeend",`<span class="dk-in">IN${c.img?` ×${nIn}`:""}</span>`);
     else if(cap)b.insertAdjacentHTML("beforeend",`<span class="dk-lock">${dkOver(list,c)?`${c.r}は1枚まで`:"コストオーバー"}</span>`);
     if(!c.img)b.insertAdjacentHTML("beforeend",`<span class="dk-cc big">${DK_COST[c.r]}</span>`);
+    if(c.img&&(S.owned[c.id]||0)>=2)b.insertAdjacentHTML("beforeend",`<span class="dk-own">×2</span>`);
     b.onclick=()=>dkToggle(c);
     w.appendChild(b);
     w.insertAdjacentHTML("beforeend",`<div class="dk-st">${btStdOK(c)?`<b class="lv-badge sm">Lv${p.lv}</b>`:""}${c.img?tcStatsHTML(c):`<span class="bt-type t${p.type}">${BT_TYPES[p.type]}</span><span>HP <b>${p.hp}</b></span><span>ATK <b>${p.atk}</b></span><span>SPD <b>${p.spd}</b></span>`}</div>`);
@@ -4381,7 +4384,7 @@ function dkItemsDraw(){
     const on=inList.includes(c),nIn=dkN(inList,c);
     const w=document.createElement("div");w.className="dk-card"+(on?" in":"")+(!on&&cdkTotal(dkEditK)>=DK_TOTAL?" off":"");
     const b=document.createElement("button");b.type="button";b.className="dk-pick";b.setAttribute("aria-label",`${c.name} を${on?"外す":"入れる"}`);
-    b.appendChild(cardEl(c,{flipped:true}));if(on)b.insertAdjacentHTML("beforeend",`<span class="dk-in">IN ×${nIn}</span>`);
+    b.appendChild(cardEl(c,{flipped:true}));if(on)b.insertAdjacentHTML("beforeend",`<span class="dk-in">IN ×${nIn}</span>`);if((S.owned[c.id]||0)>=2)b.insertAdjacentHTML("beforeend",`<span class="dk-own">×2</span>`);
     b.onclick=()=>{
       const ids=dkItems(dkEditK).map(x=>x.id),n=dkN(dkItems(dkEditK),c),room=cdkTotal(dkEditK)<DK_TOTAL;
       if(n<dkMax(c)&&room){ids.push(c.id);sfx("flip")}
