@@ -376,6 +376,12 @@ nav button span{font-family:var(--body);font-size:13px;font-weight:700}
 .mk-kind{display:flex;gap:8px;margin-bottom:4px}
 .mk-kind button{flex:1;padding:8px 10px;border:3px solid var(--ink);border-radius:10px;background:#fff;font:900 15px var(--jp);cursor:pointer}
 .mk-kind button.sel{background:#ffd23f;box-shadow:3px 3px 0 var(--ink)}
+.ed-wrap{display:grid;grid-template-columns:130px 1fr;gap:12px;align-items:start}
+.ed-prev{display:flex;flex-direction:column;gap:6px;align-items:stretch}
+.ed-prev .card{width:130px;font-size:10px}
+.ed-img{text-align:center;font-size:13px;padding:4px 6px;cursor:pointer}
+.ed-fields{display:flex;flex-direction:column;gap:8px;min-width:0}
+.ab-modal .mission{max-height:92vh;overflow:auto}
 .it-choose{display:flex;flex-wrap:wrap;gap:6px}
 .it-choose button{padding:5px 10px;border:2px solid var(--ink);border-radius:999px;background:#fff;font:700 13px var(--jp);cursor:pointer}
 .it-choose button.sel{background:#ffd23f;box-shadow:2px 2px 0 var(--ink)}
@@ -1395,10 +1401,19 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
   <div class="detail ms-modal ab-modal" id="abModal" hidden role="dialog" aria-modal="true" aria-label="能力を編集">
     <div class="mission">
       <button type="button" class="close" id="abClose" aria-label="閉じる">×</button>
-      <div class="ms-head"><b>ABILITY</b><span id="abTitle"></span></div>
-      <p class="ab-note">効果はカードを作ったときにランダムで決まっています。ここでは、わざととくせいの名前を変えられます。</p>
-      <fieldset class="ab-set" id="abEdit"><legend>バトルの能力</legend></fieldset>
-      <div class="dk-btns"><button type="button" class="btn-main" id="abSave">この能力にする</button><button type="button" class="ghost" id="abCancel">やめる</button></div>
+      <div class="ms-head"><b>EDIT</b><span id="abTitle"></span></div>
+      <div class="ed-wrap">
+        <div class="ed-prev"><div id="edPrev"></div><label class="ghost ed-img">画像を変える<input type="file" id="edFile" accept="image/*" hidden></label></div>
+        <div class="ed-fields">
+          <div class="field"><label for="edName">名前</label><input type="text" id="edName" maxlength="22"></div>
+          <div class="field"><label for="edKana">よみ・サブタイトル</label><input type="text" id="edKana" maxlength="20"></div>
+          <div class="field"><label for="edFlavor">説明文</label><textarea id="edFlavor" maxlength="60"></textarea></div>
+          <div class="field"><label for="edHue">カードの色</label><input type="range" id="edHue" min="0" max="359"></div>
+        </div>
+      </div>
+      <fieldset class="ab-set" id="edItem" hidden><legend>サポートの効果</legend><div class="it-choose" id="edItChoose"></div><p class="ab-note" id="edItInfo"></p></fieldset>
+      <fieldset class="ab-set" id="abEdit"><legend>バトルの能力（効果はランダムで決まっています。タイプと名前を変えられます）</legend></fieldset>
+      <div class="dk-btns"><button type="button" class="btn-main" id="abSave">保存する</button><button type="button" class="ghost" id="abCancel">やめる</button></div>
     </div>
   </div>
   <div class="detail ms-modal gs-modal" id="gsModal" hidden role="dialog" aria-modal="true" aria-label="ガチャのコード">
@@ -1501,7 +1516,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
           </div>
           <div class="actions">
             <button type="submit" class="btn-main" id="mkAdd" disabled>ADD TO PACK!</button>
-            <span class="maker-msg" id="mkMsg" role="status">画像と名前を入れると追加できます。</span>
+            <span class="maker-msg" id="mkMsg" role="status">画像を入れると追加できます（名前などは空白でもOK）。</span>
           </div>
         </form>
       </div>
@@ -1817,7 +1832,7 @@ function cardEl(c,{flipped=false,isNew=false,sfx=false}={}){
   d.className="card"+(flipped?" flipped":"");d.dataset.r=c.r;d.dataset.shape=c.shape;d.style.setProperty("--h",c.h);
   const tag=c.unlock?`<span class="custom-tag msn">${stdNoText(c)} UNLOCK</span>`:c.reward?`<span class="custom-tag msn">${stdNoText(c)} MISSION</span>`:c.shop?`<span class="custom-tag ltd">${stdNoText(c)} LIMITED</span>`:isItem(c)?`<span class="custom-tag item">SUPPORT</span>`:c.img?`<span class="custom-tag">ORIGINAL</span>`:`<span class="no">${stdNoText(c)}</span>`;
   const art=(c.img||c.photo)?`<div class="art${c.photo?" photo":""}"></div>`:((c.look||(typeof c.id==="number"&&LOOKS[c.id]))?`<div class="art hero">${heroSVG(c.look||LOOKS[c.id],c.h)}</div>`:`<div class="emblem"><span>${c.m}</span></div>`);
-  d.innerHTML=`<div class="inner"><div class="face back"></div><div class="face front"><div class="top"><span class="rar">${c.r}</span>${tag}</div>${art}<div class="name"><b>${esc(c.name||"???")}</b><small>${esc(c.kana||"")}</small></div></div></div>${sfx&&SFX[c.r]?`<span class="sfx">${SFX[c.r]}</span>`:""}${isNew?'<span class="new">NEW!</span>':""}`;
+  d.innerHTML=`<div class="inner"><div class="face back"></div><div class="face front"><div class="top"><span class="rar">${c.r}</span>${tag}</div>${art}<div class="name"><b>${esc(c.name||"")}</b><small>${esc(c.kana||"")}</small></div></div></div>${sfx&&SFX[c.r]?`<span class="sfx">${SFX[c.r]}</span>`:""}${isNew?'<span class="new">NEW!</span>':""}`;
   if(c.img||c.photo)d.querySelector(".art").style.backgroundImage=`url("${c.img||c.photo}")`;
   return d;
 }
@@ -2640,7 +2655,7 @@ function drawDetail(){
     <button type="button" class="ghost fav-detail ${isFav(c)?"on":""}" id="dFav">${isFav(c)?"★ お気に入り登録中":"☆ お気に入りに登録"}</button>
     ${detailMode==="cards"?lvFuseHTML(c):""}
     ${btAbilityHTML(c,detailMode!=="cards")}
-    ${c.img&&!isItem(c)&&detailMode==="cards"?`<button type="button" class="ghost" id="dAb">わざ・とくせいの名前を変える</button>`:""}
+    ${c.img&&!c.friend&&detailMode==="cards"?`<button type="button" class="ghost" id="dAb">カードを編集する</button>`:""}
     <div class="nav"><button type="button" class="ghost" id="dPrev">← 前のカード</button><span style="align-self:center;font-weight:700;font-variant-numeric:tabular-nums">${detailIdx+1} / ${detailList.length}</span><button type="button" class="ghost" id="dNext">次のカード →</button></div>`;
   const close=document.createElement("button");close.type="button";close.className="close";close.textContent="×";close.setAttribute("aria-label","閉じる");close.onclick=closeDetail;
   box.append(close,cw,t);d.appendChild(box);
@@ -2972,7 +2987,7 @@ function renderMine(){
           sel.value=c.pack;sel.onchange=()=>{c.pack=sel.value;save();render()};
           tools.appendChild(sel);
         }
-        if(!isItem(c)){const ab=document.createElement("button");ab.className="ghost";ab.textContent="能力";ab.type="button";ab.onclick=()=>abOpen(c);tools.appendChild(ab)}
+        {const ab=document.createElement("button");ab.className="ghost";ab.textContent="編集";ab.type="button";ab.onclick=()=>abOpen(c);tools.appendChild(ab)}
         const del=document.createElement("button");del.className="ghost";del.textContent="削除";del.type="button";
         armed(del,"削除","もう一度押すと削除",()=>{S.custom=S.custom.filter(x=>x.id!==c.id);delete S.owned[c.id];save();render()});
         tools.appendChild(del);s.appendChild(tools);g.appendChild(s);
@@ -3083,13 +3098,13 @@ function fillPackSelect(){
 }
 function syncNewField(){$("mkNewWrap").hidden=$("mkPack").value!=="__new";updatePreview()}
 $("mkPack").addEventListener("change",syncNewField);
-function draft(){return{id:"preview",r:$("mkRar").value,name:$("mkName").value.trim()||"Your Hero",kana:$("mkKana").value.trim(),flavor:$("mkFlavor").value.trim(),h:+$("mkHue").value,shape:"shield",img:mkImg,m:"?",...(mkK==="item"?{kind:"item",it:mkIt||"potion"}:{})}}
+function draft(){return{id:"preview",r:$("mkRar").value,name:$("mkName").value.trim(),kana:$("mkKana").value.trim(),flavor:$("mkFlavor").value.trim(),h:+$("mkHue").value,shape:"shield",img:mkImg,m:"?",...(mkK==="item"?{kind:"item",it:mkIt||"potion"}:{})}}
 function updatePreview(){
   const d=draft();
   const box=$("mkPreview");box.innerHTML="";
   if(!mkImg){d.img=null;d.m="IMG";d.shape="burst"}
   box.appendChild(cardEl(d,{flipped:true}));
-  $("mkAdd").disabled=!(mkImg&&$("mkName").value.trim());
+  $("mkAdd").disabled=!mkImg;
 }
 function loadImage(file){
   if(!file||!file.type.startsWith("image/")){$("mkMsg").textContent="画像ファイルを選んでください。";return}
@@ -3105,7 +3120,7 @@ function loadImage(file){
       ctx.drawImage(img,(W-w)/2,(H-h)/2,w,h);
       mkImg=cv.toDataURL("image/jpeg",0.82);
       $("mkFileName").textContent=file.name;
-      $("mkMsg").textContent=$("mkName").value.trim()?"準備OK！":"名前を入れてください。";
+      $("mkMsg").textContent="準備OK！";
       updatePreview();
     };
     img.onerror=()=>{$("mkMsg").textContent="この画像は読み込めませんでした。別の画像を試してください。"};
@@ -3120,10 +3135,10 @@ const drop=$("mkDrop");
 ["dragleave","drop"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove("over")}));
 drop.addEventListener("drop",e=>loadImage(e.dataTransfer.files[0]));
 document.addEventListener("paste",e=>{if($("view-make").hidden)return;const f=[...(e.clipboardData?.files||[])].find(f=>f.type.startsWith("image/"));if(f)loadImage(f)});
-["mkName","mkKana","mkFlavor","mkHue","mkRar"].forEach(id=>$(id).addEventListener("input",()=>{updatePreview();if(mkImg&&$("mkName").value.trim())$("mkMsg").textContent="準備OK！"}));
+["mkName","mkKana","mkFlavor","mkHue","mkRar"].forEach(id=>$(id).addEventListener("input",()=>{updatePreview();if(mkImg)$("mkMsg").textContent="準備OK！"}));
 $("mkForm").addEventListener("submit",e=>{
   e.preventDefault();
-  if(!mkImg||!$("mkName").value.trim())return;
+  if(!mkImg)return;
   let packId=$("mkPack").value,made=null;
   if(packId==="__new"){made=createPack($("mkNewPack").value);packId=made.id}
   const c=draft();c.id=newId("c");c.shape="shield";c.pack=packId;
@@ -3787,9 +3802,9 @@ function btCustomAbil(c){
   const sks=Object.keys(CUSTOM_SKILLS),pss=Object.keys(CUSTOM_PASSIVES);
   const t=[0,1,2].includes(b.t)?b.t:h%3;
   const sk=CUSTOM_SKILLS[b.sk]?b.sk:sks[h%sks.length];
-  const skill=Object.assign({},CUSTOM_SKILLS[sk],{key:sk,name:(b.skn||"").trim()||CUSTOM_SKILLS[sk].name});
+  const skill=Object.assign({},CUSTOM_SKILLS[sk],{key:sk,name:(b.skn||"").trim()});
   let p=null;
-  if(customHasPassive(c.r)){const ps=CUSTOM_PASSIVES[b.ps]?b.ps:pss[(h>>>4)%pss.length];p=Object.assign({},CUSTOM_PASSIVES[ps],{name:(b.psn||"").trim()||CUSTOM_PASSIVES[ps].name})}
+  if(customHasPassive(c.r)){const ps=CUSTOM_PASSIVES[b.ps]?b.ps:pss[(h>>>4)%pss.length];p=Object.assign({},CUSTOM_PASSIVES[ps],{name:(b.psn||"").trim()})}
   return{t,s:skill,p};
 }
 /* ---- card levels (STAR LIGHT cards only): Lv 1-100, from battles and fusing duplicates ---- */
@@ -3858,16 +3873,30 @@ function abRarity(pre,r){
   else{
     const sk=CUSTOM_SKILLS[b.sk],ps=CUSTOM_PASSIVES[b.ps];
     $(pre+"Info").innerHTML=`
-      <div><small>わざの効果</small> ${sk?`${sk.desc}（チャージ${sk.cost}）`:"-"}</div>
-      ${on?`<div><small>とくせいの効果</small> ${ps?ps.desc:"-"}</div>`:""}`;
+      ${(()=>{let f=null;try{f=tcStatic({id:"ab-preview",name:"",r,img:"x",bt:b})}catch(e){}
+        return f?`<div><small>わざの効果</small> ⚡${f.cost} ・ ${esc(f.skill.desc)}</div>${on&&f.passive?`<div><small>とくせいの効果</small> ${esc(f.passive.desc)}</div>`:""}`
+        :`<div><small>わざの効果</small> ${sk?sk.desc:"-"}</div>${on?`<div><small>とくせいの効果</small> ${ps?ps.desc:"-"}</div>`:""}`})()}`;
   }
-  $(pre+"Note").textContent=(on?"":`とくせいは ${CUSTOM_PASSIVE_MIN} 以上のカードだけに付きます。 `)+"名前を空けておくと、効果の名前がそのまま使われます。";
+  $(pre+"Note").textContent=(on?"":`とくせいは ${CUSTOM_PASSIVE_MIN} 以上のカードだけに付きます。 `)+"名前を付けなければ空白のままです。";
 }
 let abCard=null,abAfter=null;
+let edImg=null,edIt="";
+function edDraft(){return Object.assign({},abCard,{name:$("edName").value.trim(),kana:$("edKana").value.trim(),flavor:$("edFlavor").value.trim(),h:+$("edHue").value,img:edImg||abCard.img},isItem(abCard)?{it:edIt}:{})}
+function edPreview(){const b=$("edPrev");b.innerHTML="";b.appendChild(cardEl(edDraft(),{flipped:true}))}
+function edItDraw(){
+  const box=$("edItChoose");box.innerHTML="";
+  Object.keys(CUSTOM_ITEMS).forEach(k=>{const b=document.createElement("button");b.type="button";b.textContent=CUSTOM_ITEMS[k].name;b.classList.toggle("sel",edIt===k);b.onclick=()=>{edIt=k;sfx("flip");edItDraw();edPreview()};box.appendChild(b)});
+  $("edItInfo").textContent=`${abCard.r}：${itemOf({it:edIt,r:abCard.r}).desc}`;
+}
 function abOpen(c,after){
-  abCard=c;abAfter=after||null;
-  $("abTitle").textContent=`${c.name}（${c.r}）`;
-  abFill("ab",c.bt||btCustomDefaults(c),c.r);
+  abCard=c;abAfter=after||null;edImg=null;
+  $("abTitle").textContent=`${c.name||"（名前なし）"}（${c.r}）`;
+  $("edName").value=c.name||"";$("edKana").value=c.kana||"";$("edFlavor").value=c.flavor||"";$("edHue").value=c.h||0;$("edFile").value="";
+  const item=isItem(c);
+  $("edItem").hidden=!item;$("abEdit").hidden=item;
+  if(item){edIt=CUSTOM_ITEMS[c.it]?c.it:"potion";edItDraw()}
+  else abFill("ab",c.bt||btCustomDefaults(c),c.r);
+  edPreview();
   $("abModal").hidden=false;document.body.style.overflow="hidden";
 }
 function btCustomDefaults(c){const a=btCustomAbil(c);const sk=Object.keys(CUSTOM_SKILLS).find(k=>CUSTOM_SKILLS[k].desc===a.s.desc);const ps=a.p?Object.keys(CUSTOM_PASSIVES).find(k=>CUSTOM_PASSIVES[k].k===a.p.k):"tough";return{t:a.t,sk,skn:"",ps,psn:""}}
@@ -4566,7 +4595,7 @@ function tcHit(G,s,att,def,m,pierce){
   const fs=tcFoe(s);
   if(!att||!def||att.hp<=0||def.hp<=0)return 0;
   const dg=tcPk(def,"dodge");
-  if(dg&&Math.random()<dg.v){tcLog(G,`${tcName(G,fs,def)} は「${esc(dg.name)}」で攻撃をよけた！`);tcEv(G,{s:fs,uid:def.uid,txt:"MISS",cls:"miss",sfx:"tink"});return 0}
+  if(dg&&Math.random()<dg.v){tcLog(G,`${tcName(G,fs,def)} は${dg.name?`「${esc(dg.name)}」で`:""}攻撃をよけた！`);tcEv(G,{s:fs,uid:def.uid,txt:"MISS",cls:"miss",sfx:"tink"});return 0}
   const ai=tcInfo(att.uid),di=tcInfo(def.uid);
   let mul=1;att.mods.forEach(x=>{if(x.k==="buff")mul+=x.v;if(x.k==="weaken")mul-=x.v});
   const rg=tcPk(att,"rage");if(rg&&att.hp<=att.maxHp*.4)mul+=rg.v;
@@ -4576,7 +4605,7 @@ function tcHit(G,s,att,def,m,pierce){
   let grd=0;def.mods.forEach(x=>{if(x.k==="guard")grd+=x.v});const tg=tcPk(def,"tough");if(tg)grd+=tg.v;grd=Math.min(.8,grd);
   let d=Math.max(1,Math.round(m*mul*(weak?TC_WEAK:1)*(1-grd)));
   def.hp-=d;
-  if(def.hp<=0&&tcPk(def,"guts")&&!def.gutsUsed){def.hp=1;def.gutsUsed=true;tcLog(G,`${tcName(G,fs,def)} は「${esc(tcPk(def,"guts").name)}」で踏みとどまった！`)}
+  if(def.hp<=0&&tcPk(def,"guts")&&!def.gutsUsed){def.hp=1;def.gutsUsed=true;tcLog(G,`${tcName(G,fs,def)} は${tcPk(def,"guts").name?`「${esc(tcPk(def,"guts").name)}」で`:""}踏みとどまった！`)}
   def.hp=Math.max(0,def.hp);
   tcEv(G,{s:fs,uid:def.uid,txt:"-"+d,cls:"dmg",sfx:weak?"boom":"crash",hit:true});
   if(weak)tcEv(G,{s:fs,uid:def.uid,txt:"弱点！",cls:"eff"});
@@ -4586,7 +4615,7 @@ function tcHit(G,s,att,def,m,pierce){
 }
 function tcUseSkill(G,s,u){
   const f=tcInfo(u.uid),fs=tcFoe(s),P=G[s];
-  tcLog(G,`<b>${tcName(G,s,u)} のわざ「${esc(f.skill.name)}」！</b>`);tcEv(G,{s,uid:u.uid,cast:true,sfx:"rare"});
+  tcLog(G,`<b>${tcName(G,s,u)} のわざ${f.skill.name?`「${esc(f.skill.name)}」`:""}！</b>`);tcEv(G,{s,uid:u.uid,cast:true,sfx:"rare"});
   const team=[P.act].concat(P.bench).filter(x=>x&&x.hp>0);
   for(const x of f.skill.fx){
     const foe=G[fs].act;
@@ -5217,11 +5246,11 @@ function frParse(code){
     const team=o.c.map((e,i)=>{
       const r=ORDER.includes(e&&e.r)?e.r:"N";
       const img=typeof e.i==="string"&&/^data:image\/(jpeg|png|gif|webp);base64,[A-Za-z0-9+/=]+$/.test(e.i)&&e.i.length<40000?e.i:FR_BLANK;
-      const nm=String(e.n||"???").slice(0,22);
+      const nm=String(e.n||"").slice(0,22);
       return{c:{id:"friend-"+i,r,name:nm,kana:String(e.k||"").slice(0,20),flavor:"",h:Number(e.h)||0,shape:"shield",img,m:nm.slice(0,2),bt:cleanBt(e.bt)||{t:0,sk:"strike",skn:"",ps:"tough",psn:""},friend:true},lv:1};
     });
     const items=(Array.isArray(o.it)?o.it:[]).slice(0,200).map((e,i)=>{
-      const r=ORDER.includes(e&&e.r)?e.r:"N",nm=String(e&&e.n||"???").slice(0,22);
+      const r=ORDER.includes(e&&e.r)?e.r:"N",nm=String(e&&e.n||"").slice(0,22);
       const img=e&&typeof e.i==="string"&&/^data:image\/(jpeg|png|gif|webp);base64,[A-Za-z0-9+/=]+$/.test(e.i)&&e.i.length<40000?e.i:FR_BLANK;
       return{id:"friend-it"+i,r,name:nm,kana:String(e&&e.k||"").slice(0,20),flavor:"",h:Number(e&&e.h)||0,shape:"shield",img,m:"?",kind:"item",it:CUSTOM_ITEMS[e&&e.e]?e.e:"potion",friend:true};
     });
@@ -5590,7 +5619,7 @@ function gfImport(pk,quiet){
   const keepIds=new Set();
   cards.forEach(c=>{
     const id="f-"+uid.slice(-12)+"-"+String(c.id||"").slice(-16);keepIds.add(id);
-    const card={id,r:c.r,name:String(c.name||"???").slice(0,22),kana:String(c.kana||"").slice(0,20),flavor:String(c.flavor||"").slice(0,60),h:Number(c.h)||0,shape:"shield",img:c.img,m:"?",pack:p.id,bt:c.kind==="item"?null:cleanBt(c.bt),friend:true,...(c.kind==="item"?{kind:"item",it:CUSTOM_ITEMS[c.it]?c.it:"potion"}:{})};
+    const card={id,r:c.r,name:String(c.name||"").slice(0,22),kana:String(c.kana||"").slice(0,20),flavor:String(c.flavor||"").slice(0,60),h:Number(c.h)||0,shape:"shield",img:c.img,m:"?",pack:p.id,bt:c.kind==="item"?null:cleanBt(c.bt),friend:true,...(c.kind==="item"?{kind:"item",it:CUSTOM_ITEMS[c.it]?c.it:"potion"}:{})};
     const at=S.custom.findIndex(x=>x.id===id);if(at>=0)S.custom[at]=card;else S.custom.push(card);
   });
   S.custom=S.custom.filter(c=>c.pack!==p.id||keepIds.has(c.id)); // cards the friend removed disappear
@@ -5611,7 +5640,19 @@ abBuild($("mkAb"),"mk");["mk","ab"].forEach(pre=>$(pre+"T").addEventListener("cl
 $("mkRar").addEventListener("change",()=>{abRarity("mk",$("mkRar").value);mkItDraw()});
 $("abClose").onclick=abClose;$("abCancel").onclick=abClose;
 $("abModal").addEventListener("click",e=>{if(e.target===$("abModal"))abClose()});
-$("abSave").onclick=()=>{if(!abCard)return;abCard.bt=abRead("ab");save();sfx("rankup");toast(`${abCard.name} の能力を決めました！`);abClose();render();if(abAfter)abAfter()};
+$("abSave").onclick=()=>{
+  if(!abCard)return;
+  const c=abCard,before=JSON.stringify(c),d=edDraft();
+  c.name=d.name;c.kana=d.kana;c.flavor=d.flavor;c.h=d.h;if(edImg)c.img=edImg;
+  if(isItem(c))c.it=edIt;else c.bt=abRead("ab");
+  if(!save()){Object.assign(c,JSON.parse(before));toast("保存容量がいっぱいで保存できませんでした");return}
+  sfx("rankup");toast(`${c.name||"カード"} を保存しました！`);abClose();render();mineStale=true;if(typeof renderMine==="function"&&!$("view-make").hidden)renderMine();if(abAfter)abAfter();
+};
+["edName","edKana","edFlavor","edHue"].forEach(id=>$(id).addEventListener("input",edPreview));
+$("edFile").onchange=e=>{
+  const f=e.target.files[0];if(!f||!f.type.startsWith("image/"))return;
+  const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const W=360,H=420,cv=document.createElement("canvas");cv.width=W;cv.height=H;const x=cv.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,W,H);const s=Math.max(W/im.width,H/im.height),w=im.width*s,hh=im.height*s;x.drawImage(im,(W-w)/2,(H-hh)/2,w,hh);edImg=cv.toDataURL("image/jpeg",.82);edPreview()};im.src=r.result};r.readAsDataURL(f);
+};
 $("btAtk").onclick=()=>btTurn({k:"atk"});
 $("btSkill").onclick=()=>btTurn({k:"skill"});
 $("btSwitch").onclick=()=>{if(!BT||BT.busy||BT.mustPick)return;BT.switching=!BT.switching;btDraw()};
