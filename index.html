@@ -4622,7 +4622,7 @@ function tcInfo(uid){
   const skDmg=hits.length?hits.map(x=>x.n>1?`${x.d}×${x.n}`:`${x.d}`).join("+"):"";
   const passive=p.passive?Object.assign({},p.passive,{desc:TC_PDESC[pk]||p.passive.desc}):null;
   return TC.info[uid]={uid,c,item:false,type:p.type,hp:p.hp,atk:p.atk,basic,skDmg,skill:Object.assign({},p.skill,{desc:sdesc}),supp,passive,
-    cost:Math.max(1,p.skill.cost-(pk==="first"?1:0)),ret:Math.max(0,TC_RETREAT[c.r]-(p.type===1?1:0)),prize:TC_PRIZE[c.r]||1};
+    cost:Math.max(1,p.skill.cost-(pk==="first"?1:0)),ret:Math.max(0,Math.min(3,TC_RETREAT[c.r]+(btHash(String(c.id)+"|"+c.name+"#ret")%3-1)-(p.type===1?1:0))),prize:TC_PRIZE[c.r]||1};
 }
 const tcPk=(u,k)=>{const p=tcInfo(u.uid).passive;return p&&p.k===k?p:null};
 function tcUnit(G,uid){const f=tcInfo(uid);return{uid,hp:f.hp,maxHp:f.hp,atk:f.atk,en:0,mods:[],stun:false,dot:null,gutsUsed:false,ambush:false,inTurn:G.turn}}
