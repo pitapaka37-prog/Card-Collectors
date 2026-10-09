@@ -641,6 +641,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
 .ab-info{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:700;padding:8px 10px;background:#fff6dc;border:2px dashed var(--ink)}
 .ab-info small{font-size:11px;color:#7a3cff;margin-right:4px}
 .ab-note{margin:0;font-size:12px;font-weight:700;opacity:.8}
+.ab-tip{margin-top:6px;font-size:11px;font-weight:700;opacity:.75}
 .ab-modal .mission{width:min(560px,100%);display:flex;flex-direction:column;gap:10px}
 .cb-panel{align-self:stretch;display:flex;flex-direction:column;gap:8px;padding:14px;background:#fff6dc;border:4px solid var(--ink);box-shadow:6px 6px 0 #d6336c}
 .cb-panel .dk-head small{font-size:13px;font-weight:700}
@@ -1306,7 +1307,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
     <div class="mission">
       <button type="button" class="close" id="abClose" aria-label="閉じる">×</button>
       <div class="ms-head"><b>ABILITY</b><span id="abTitle"></span></div>
-      <p class="ab-note">効果はカードを作ったときにランダムで決まっています。ここでは、わざととくせいの名前を変えられます。</p>
+      <p class="ab-note">名前に合う言葉が入っていると、その効果に変わります。合う言葉がなければ今の効果のままです。</p>
       <fieldset class="ab-set" id="abEdit"><legend>バトルの能力</legend></fieldset>
       <div class="dk-btns"><button type="button" class="btn-main" id="abSave">この能力にする</button><button type="button" class="ghost" id="abCancel">やめる</button></div>
     </div>
@@ -1397,7 +1398,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
             <div class="field"><label for="mkHue">カードの色</label><input type="range" id="mkHue" min="0" max="359" value="210"></div>
           </div>
           <div class="field"><label for="mkFlavor">説明文</label><textarea id="mkFlavor" maxlength="60" placeholder="港の風を味方にして街を守る。"></textarea></div>
-          <fieldset class="ab-set" id="mkAb"><legend>バトルの能力（自作カードバトル用・効果はランダム）</legend></fieldset>
+          <fieldset class="ab-set" id="mkAb"><legend>バトルの能力（自作カードバトル用・名前で効果が決まる）</legend></fieldset>
           <div class="row2">
             <div class="field"><label for="mkPack">入れるガチャ</label><select id="mkPack"></select></div>
             <div class="field" id="mkNewWrap" hidden><label for="mkNewPack">新しいガチャの名前</label><input type="text" id="mkNewPack" maxlength="20" placeholder="YOKOHAMA PACK"></div>
@@ -2984,12 +2985,12 @@ $("mkForm").addEventListener("submit",e=>{
   if(!mkImg||!$("mkName").value.trim())return;
   let packId=$("mkPack").value,made=null;
   if(packId==="__new"){made=createPack($("mkNewPack").value);packId=made.id}
-  const c=draft();c.id=newId("c");c.shape="shield";c.pack=packId;c.bt=Object.assign(btRandomBt(),{skn:$("mkSkn").value.trim().slice(0,14),psn:$("mkPsn").value.trim().slice(0,14)});
+  const c=draft();c.id=newId("c");c.shape="shield";c.pack=packId;c.bt=btApplyNames(Object.assign(btRandomBt(),{skn:$("mkSkn").value.trim().slice(0,14),psn:$("mkPsn").value.trim().slice(0,14)}));
   S.custom.push(c);
   if(!save()){S.custom.pop();if(made)S.packs.pop();$("mkMsg").textContent="保存容量がいっぱいです。作ったカードをいくつか削除してから追加してください。";return}
   render();fillPackSelect();$("mkPack").value=packId;syncNewField();$("mkNewPack").value="";
   $("mkMsg").textContent=`「${c.name}」を ${c.r} として ${pname(packOf(packId))} に追加しました！`;
-  mkImg=null;$("mkFile").value="";$("mkName").value="";$("mkKana").value="";$("mkFlavor").value="";$("mkSkn").value="";$("mkPsn").value="";
+  mkImg=null;$("mkFile").value="";$("mkName").value="";$("mkKana").value="";$("mkFlavor").value="";$("mkSkn").value="";$("mkPsn").value="";abRarity("mk",$("mkRar").value);
   $("mkFileName").textContent="JPG / PNG / GIF など。カードの形（縦長）に合わせて自動で切り抜きます";
   updatePreview();
 });
@@ -3688,6 +3689,38 @@ function lvFuseHTML(c){
 }
 /* ---- ability editor for original cards (used in the MAKE form and the edit window) ---- */
 // the effects (type, skill, passive) are rolled at random when the card is made; you only name the skill and the passive
+// the names you type decide the effect when they contain a matching word (炎→やけど, 盾→ガード …); otherwise it stays random
+const NAME_SKILL=[
+ ["teamheal",/(みんな|仲間|なかま|チーム|全員|祈|いのり|聖なる|天使|女神|エンジェル)/],
+ ["counter",/(カウンター|反撃|はんげき|返し|かえし|跳ね返|はねかえ|ミラー|鏡|かがみ|リフレク|counter|mirror|reflect)/],
+ ["guard",/(盾|たて|シールド|ガード|バリア|守|まも|鉄壁|防|壁|かべ|shield|guard|barrier)/],
+ ["heal",/(回復|かいふく|ヒール|癒|いや|治|キュア|休|やすみ|リカバ|ケア|heal|cure|rest)/],
+ ["burn",/(炎|火|ほのお|ファイ|フレイ|燃|焼|やけ|バーン|灼熱|マグマ|溶岩|毒|どく|ポイズン|fire|flame|burn|poison)/],
+ ["stun",/(雷|かみなり|サンダー|電|でん|しびれ|スタン|麻痺|まひ|ショック|びっくり|稲妻|いなずま|ボルト|thunder|shock|stun|volt|bolt)/],
+ ["jam",/(封|ふう|吸|すい|ドレイン|奪|うば|盗|ぬす|ハック|妨害|じゃま|邪魔|時を止|時間停止|drain|hack|steal)/],
+ ["weaken",/(呪|のろ|弱|よわ|ダウン|闇|やみ|影|かげ|恐怖|威圧|にらみ|睨|霧|きり|カース|curse|dark|shadow)/],
+ ["power",/(気合|きあい|覚醒|かくせい|パワーアップ|怒|いか|咆哮|叫|さけ|闘志|ブースト|変身|へんしん|オーラ|ため|溜|boost|aura)/],
+ ["combo",/(連|れん|ラッシュ|乱|らん|百|千|コンボ|マシンガン|ダブル|トリプル|嵐|あらし|ストーム|rush|combo|storm|double|triple)/],
+ ["pierce",/(貫|つらぬ|突|つき|ランス|槍|やり|スピア|ピアス|矢|アロー|ビーム|レーザー|狙|ねら|スナイプ|lance|spear|arrow|beam|laser|snipe)/],
+ ["strike",/(必殺|斬|切|きり|拳|こぶし|パンチ|キック|蹴|一撃|砲|爆|ばく|ストライク|スラッシュ|剣|けん|ソード|ブレイク|破|やぶ|大|ハンマー|punch|kick|slash|strike|sword|blast|break|smash)/],
+];
+const NAME_PASSIVE=[
+ ["guts",/(根性|こんじょう|不屈|ふくつ|不死|ふし|粘|ねば|ガッツ|あきらめ|諦|魂|たましい|執念|立ち上|guts)/],
+ ["rage",/(怒|いか|火事場|逆境|ピンチ|底力|そこぢから|狂|くる|暴走|ぼうそう|獣|けもの|バーサーカー|rage|berserk)/],
+ ["ambush",/(不意|奇襲|きしゅう|暗殺|待ち伏|まちぶ|隠|かく|潜|ひそ|闇討|サプライズ|先制|忍|しのび|ninja|ambush)/],
+ ["immune",/(無敵|むてき|平気|へいき|へっちゃら|耐性|鈍感|どんかん|聖|加護|かご|浄化|守護|しゅご|バリア|immune)/],
+ ["first",/(先手|せんて|速|はや|早|光速|神速|電光|スピード|疾|瞬|雷|いかずち|speed|fast|quick)/],
+ ["charge",/(チャージ|充電|じゅうでん|集中|しゅうちゅう|瞑想|めいそう|精神|エネルギー|星|ほし|太陽|魔力|まりょく|魔|charge|energy|star)/],
+ ["regen",/(再生|さいせい|回復|かいふく|癒|いや|治|自然|しぜん|生命|命|いのち|森|もり|緑|みどり|光合成|ヒール|regen|heal)/],
+ ["dodge",/(身軽|みがる|回避|かいひ|よけ|避|かわ|幻|まぼろし|影|かげ|風|かぜ|蝶|ちょう|ステップ|ミラージュ|dodge|wind|mirage)/],
+ ["tough",/(鋼|はがね|鉄|てつ|硬|かた|頑丈|がんじょう|タフ|筋肉|きんにく|岩|いわ|守|まも|アーマー|鎧|よろい|盾|たて|iron|steel|tough|armor)/],
+];
+const NAME_TYPE=[[0,/(パワー|力|ちから|怪力|拳|こぶし|岩|いわ|鋼|はがね|大|power)/],[1,/(スピード|速|はや|風|かぜ|疾|光|ひかり|瞬|雷|speed|wind)/],[2,/(技|わざ|テク|トリック|頭脳|魔|まほう|作戦|さくせん|trick|magic)/]];
+function btNameMatch(skn,psn){
+  const s=String(skn||"").toLowerCase(),p=String(psn||"").toLowerCase(),f=(list,t)=>{if(!t)return null;const m=list.find(x=>x[1].test(t));return m?m[0]:null};
+  return{sk:f(NAME_SKILL,s),ps:f(NAME_PASSIVE,p),t:f(NAME_TYPE,s+" "+p)};
+}
+function btApplyNames(b){const m=btNameMatch(b.skn,b.psn);if(m.sk)b.sk=m.sk;if(m.ps)b.ps=m.ps;if(m.t!=null)b.t=m.t;return b}
 function btRandomBt(){const sks=Object.keys(CUSTOM_SKILLS),pss=Object.keys(CUSTOM_PASSIVES),rnd=a=>a[Math.floor(Math.random()*a.length)];return{t:Math.floor(Math.random()*3),sk:rnd(sks),skn:"",ps:rnd(pss),psn:""}}
 function abBuild(box,pre){
   box.insertAdjacentHTML("beforeend",`
@@ -3699,7 +3732,7 @@ function abBuild(box,pre){
     <p class="ab-note" id="${pre}Note"></p>`);
 }
 const abBase={};
-function abRead(pre){const b=abBase[pre]||btRandomBt();return cleanBt(Object.assign({},b,{skn:$(pre+"Skn").value.trim(),psn:$(pre+"Psn").value.trim()}))}
+function abRead(pre){const b=abBase[pre]||btRandomBt();return cleanBt(btApplyNames(Object.assign({},b,{skn:$(pre+"Skn").value.trim(),psn:$(pre+"Psn").value.trim()})))}
 function abFill(pre,bt,r){
   abBase[pre]=bt||null;
   $(pre+"Skn").value=bt&&bt.skn||"";$(pre+"Psn").value=bt&&bt.psn||"";
@@ -3708,13 +3741,12 @@ function abFill(pre,bt,r){
 function abRarity(pre,r){
   const on=customHasPassive(r),b=abBase[pre];
   $(pre+"Psn").disabled=!on;
-  if(!b){$(pre+"Info").innerHTML=`<b>能力はランダム！</b> タイプ・わざの効果・とくせいの効果は、カードを追加したときにランダムで決まります。名前だけ自由に付けられます。`}
-  else{
-    const sk=CUSTOM_SKILLS[b.sk],ps=CUSTOM_PASSIVES[b.ps];
-    $(pre+"Info").innerHTML=`<div class="bt-abil-row"><span class="bt-type t${b.t}">${BT_TYPES[b.t]}</span><b>${BT_TNAME[b.t]}</b></div>
-      <div><small>わざの効果</small> ${sk?`${sk.desc}（チャージ${sk.cost}）`:"-"}</div>
-      ${on?`<div><small>とくせいの効果</small> ${ps?ps.desc:"-"}</div>`:""}`;
-  }
+  const m=btNameMatch($(pre+"Skn").value,on?$(pre+"Psn").value:""),sk=CUSTOM_SKILLS[m.sk||(b&&b.sk)],ps=CUSTOM_PASSIVES[m.ps||(b&&b.ps)],t=m.t!=null?m.t:b?b.t:null;
+  const q="<i>？ ランダム</i>";
+  $(pre+"Info").innerHTML=`<div class="bt-abil-row">${t!=null?`<span class="bt-type t${t}">${BT_TYPES[t]}</span><b>${BT_TNAME[t]}</b>`:`<small>タイプ</small> ${q}`}</div>
+    <div><small>わざの効果</small> ${sk?`${sk.desc}（チャージ${sk.cost}）${m.sk?" ✨名前で決定":""}`:q}</div>
+    ${on?`<div><small>とくせいの効果</small> ${ps?`${ps.desc}${m.ps?" ✨名前で決定":""}`:q}</div>`:""}
+    <div class="ab-tip">名前に「炎」「雷」「盾」「回復」「連続」「槍」「必殺」などの言葉を入れると、それっぽい効果になります。当てはまらないときはランダム。</div>`;
   $(pre+"Note").textContent=(on?"":`とくせいは ${CUSTOM_PASSIVE_MIN} 以上のカードだけに付きます。 `)+"名前を空けておくと、効果の名前がそのまま使われます。";
 }
 let abCard=null,abAfter=null;
@@ -4679,7 +4711,7 @@ function gfDelete(id){
   save();render();toast("フレンドガチャを消しました");
 }
 abBuild($("abEdit"),"ab");
-abBuild($("mkAb"),"mk");abFill("mk",null,$("mkRar").value);
+abBuild($("mkAb"),"mk");["mk","ab"].forEach(pre=>["Skn","Psn"].forEach(k=>$(pre+k).addEventListener("input",()=>abRarity(pre,pre==="mk"?$("mkRar").value:abCard&&abCard.r))));abFill("mk",null,$("mkRar").value);
 $("mkRar").addEventListener("change",()=>abRarity("mk",$("mkRar").value));
 $("abClose").onclick=abClose;$("abCancel").onclick=abClose;
 $("abModal").addEventListener("click",e=>{if(e.target===$("abModal"))abClose()});
