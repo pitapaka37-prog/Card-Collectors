@@ -1483,7 +1483,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
             <input type="file" id="mkFile" accept="image/*">
           </label>
           <div class="row2">
-            <div class="field"><label for="mkName" id="mkNameLbl">ヒーロー名（英語）</label><input type="text" id="mkName" maxlength="22" placeholder="Captain Yokohama"></div>
+            <div class="field"><label for="mkName" id="mkNameLbl">ヒーロー名</label><input type="text" id="mkName" maxlength="22" placeholder="Captain Yokohama"></div>
             <div class="field"><label for="mkKana">よみ・サブタイトル</label><input type="text" id="mkKana" maxlength="20" placeholder="キャプテン・ヨコハマ"></div>
           </div>
           <div class="row2">
@@ -1795,21 +1795,22 @@ function drawOne(minSR,pool,bid){
   const list=pool[r];return list[Math.floor(Math.random()*list.length)];
 }
 /* ---- item cards (original cards only): used from the hand in original-card battles ---- */
+// v: strength for N / R / SR / SSR / UR (higher rarity = stronger support)
 var CUSTOM_ITEMS={
- potion:{name:"回復ドリンク",desc:"バトル場のヒーローのHPを30%回復する"},
- team:{name:"みんなの救急箱",desc:"自分のヒーロー全員（控えも）のHPを15%回復する"},
- draw:{name:"作戦ノート",desc:"山札からカードを2枚引く"},
- search:{name:"ヒーロー召集",desc:"山札からヒーローを1枚、手札に加える"},
- battery:{name:"パワーバッテリー",desc:"自分のヒーロー1体にエネルギーを1つ付ける（1ターン1回のエネルギーとは別）"},
- swap:{name:"テレポート装置",desc:"バトル場のヒーローと控えのヒーローを入れ替える（エネルギーはいらない）"},
- gust:{name:"おびき寄せの笛",desc:"相手の控えのヒーローを1体えらんで、相手のバトル場に引っぱり出す"},
- boost:{name:"ブーストドリンク",desc:"この番、バトル場のヒーローの攻撃のダメージ1.5倍"},
- shield:{name:"防御シールド",desc:"次の相手の番、バトル場のヒーローが受けるダメージ50%カット"},
- cure:{name:"万能薬",desc:"バトル場のヒーローのしびれ・やけど・ダメージダウンを治す"},
- breaker:{name:"エネルギーブレイカー",desc:"相手のバトル場のヒーローのエネルギーを1つトラッシュする"},
+ potion:{name:"回復ドリンク",v:[20,30,40,60,100],d:v=>v>=100?"バトル場のヒーローのHPを全回復する":`バトル場のヒーローのHPを${v}%回復する`},
+ team:{name:"みんなの救急箱",v:[10,15,20,30,40],d:v=>`自分のヒーロー全員（控えも）のHPを${v}%回復する`},
+ draw:{name:"作戦ノート",v:[1,2,2,3,4],d:v=>`山札からカードを${v}枚引く`},
+ search:{name:"ヒーロー召集",v:[1,1,1,2,2],d:v=>`山札からヒーローを${v}枚、手札に加える`},
+ battery:{name:"パワーバッテリー",v:[1,1,2,2,3],d:v=>`自分のヒーロー1体にエネルギーを${v}つ付ける（1ターン1回のエネルギーとは別）`},
+ swap:{name:"テレポート装置",v:[0,0,10,20,30],d:v=>`バトル場のヒーローと控えのヒーローを入れ替える（エネルギーはいらない）${v?`。出てきたヒーローのHPを${v}%回復`:""}`},
+ gust:{name:"おびき寄せの笛",v:[0,0,10,20,30],d:v=>`相手の控えのヒーローを1体えらんで、相手のバトル場に引っぱり出す${v?`。そのヒーローに${v}ダメージ（HPは1残る）`:""}`},
+ boost:{name:"ブーストドリンク",v:[20,30,50,70,100],d:v=>`この番、バトル場のヒーローの攻撃のダメージ${v}%アップ`},
+ shield:{name:"防御シールド",v:[30,40,50,60,80],d:v=>`次の相手の番、バトル場のヒーローが受けるダメージ${v}%カット`},
+ cure:{name:"万能薬",v:[0,0,10,20,30],d:v=>`バトル場のヒーローのしびれ・やけど・ダメージダウンを治す${v?`。さらにHPを${v}%回復`:""}`},
+ breaker:{name:"エネルギーブレイカー",v:[1,1,1,2,3],d:v=>`相手のバトル場のヒーローのエネルギーを${v}つトラッシュする`},
 };
 const isItem=c=>!!c&&c.kind==="item";
-function itemOf(c){return CUSTOM_ITEMS[c&&c.it]||CUSTOM_ITEMS.potion}
+function itemOf(c){const e=CUSTOM_ITEMS[c&&c.it]||CUSTOM_ITEMS.potion,k=Math.max(0,["N","R","SR","SSR","UR"].indexOf(c&&c.r)),v=e.v[k];return{name:e.name,v,desc:e.d(v)}}
 function itemHTML(c){const e=itemOf(c);return `<div class="bt-abil it-abil"><div class="bt-abil-row"><span class="it-badge">SUPPORT</span><b>サポートカード</b><span>自作カードバトル用</span></div><div class="bt-abil-sk"><small>効果 ・ 手札から使う</small><b>${esc(e.name)}</b><span>${esc(e.desc)}</span></div></div>`}
 function cardEl(c,{flipped=false,isNew=false,sfx=false}={}){
   const d=document.createElement("div");
@@ -3063,14 +3064,14 @@ function mkKindSet(k){
   mkK=k==="item"?"item":"hero";
   $("mkKind").querySelectorAll("button").forEach(b=>b.classList.toggle("sel",b.dataset.k===mkK));
   $("mkItem").hidden=mkK!=="item";$("mkAb").hidden=mkK==="item";
-  $("mkNameLbl").textContent=mkK==="item"?"サポート名（英語）":"ヒーロー名（英語）";
+  $("mkNameLbl").textContent=mkK==="item"?"サポート名":"ヒーロー名";
   $("mkName").placeholder=mkK==="item"?"Mega Potion":"Captain Yokohama";
   mkItDraw();updatePreview();
 }
 function mkItDraw(){
   const box=$("mkItChoose");box.innerHTML="";
   [["","？ランダム"]].concat(Object.keys(CUSTOM_ITEMS).map(k=>[k,CUSTOM_ITEMS[k].name])).forEach(([k,n])=>{const b=document.createElement("button");b.type="button";b.textContent=n;b.classList.toggle("sel",mkIt===k);b.onclick=()=>{mkIt=k;sfx("flip");mkItDraw();updatePreview()};box.appendChild(b)});
-  $("mkItInfo").textContent=mkIt?CUSTOM_ITEMS[mkIt].desc:"効果はカードを追加したときにランダムで決まります。";
+  $("mkItInfo").textContent=mkIt?`${$("mkRar").value}：${itemOf({it:mkIt,r:$("mkRar").value}).desc}（レアリティが高いほど強くなります）`:"効果はカードを追加したときにランダムで決まります。レアリティが高いほど強くなります。";
 }
 function fillPackSelect(){
   const sel=$("mkPack"),cur=sel.value;sel.innerHTML="";
@@ -4506,7 +4507,7 @@ const tcWait=ms=>BT_FAST?Promise.resolve():new Promise(r=>setTimeout(r,ms));
 function tcInfo(uid){
   if(TC.info[uid])return TC.info[uid];
   const c=TC.cards[uid];
-  if(isItem(c)){const e=itemOf(c);return TC.info[uid]={uid,c,item:true,it:CUSTOM_ITEMS[c.it]?c.it:"potion",name:e.name,desc:e.desc}}
+  if(isItem(c)){const e=itemOf(c);return TC.info[uid]={uid,c,item:true,it:CUSTOM_ITEMS[c.it]?c.it:"potion",name:e.name,desc:e.desc,v:e.v}}
   const p0=btProfile(c,1),pk=p0.passive&&p0.passive.k;
   const p=Object.assign({},p0,{hp:Math.max(30,Math.round(TC_HP[c.r]*p0.hp/BT_HP[c.r]/10)*10),atk:TC_ATK[c.r]*p0.atk/BT_ATK[c.r]});
   const skey=p.skill.key||"";
@@ -4711,17 +4712,17 @@ function tcAct(G,s,a){
     if(it==="breaker"&&!(F.act&&F.act.en>=1))return "相手のバトル場にエネルギーがありません";
     P.hand.splice(a.h,1);P.disc.push(uid); // the item goes to the discard pile
     let msg="";
-    if(it==="potion"){act.hp=Math.min(act.maxHp,act.hp+Math.round(act.maxHp*.3));msg=`${tcName(G,s,act)} のHPが回復！`;tcEv(G,{s,uid:act.uid,txt:"HEAL",cls:"heal",sfx:"up"})}
-    else if(it==="team"){[act].concat(P.bench).forEach(u=>{if(u)u.hp=Math.min(u.maxHp,u.hp+Math.round(u.maxHp*.15))});msg="味方全員のHPが回復！";if(act)tcEv(G,{s,uid:act.uid,txt:"HEAL",cls:"heal",sfx:"up"})}
-    else if(it==="draw"){const n=tcDrawCards(G,s,2);msg=`カードを${n}枚引いた`;tcEv(G,{sfx:"flip"})}
-    else if(it==="search"){const k=P.deck.findIndex(u=>!tcInfo(u).item);const h2=P.deck.splice(k,1)[0];P.hand.push(h2);P.deck=shuffled(P.deck);msg=`${esc(tcInfo(h2).c.name)} を手札に加えた`;tcEv(G,{sfx:"flip"})}
-    else if(it==="battery"){const u=target(bt);u.en++;msg=`${tcName(G,s,u)} にエネルギーが付いた ⚡`;tcEv(G,{s,uid:u.uid,txt:"+⚡",cls:"heal",sfx:"tink"})}
-    else if(it==="swap"){const u=P.bench[a.w];P.bench[a.w]=act;act.stun=false;act.dot=null;tcSetActive(G,s,u);msg=`${esc(tcInfo(u.uid).c.name)} とバトル場を入れ替えた！`;tcEv(G,{s,uid:u.uid,sfx:"flip"})}
-    else if(it==="gust"){const u=F.bench[a.w];F.bench[a.w]=F.act;tcSetActive(G,tcFoe(s),u);msg=`相手の ${esc(tcInfo(u.uid).c.name)} を引っぱり出した！`;tcEv(G,{s:tcFoe(s),uid:u.uid,sfx:"flip"})}
-    else if(it==="boost"){act.mods.push({k:"buff",v:.5,t:1});msg=`${tcName(G,s,act)} の攻撃がパワーアップ！`;tcEv(G,{s,uid:act.uid,txt:"POWER UP",cls:"heal",sfx:"rankup"})}
-    else if(it==="shield"){act.mods.push({k:"guard",v:.5,t:1});msg=`${tcName(G,s,act)} にシールド！`;tcEv(G,{s,uid:act.uid,txt:"GUARD",cls:"heal",sfx:"tink"})}
-    else if(it==="cure"){act.stun=false;act.dot=null;act.mods=act.mods.filter(m=>m.k!=="weaken");msg=`${tcName(G,s,act)} は元気になった！`;tcEv(G,{s,uid:act.uid,txt:"CURE",cls:"heal",sfx:"up"})}
-    else if(it==="breaker"){const u=F.act;u.en--;msg=`相手の ${esc(tcInfo(u.uid).c.name)} のエネルギーを1つトラッシュ！`;tcEv(G,{s:tcFoe(s),uid:u.uid,txt:"-⚡",cls:"weak",sfx:"crash"})}
+    if(it==="potion"){act.hp=Math.min(act.maxHp,act.hp+Math.round(act.maxHp*f.v/100));msg=`${tcName(G,s,act)} のHPが回復！`;tcEv(G,{s,uid:act.uid,txt:"HEAL",cls:"heal",sfx:"up"})}
+    else if(it==="team"){[act].concat(P.bench).forEach(u=>{if(u)u.hp=Math.min(u.maxHp,u.hp+Math.round(u.maxHp*f.v/100))});msg="味方全員のHPが回復！";if(act)tcEv(G,{s,uid:act.uid,txt:"HEAL",cls:"heal",sfx:"up"})}
+    else if(it==="draw"){const n=tcDrawCards(G,s,f.v);msg=`カードを${n}枚引いた`;tcEv(G,{sfx:"flip"})}
+    else if(it==="search"){const got=[];for(let q=0;q<f.v;q++){const k=P.deck.findIndex(u=>!tcInfo(u).item);if(k<0)break;const h2=P.deck.splice(k,1)[0];P.hand.push(h2);got.push(esc(tcInfo(h2).c.name))}P.deck=shuffled(P.deck);msg=`${got.join("・")} を手札に加えた`;tcEv(G,{sfx:"flip"})}
+    else if(it==="battery"){const u=target(bt);u.en+=f.v;msg=`${tcName(G,s,u)} にエネルギーが${f.v}つ付いた ⚡`;tcEv(G,{s,uid:u.uid,txt:"+⚡"+(f.v>1?f.v:""),cls:"heal",sfx:"tink"})}
+    else if(it==="swap"){const u=P.bench[a.w];P.bench[a.w]=act;act.stun=false;act.dot=null;tcSetActive(G,s,u);if(f.v)u.hp=Math.min(u.maxHp,u.hp+Math.round(u.maxHp*f.v/100));msg=`${esc(tcInfo(u.uid).c.name)} とバトル場を入れ替えた！`;tcEv(G,{s,uid:u.uid,sfx:"flip"})}
+    else if(it==="gust"){const u=F.bench[a.w];F.bench[a.w]=F.act;tcSetActive(G,tcFoe(s),u);msg=`相手の ${esc(tcInfo(u.uid).c.name)} を引っぱり出した！`;tcEv(G,{s:tcFoe(s),uid:u.uid,sfx:"flip"});if(f.v){const dd=Math.min(f.v,u.hp-1);if(dd>0){u.hp-=dd;tcEv(G,{s:tcFoe(s),uid:u.uid,txt:"-"+dd,cls:"dmg",sfx:"crash",hit:true})}}}
+    else if(it==="boost"){act.mods.push({k:"buff",v:f.v/100,t:1});msg=`${tcName(G,s,act)} の攻撃がパワーアップ！`;tcEv(G,{s,uid:act.uid,txt:"POWER UP",cls:"heal",sfx:"rankup"})}
+    else if(it==="shield"){act.mods.push({k:"guard",v:f.v/100,t:1});msg=`${tcName(G,s,act)} にシールド！`;tcEv(G,{s,uid:act.uid,txt:"GUARD",cls:"heal",sfx:"tink"})}
+    else if(it==="cure"){act.stun=false;act.dot=null;act.mods=act.mods.filter(m=>m.k!=="weaken");if(f.v)act.hp=Math.min(act.maxHp,act.hp+Math.round(act.maxHp*f.v/100));msg=`${tcName(G,s,act)} は元気になった！`;tcEv(G,{s,uid:act.uid,txt:"CURE",cls:"heal",sfx:"up"})}
+    else if(it==="breaker"){const u=F.act;const nb=Math.min(f.v,u.en);u.en-=nb;msg=`相手の ${esc(tcInfo(u.uid).c.name)} のエネルギーを${nb}つトラッシュ！`;tcEv(G,{s:tcFoe(s),uid:u.uid,txt:"-⚡",cls:"weak",sfx:"crash"})}
     tcLog(G,`${tcPre(G,s)}サポート「${esc(f.name)}」！ ${msg}`);
     return null;
   }
@@ -5607,7 +5608,7 @@ function gfDelete(id){
 try{indexedDB.deleteDatabase("cch-media")}catch(e){} // clean up clips from the removed video-card feature
 abBuild($("abEdit"),"ab");
 abBuild($("mkAb"),"mk");["mk","ab"].forEach(pre=>$(pre+"T").addEventListener("click",e=>{const b=e.target.closest("button");if(b){abTSet(pre,b.dataset.t);sfx("flip")}}));abFill("mk",null,$("mkRar").value);
-$("mkRar").addEventListener("change",()=>abRarity("mk",$("mkRar").value));
+$("mkRar").addEventListener("change",()=>{abRarity("mk",$("mkRar").value);mkItDraw()});
 $("abClose").onclick=abClose;$("abCancel").onclick=abClose;
 $("abModal").addEventListener("click",e=>{if(e.target===$("abModal"))abClose()});
 $("abSave").onclick=()=>{if(!abCard)return;abCard.bt=abRead("ab");save();sfx("rankup");toast(`${abCard.name} の能力を決めました！`);abClose();render();if(abAfter)abAfter()};
