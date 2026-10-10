@@ -1482,7 +1482,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
     <div class="mission">
       <button type="button" class="close" id="mgClose" aria-label="閉じる">×</button>
       <div class="ms-head"><b>MY GACHA</b><span id="mgCount"></span></div>
-      <p class="ab-note">自分で作ったガチャはここに入ります。引きたいガチャを選んでね（1回100コイン・10連1000コイン）。</p>
+      <p class="ab-note">自分で作ったガチャはここに入ります。引きたいガチャを選んでね（1回50コイン・10連500コイン）。</p>
       <div class="gf-list" id="mgList"></div>
       <div class="dk-btns"><button type="button" class="btn-main" id="mgNew">＋ 新しいガチャを作る</button></div>
     </div>
@@ -2556,7 +2556,7 @@ document.addEventListener("visibilitychange",()=>{if(document.visibilityState===
 /* ---- coins: selling duplicates ---- */
 const SELL_STARS={N:1,R:1,SR:3,SSR:8,UR:20};
 const isCustom=c=>!!c.img;
-const PULL_COST={std:{1:100,10:1000},own:{1:100,10:1000}}; // your own and friends' gachas cost the same as STAR LIGHT
+const PULL_COST={std:{1:100,10:1000},own:{1:50,10:500}}; // your own and friends' gachas: 50 / 500
 const pullCost=(bid,n)=>PULL_COST[bid==="std"?"std":"own"][n];
 // what one copy sells for: STAR LIGHT cards give stars, your own cards give 1 coin
 const sellValue=c=>isCustom(c)?{coins:1,stars:0}:{coins:0,stars:SELL_STARS[c.r]};
