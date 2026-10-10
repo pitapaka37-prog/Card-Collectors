@@ -1882,7 +1882,15 @@ const packOf=id=>S.packs.find(p=>p.id===id);
 const pname=p=>(p&&p.name.trim())||"NO NAME";
 const cardsIn=id=>S.custom.filter(c=>c.pack===id);
 // dex books: STANDARD also lists the shop-only cards (they never come from the gacha)
-function dexPoolOf(id){if(id==="std"){const o={};ORDER.forEach(r=>o[r]=byR[r].concat(shopByR[r],rewardByR[r]));return o}return poolOf(id)}
+function dexTitleGroup(id){const p=packOf(id);if(!p)return [id];const t=pname(p);return S.packs.filter(x=>pname(x)===t).map(x=>x.id)}
+const dexKey=c=>c.friend&&/^f-[^-]*-/.test(c.id)?c.id.replace(/^f-[^-]*-/,""):String(c.id).slice(-16); // the same card in a friend's copy and in your own
+function dexPoolOf(id){
+  if(id==="std"){const o={};ORDER.forEach(r=>o[r]=byR[r].concat(shopByR[r],rewardByR[r]));return o}
+  const ids=dexTitleGroup(id);if(ids.length<2)return poolOf(id);
+  const seen=new Map();
+  ids.forEach(pid=>cardsIn(pid).forEach(c=>{const k=dexKey(c),o=seen.get(k);if(!o||(!S.owned[o.id]&&S.owned[c.id]))seen.set(k,c)}));
+  const list=[...seen.values()],o={};ORDER.forEach(r=>o[r]=list.filter(c=>c.r===r));return o;
+}
 function poolOf(id){if(id==="std")return byR;if(id==="shop")return shopByR;const list=cardsIn(id);const o={};ORDER.forEach(r=>o[r]=list.filter(c=>c.r===r));return o}
 function getPity(id){return id==="std"?S.pity:(S.pityBy[id]||0)}
 function setPity(id,v){if(id==="std")S.pity=v;else S.pityBy[id]=v}
@@ -2807,12 +2815,13 @@ function dexStats(pool){
   return{list,total:list.length,have:list.filter(c=>S.owned[c.id]).length};
 }
 function renderDex(){
-  const books=[{id:"std",title:"STAR LIGHT COMICS",sub:"スターライト・コミックスのヒーロー（ショップ限定も収録）",color:null}].concat(S.packs.filter(p=>!p.friend).map(p=>({id:p.id,title:pname(p),sub:p.collab?"みんなで作ったガチャ":"あなたが作ったガチャ",color:p.color}))); // friends' gachas have no book of their own
+  const books=[{id:"std",title:"STAR LIGHT COMICS",sub:"スターライト・コミックスのヒーロー（ショップ限定も収録）",color:null}].concat(S.packs.filter((p,i)=>S.packs.findIndex(x=>pname(x)===pname(p))===i).map(p=>{const g=dexTitleGroup(p.id).map(packOf);return{id:p.id,title:pname(p),sub:g.length>1?"同じ名前のガチャをまとめた図鑑":p.friend?"フレンドのガチャ":p.collab?"みんなで作ったガチャ":"あなたが作ったガチャ",color:p.color}})); // one book per title
   books.forEach(b=>b.s=dexStats(dexPoolOf(b.id)));
   const allHave=books.reduce((a,b)=>a+b.s.have,0),allTotal=books.reduce((a,b)=>a+b.s.total,0);
   $("dexCount").textContent=`${allHave}/${allTotal}`;
   if(dexSel==="shop")dexSel="std";
-  if(dexSel&&dexSel!=="std"&&(!packOf(dexSel)||packOf(dexSel).friend||!cardsIn(dexSel).length))dexSel=null;
+  if(dexSel&&dexSel!=="std"&&(!packOf(dexSel)||!dexTitleGroup(dexSel).some(id=>cardsIn(id).length)))dexSel=null;
+  if(dexSel&&dexSel!=="std")dexSel=dexTitleGroup(dexSel)[0]; // the book of a title is kept under its first gacha
   $("dexPick").hidden=!!dexSel;$("dexView").hidden=!dexSel;
   const box=$("binders");box.innerHTML="";
   books.forEach(({id,title,sub,color,s})=>{
@@ -2841,7 +2850,7 @@ function renderDex(){
   $("sellbar").hidden=true; // selling lives in MY CARDS now; the dex only records which cards you have met
   const own=dexSel!=="std"&&!!packOf(dexSel);
   $("resetbar").hidden=!own;
-  if(own){const id=dexSel;armed($("dexReset"),"この図鑑をリセット","もう一度押すとリセットします",()=>resetPackDex(id));$("dexReset").textContent="この図鑑をリセット"}
+  if(own){const id=dexSel;armed($("dexReset"),"この図鑑をリセット","もう一度押すとリセットします",()=>dexTitleGroup(id).forEach(x=>resetPackDex(x)));$("dexReset").textContent="この図鑑をリセット"}
   if(dn){
     $("sellInfo").textContent=`ダブっているカード ${dn} 枚（各1枚は残します）`;
     armed($("sellAll"),`ダブりをまとめて売る ${dl}`,`もう一度押すと ${dn} 枚売ります`,()=>sellCards(dupesIn(dexPoolOf(dexSel))));
@@ -3118,8 +3127,11 @@ function openMakeFor(id){
 // Only the visible screen is redrawn; the others are marked stale and drawn when opened.
 let dexStale=true,mineStale=true,shopStale=true;
 function updateDexCount(){
-  const ids=CARDS.map(c=>c.id).concat(SHOP_CARDS.map(c=>c.id),REWARD_CARDS.map(c=>c.id),S.custom.filter(c=>!c.friend).map(c=>c.id));
-  $("dexCount").textContent=`${ids.filter(id=>S.owned[id]).length}/${ids.length}`;
+  const ids=CARDS.map(c=>c.id).concat(SHOP_CARDS.map(c=>c.id),REWARD_CARDS.map(c=>c.id));
+  const cus=new Map(); // the same card in gachas with the same title counts once
+  S.custom.forEach(c=>{const p=packOf(c.pack);const k=(p?pname(p):"")+"|"+dexKey(c);cus.set(k,(cus.get(k)||false)||!!S.owned[c.id])});
+  const have=ids.filter(id=>S.owned[id]).length+[...cus.values()].filter(Boolean).length;
+  $("dexCount").textContent=`${have}/${ids.length+cus.size}`;
 }
 function render(){
   $("gems").textContent=S.gems.toLocaleString();$("pts").textContent=S.points.toLocaleString();
