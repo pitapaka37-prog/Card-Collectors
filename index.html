@@ -386,6 +386,11 @@ nav button span{font-family:var(--body);font-size:13px;font-weight:700}
 .cc-tag{display:inline-block;margin-left:6px;padding:0 6px;border:2px solid var(--ink);background:#7a3cff;color:#fff;font-size:11px;font-weight:700}
 .bt-abil-sk.dw small{color:#e2231a}.bt-abil-sk.dw{background:#fff0ee}
 .bt-abil-sk.rb small{color:#1d9e5a}
+.gx-banner{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:4px 12px;margin:0 0 12px;padding:10px 14px;border:4px solid var(--ink);background:linear-gradient(90deg,#ff3d00,#ffb300,#ff3d00);background-size:200% 100%;color:#fff;box-shadow:5px 5px 0 var(--ink);animation:gx-flow 2s linear infinite,pu-pulse 1.2s ease-in-out infinite}
+.gx-banner b{font-size:17px;text-shadow:2px 2px 0 var(--ink)}
+.gx-banner span{font-weight:900;background:var(--ink);color:var(--yellow);padding:0 8px}
+@keyframes gx-flow{0%{background-position:0 0}100%{background-position:200% 0}}
+.gx-got{margin:6px 0 0;font-weight:900;color:#ffb300;text-shadow:1px 1px 0 #000}
 .it-choose{display:flex;flex-wrap:wrap;gap:6px}
 .it-choose button{padding:5px 10px;border:2px solid var(--ink);border-radius:999px;background:#fff;font:700 13px var(--jp);cursor:pointer}
 .it-choose button.sel{background:#ffd23f;box-shadow:2px 2px 0 var(--ink)}
@@ -1310,6 +1315,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
   <section id="view-games" hidden>
     <div class="panel">
       <div class="panel-head"><h3>MINI GAMES<small>ミニゲーム</small></h3></div>
+      <div class="gx-banner" id="gxBanner" hidden role="status"></div>
       <div class="games">
         <button type="button" class="game-tile" id="playVcm">
           <span class="gt-art" aria-hidden="true"><span class="gt-meteor m1"></span><span class="gt-meteor m2"></span><span class="gt-meteor m3"></span><span class="gt-ship"></span></span>
@@ -2507,6 +2513,22 @@ $("pull10").onclick=()=>pull(10);
 /* ---- coins: toast ---- */
 let toastTimer=0;
 function toast(msg){const t=$("toast");t.textContent=msg;t.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove("show"),2200)}
+/* ---- guerrilla time: 3 surprise windows a day (30 min each, same for everyone) when mini-game coins are doubled ---- */
+const GX_LEN=30*60*1000;
+function gxWindows(d){
+  const day=new Date(d.getFullYear(),d.getMonth(),d.getDate()),key=`${day.getFullYear()}-${day.getMonth()+1}-${day.getDate()}`,out=[];
+  for(let i=0;i<3;i++){const hsh=btHash(key+"#gx"+i);const startMin=7*60+((hsh%((23-7)*60-30))|0);out.push(day.getTime()+startMin*60000)} // between 7:00 and 23:00
+  return out.sort((a,b)=>a-b);
+}
+function gxNow(t){t=t||Date.now();const s=gxWindows(new Date(t)).find(x=>t>=x&&t<x+GX_LEN);return s?{end:s+GX_LEN}:null}
+let gxSeen=0;
+function gxTick(){
+  const g=gxNow(),el=document.getElementById("gxBanner");
+  if(el){el.hidden=!g;if(g)el.innerHTML=`<b>🔥 ゲリラ発生！ ミニゲームのコイン2倍！</b><span>あと ${Math.max(1,Math.ceil((g.end-Date.now())/60000))} 分</span>`}
+  const hb=document.getElementById("hpGames");if(hb&&g)hb.textContent="🔥 コイン2倍中！";
+  if(g&&gxSeen!==g.end){gxSeen=g.end;if(typeof toast==="function")toast(`🔥 ゲリラ発生中！ あと ${Math.max(1,Math.ceil((g.end-Date.now())/60000))} 分、ミニゲームでもらえるコインが2倍！`)}
+}
+setInterval(gxTick,20000);setTimeout(gxTick,1500);
 function addGems(n){S.gems+=n;save();$("gems").textContent=S.gems.toLocaleString();renderCover()}
 
 /* ---- coins: idle earnings ---- */
@@ -3288,6 +3310,7 @@ render();
 updateIdle();
 /* ---- mini game: VELVET COMET MISSION (invader-style meteor shooter) ---- */
 const VCM=(()=>{
+  let vcmGx=false;
   const COINS_PER_WAVE=10,MAX_WAVE=50,MAX_REWARD=COINS_PER_WAVE*MAX_WAVE,SHIELD_TIME=300,MAX_LIVES=3; // 300 ticks = 5 s
   let cv,ctx,W=0,H=0,dpr=1,bg=null,raf=0,last=0,state="title",paused=false;
   let player,bullets,rocks,meteors,stray,powerups,particles,words,form,score,lives,wave,fireT,strayT,rockT,power,shake,flashT,starsTaken,cleared;
@@ -3511,16 +3534,17 @@ const VCM=(()=>{
       <div class="vcm-best">HIGH SCORE <b>${(S.hiScore||0).toLocaleString()}</b></div>
       <button type="button" class="btn-main" id="vcmGo">LAUNCH!</button>
       <p class="vcm-prize-note">★ 全 50 ウェーブクリアのミッション報酬は SSR「スター・ヴェルベット号」！</p>
-      <p class="vcm-note">ウェーブを1つクリアするごとにコイン ${COINS_PER_WAVE} 枚（全クリアで ${MAX_REWARD} 枚）</p>`);
+      <p class="vcm-note">ウェーブを1つクリアするごとにコイン ${COINS_PER_WAVE} 枚（全クリアで ${MAX_REWARD} 枚）</p>${gxNow()?`<p class="gx-got">🔥 今はゲリラタイム！ コイン2倍！</p>`:""}`);
     $g("vcmGo").onclick=e=>{e.stopPropagation();start()};
   }
-  function start(){reset();missionAdd("game",1);S.stats.games=(S.stats.games||0)+1;save();state="play";paused=false;screen("");$g("vcmPause").hidden=false;sfx("up");if(bgmReady)BGM.play("arcade")}
+  function start(){reset();vcmGx=!!gxNow();missionAdd("game",1);S.stats.games=(S.stats.games||0)+1;save();state="play";paused=false;screen("");$g("vcmPause").hidden=false;sfx("up");if(bgmReady)BGM.play("arcade")}
   function end(){
     if(state!=="play")return;
     state="over";$g("vcmPause").hidden=true;
     if(cleared)score+=5000; // clear bonus
     const waves=cleared?MAX_WAVE:wave-1; // waves fully cleared this run
-    const coins=Math.min(MAX_REWARD,waves*COINS_PER_WAVE);
+    const gx=vcmGx||!!gxNow();
+    const coins=Math.min(MAX_REWARD,waves*COINS_PER_WAVE)*(gx?2:1);
     S.stats.bestWave=Math.max(S.stats.bestWave||0,waves);
     const prize=cleared&&!S.normalClaimed.vcm50?REWARD_CARDS.find(c=>c.id==="r1"):null;
     const best=score>(S.hiScore||0);if(best)S.hiScore=score;
@@ -3530,7 +3554,7 @@ const VCM=(()=>{
       screen(`<div class="vcm-over">${cleared?"MISSION<br>COMPLETE!":"GAME OVER"}</div>
         ${best?'<div class="vcm-new">NEW RECORD!</div>':""}
         ${prize?`<div class="vcm-prize"><div class="vcm-prize-card" id="vcmPrize"></div><div class="vcm-prize-text"><b>MISSION CLEAR!</b><span>MISSION の「NORMAL」から SSR「${esc(prize.kana)}」を受け取ろう！</span></div></div>`:""}
-        <div class="vcm-result"><div><small>SCORE</small><b>${score.toLocaleString()}</b></div><div><small>CLEAR</small><b>${waves}</b></div><div><small>COINS</small><b>＋${coins}</b></div></div>
+        <div class="vcm-result"><div><small>SCORE</small><b>${score.toLocaleString()}</b></div><div><small>CLEAR</small><b>${waves}</b></div><div><small>COINS${gx&&coins?" ×2!":""}</small><b>＋${coins}</b></div></div>${gx&&coins?`<p class="gx-got">🔥 ゲリラタイムでコイン2倍！</p>`:""}
         <div class="vcm-btns"><button type="button" class="btn-main" id="vcmRetry">RETRY</button><button type="button" class="ghost" id="vcmExit2">もどる</button></div>`);
       if(prize){const pc=$g("vcmPrize");const card=cardEl(prize,{});card.classList.add("hint-ssr");pc.appendChild(card);sfx("boom")}
       $g("vcmRetry").onclick=e=>{e.stopPropagation();start()};
@@ -6062,7 +6086,7 @@ function renderHome(){
   $("hpFiles").textContent=`${have} / ${all.length} 種 ・ ${Math.round(have/all.length*100)}%`;
   const open=SHOP_CARDS.filter(c=>!S.owned[c.id]).length;
   $("hpShop").textContent=`★${S.points.toLocaleString()} ・ 交換できるカード ${open} 枚`;
-  $("hpGames").textContent=`HIGH SCORE ${(S.hiScore||0).toLocaleString()}`;
+  $("hpGames").textContent=gxNow()?"🔥 コイン2倍中！":`HIGH SCORE ${(S.hiScore||0).toLocaleString()}`;
   btSeasonCheck();
   {const mine=CARDS.concat(SHOP_CARDS,REWARD_CARDS,S.custom).filter(c=>(S.owned[c.id]||0)>0);$("hpCards").textContent=`${mine.reduce((a,c)=>a+S.owned[c.id],0)}枚 ・ ${mine.length}種類`}
   $("hpBattle").textContent=`RANK ${btRankOf(S.battle.bp)} ・ BP ${S.battle.bp||0}`;
