@@ -6110,9 +6110,9 @@ $("playBattle").onclick=()=>{tab("battle");window.scrollTo({top:0,behavior:"smoo
 
 /* ---- comics: read the STAR LIGHT COMICS issues page by page ---- */
 var COMICS=[ // var: the home screen can render before this line runs
- {id:"atlas-01",title:"ATLAS PRIME #1",sub:"最強最弱の男",desc:"普段は人並み以下の体力しか持たない青年ダニエル・ウォーカー。街に巨大生物「ギガンター」が現れたとき、彼の秘密が明かされる――",dir:"comics/atlas-01/",pages:13},
+ {id:"atlas-01",title:"ATLAS PRIME #1",sub:"最強最弱の男",desc:"普段は人並み以下の体力しか持たない青年ダニエル・ウォーカー。街に巨大生物「ギガンター」が現れたとき、彼の秘密が明かされる――",dir:"comics/atlas-01/",pages:13,v:2},
 ];
-const cmSrc=(c,i)=>`${c.dir}${String(i).padStart(2,"0")}.jpg`;
+const cmSrc=(c,i)=>`${c.dir}${String(i).padStart(2,"0")}.jpg${c.v?`?v=${c.v}`:""}`; // v: bump when pages are reordered
 let CM=null; // {c, i}
 function renderComics(){
   if(!S.comicPos||typeof S.comicPos!=="object")S.comicPos={};
