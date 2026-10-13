@@ -1107,6 +1107,34 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
 .hp-games{background-color:#0b1240}
 .hp-make{background-color:#1d9e5a}
 .hp-cards{background-color:#d6336c;grid-column:span 2}
+.hp-comics{background-color:#1d5fd6;grid-column:span 2}
+.cm-list{display:flex;flex-direction:column;gap:14px}
+.cm-issue{display:grid;grid-template-columns:120px 1fr;gap:14px;align-items:start;padding:12px;border:4px solid var(--ink);background:#fff;box-shadow:5px 5px 0 var(--ink);text-align:left;color:inherit;cursor:pointer}
+.cm-issue:active{transform:translate(3px,3px);box-shadow:2px 2px 0 var(--ink)}
+.cm-cover img{display:block;width:100%;aspect-ratio:2/3;object-fit:cover;border:3px solid var(--ink);box-shadow:3px 3px 0 var(--ink);transform:rotate(-2deg)}
+.cm-info{display:flex;flex-direction:column;gap:4px;min-width:0}
+.cm-info small{font-family:var(--display);color:var(--red);letter-spacing:.06em}
+.cm-info b{font-family:var(--display);font-weight:400;font-size:26px;line-height:1}
+.cm-info i{font-style:normal;font-weight:900;font-size:16px}
+.cm-info>span{font-size:12px;line-height:1.5}
+.cm-info em{font-style:normal;font-size:12px;font-weight:700;opacity:.75}
+.cm-info u{text-decoration:none;align-self:flex-start;margin-top:4px;padding:4px 14px;background:var(--red);color:#fff;border:3px solid var(--ink);font-family:var(--display);font-size:16px;box-shadow:3px 3px 0 var(--ink)}
+.cm-reader{position:fixed;inset:0;z-index:80;display:flex;flex-direction:column;background:#111}
+.cm-reader[hidden]{display:none}
+.cm-top{display:flex;align-items:center;gap:10px;padding:8px 12px;padding-top:max(8px,env(safe-area-inset-top));color:#fff;background:#000}
+.cm-top b{flex:1;min-width:0;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cm-top span{font-family:var(--display);font-size:16px;color:var(--yellow)}
+.cm-x{width:40px;height:40px;border:3px solid #fff;background:var(--yellow);color:var(--ink);font-size:22px;font-weight:900;cursor:pointer}
+.cm-stage{position:relative;flex:1;min-height:0;display:grid;place-items:center;overflow:hidden}
+.cm-stage img{max-width:100%;max-height:100%;object-fit:contain;display:block}
+.cm-stage img.in{animation:cm-in .3s ease-out}
+@keyframes cm-in{0%{opacity:.2;transform:translateX(16px)}100%{opacity:1;transform:none}}
+.cm-tap{position:absolute;top:0;bottom:0;width:35%;border:0;background:none;cursor:pointer}
+.cm-tap.l{left:0}.cm-tap.r{right:0}
+.cm-bar{display:flex;align-items:center;gap:10px;padding:8px 12px;padding-bottom:max(10px,env(safe-area-inset-bottom));background:#000}
+.cm-bar input{flex:1;min-width:0;accent-color:var(--yellow)}
+.cm-bar button{font-size:14px;padding:8px 12px;white-space:nowrap}
+@media (max-width:640px){.cm-issue{grid-template-columns:96px 1fr}.cm-info b{font-size:22px}.cm-bar button{font-size:12px;padding:8px}}
 .hp b{position:relative;font-family:var(--display);font-weight:400;font-size:clamp(34px,7vw,56px);line-height:.9;letter-spacing:.04em;color:var(--yellow);-webkit-text-stroke:1.5px var(--ink);text-shadow:4px 4px 0 var(--ink)}
 .hp-pull b{font-size:clamp(48px,11vw,84px)}
 .hp i{position:relative;font-style:normal;font-family:var(--jp);font-size:13px;text-shadow:1px 1px 0 var(--ink)}
@@ -1116,6 +1144,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
   .home-hero{grid-template-columns:110px 1fr;gap:14px;padding:16px}
   .home-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
   .hp-cards{grid-column:span 1}
+  .hp-comics{grid-column:span 1}
   .hp{min-height:130px;padding:12px}
   .hh-stats b{font-size:19px}
 }
@@ -1227,6 +1256,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
         <button type="button" class="hp hp-games" data-go="games"><span class="hp-sfx">ZOOOM!</span><b>GAMES</b><i>ミニゲーム</i><small id="hpGames"></small></button>
         <button type="button" class="hp hp-make" data-go="make"><span class="hp-sfx">SKETCH!</span><b>MAKE</b><i>カードを作る</i><small id="hpMake"></small></button>
         <button type="button" class="hp hp-cards" data-go="cards"><span class="hp-sfx">WOW!</span><b>MY CARDS</b><i>手持ちカード（レベル上げ・合成・売却）</i><small id="hpCards"></small></button>
+        <button type="button" class="hp hp-comics" data-go="comics"><span class="hp-sfx">KRAK!</span><b>COMICS</b><i>スターライト・コミックスを読む</i><small id="hpComics"></small></button>
         <button type="button" class="hp hp-battle" data-go="battle"><span class="hp-sfx">BAM!</span><b>BATTLE</b><i>カードバトル</i><small id="hpBattle"></small></button>
       </div>
     </div>
@@ -1294,6 +1324,18 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
     </div>
   </section>
 
+  <section id="view-comics" hidden>
+    <div class="panel">
+      <div><button class="ghost" id="comicsBack">← ホームへ</button></div>
+      <div class="panel-head"><h3>COMICS<small>スターライト・コミックス</small></h3></div>
+      <div class="cm-list" id="cmList"></div>
+    </div>
+  </section>
+  <div class="cm-reader" id="cmReader" hidden role="dialog" aria-modal="true" aria-label="コミックを読む">
+    <div class="cm-top"><b id="cmTitle"></b><span id="cmPage"></span><button type="button" class="cm-x" id="cmClose" aria-label="閉じる">×</button></div>
+    <div class="cm-stage" id="cmStage"><img id="cmImg" alt=""><button type="button" class="cm-tap l" id="cmTapL" aria-label="前のページ"></button><button type="button" class="cm-tap r" id="cmTapR" aria-label="次のページ"></button></div>
+    <div class="cm-bar"><button type="button" class="ghost" id="cmPrev">← 前のページ</button><input type="range" id="cmSlider" min="0" value="0" aria-label="ページ"><button type="button" class="btn-main" id="cmNext">次のページ →</button></div>
+  </div>
   <section id="view-cards" hidden>
     <div class="panel">
       <div><button class="ghost" id="cardsBack">← ホームへ</button></div>
@@ -2303,7 +2345,7 @@ const BGM=(()=>{
   };
 })();
 let currentScreen="home",bgmReady=false;
-function screenMusic(){if(bgmReady)BGM.play(currentScreen==="deck"?"games":currentScreen)}
+function screenMusic(){if(bgmReady)BGM.play(currentScreen==="deck"?"games":currentScreen==="comics"?"cards":currentScreen)}
 document.addEventListener("visibilitychange",()=>{if(!actx)return;if(document.visibilityState==="hidden")actx.suspend();else actx.resume()});
 function sfx(kind){
   if(!S.sound)return;
@@ -3170,11 +3212,12 @@ function render(){
 function tab(which){
   currentScreen=which;screenMusic();
   if(which==="home")setTimeout(renderHome,0);
-  ["home","gacha","dex","make","shop","games","battle","deck","cards"].forEach(t=>{
-    const on=t===which;const tb=document.getElementById("tab-"+t);if(tb)tb.setAttribute("aria-selected",on||(t==="games"&&(which==="battle"||which==="deck"))||(t==="home"&&which==="cards"));$("view-"+t).hidden=!on;
+  ["home","gacha","dex","make","shop","games","battle","deck","cards","comics"].forEach(t=>{
+    const on=t===which;const tb=document.getElementById("tab-"+t);if(tb)tb.setAttribute("aria-selected",on||(t==="games"&&(which==="battle"||which==="deck"))||(t==="home"&&(which==="cards"||which==="comics")));$("view-"+t).hidden=!on;
     if(on&&t==="make")$("view-make").style.display="flex";
     if(on&&t==="gacha")$("view-gacha").style.display="flex";
   });
+  if(which==="comics")renderComics();
   if(which==="dex"){missionAdd("dex",1);save()}
   if(which==="dex"&&dexStale){renderDex();dexStale=false}
   if(which==="make"&&mineStale){renderMine();mineStale=false}
@@ -6065,6 +6108,56 @@ $("btGiveUp").onclick=()=>{if(!BT||BT.over)return;if(BT.busy&&!BT.online)return;
   btEnd("lose")};
 $("playBattle").onclick=()=>{tab("battle");window.scrollTo({top:0,behavior:"smooth"})};
 
+/* ---- comics: read the STAR LIGHT COMICS issues page by page ---- */
+var COMICS=[ // var: the home screen can render before this line runs
+ {id:"atlas-01",title:"ATLAS PRIME #1",sub:"最強最弱の男",desc:"普段は人並み以下の体力しか持たない青年ダニエル・ウォーカー。街に巨大生物「ギガンター」が現れたとき、彼の秘密が明かされる――",dir:"comics/atlas-01/",pages:13},
+];
+const cmSrc=(c,i)=>`${c.dir}${String(i).padStart(2,"0")}.jpg`;
+let CM=null; // {c, i}
+function renderComics(){
+  if(!S.comicPos||typeof S.comicPos!=="object")S.comicPos={};
+  const box=$("cmList");box.innerHTML="";
+  COMICS.forEach(c=>{
+    const at=S.comicPos[c.id]||0,done=S.comicDone&&S.comicDone[c.id];
+    const b=document.createElement("button");b.type="button";b.className="cm-issue";
+    b.innerHTML=`<span class="cm-cover"><img src="${c.dir}cover-s.jpg" alt="" loading="lazy"></span><span class="cm-info"><small>STAR LIGHT COMICS</small><b>${esc(c.title)}</b><i>${esc(c.sub)}</i><span>${esc(c.desc)}</span><em>表紙＋${c.pages-1} ページ${done?" ・ 読んだ！":at?` ・ ${at+1}ページ目から`:" ・ NEW!"}</em><u>${at&&!done?"つづきを読む ▶":"読む ▶"}</u></span>`;
+    b.onclick=()=>cmOpen(c,done?0:at);
+    box.appendChild(b);
+  });
+}
+function cmOpen(c,i){
+  CM={c,i:Math.max(0,Math.min(c.pages-1,i||0))};
+  $("cmTitle").textContent=`${c.title}「${c.sub}」`;
+  $("cmSlider").max=c.pages-1;
+  $("cmReader").hidden=false;document.body.style.overflow="hidden";sfx("flip");
+  cmShow();
+}
+function cmShow(){
+  if(!CM)return;const {c,i}=CM;
+  const img=$("cmImg");img.classList.remove("in");void img.offsetWidth;img.src=cmSrc(c,i);img.classList.add("in");
+  img.alt=`${c.title} ${i===0?"表紙":i+"ページ"}`;
+  $("cmPage").textContent=i===0?`表紙 / ${c.pages-1}`:`${i} / ${c.pages-1}`;
+  $("cmSlider").value=i;
+  $("cmPrev").disabled=i===0;
+  $("cmNext").textContent=i>=c.pages-1?"読み終わった！":"次のページ →";
+  if(i+1<c.pages){const pre=new Image();pre.src=cmSrc(c,i+1)} // the next page is ready before you turn
+  S.comicPos=S.comicPos||{};S.comicPos[c.id]=i;
+  if(i>=c.pages-1){S.comicDone=S.comicDone||{};S.comicDone[c.id]=true}
+  save();
+}
+function cmGo(d){
+  if(!CM)return;const n=CM.i+d;
+  if(n>=CM.c.pages){cmClose();return}
+  if(n<0)return;CM.i=n;sfx("flip");cmShow();
+}
+function cmClose(){const c=CM&&CM.c;$("cmReader").hidden=true;document.body.style.overflow="";CM=null;renderComics();if(c&&S.comicDone&&S.comicDone[c.id]&&S.comicPos[c.id]>=c.pages-1)toast(`「${c.title}」を読み終わりました！ TO BE CONTINUED…`)}
+$("cmPrev").onclick=()=>cmGo(-1);$("cmNext").onclick=()=>cmGo(1);
+$("cmTapL").onclick=()=>cmGo(-1);$("cmTapR").onclick=()=>cmGo(1);
+$("cmClose").onclick=cmClose;
+$("cmSlider").addEventListener("input",()=>{if(!CM)return;CM.i=+$("cmSlider").value;cmShow()});
+document.addEventListener("keydown",e=>{if(!CM)return;if(e.key==="ArrowRight")cmGo(1);else if(e.key==="ArrowLeft")cmGo(-1);else if(e.key==="Escape")cmClose()});
+$("comicsBack").onclick=()=>{tab("home");window.scrollTo({top:0})};
+
 /* ---- home screen ---- */
 function renderHome(){
   updateMissionBadge();
@@ -6086,6 +6179,7 @@ function renderHome(){
   $("hpFiles").textContent=`${have} / ${all.length} 種 ・ ${Math.round(have/all.length*100)}%`;
   const open=SHOP_CARDS.filter(c=>!S.owned[c.id]).length;
   $("hpShop").textContent=`★${S.points.toLocaleString()} ・ 交換できるカード ${open} 枚`;
+  {const cms=COMICS||[];$("hpComics").textContent=`${cms.length} 冊 ・ ${cms.filter(c=>S.comicDone&&S.comicDone[c.id]).length} 冊読んだ`}
   $("hpGames").textContent=gxNow()?"🔥 コイン2倍中！":`HIGH SCORE ${(S.hiScore||0).toLocaleString()}`;
   btSeasonCheck();
   {const mine=CARDS.concat(SHOP_CARDS,REWARD_CARDS,S.custom).filter(c=>(S.owned[c.id]||0)>0);$("hpCards").textContent=`${mine.reduce((a,c)=>a+S.owned[c.id],0)}枚 ・ ${mine.length}種類`}
