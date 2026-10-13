@@ -6111,6 +6111,7 @@ $("playBattle").onclick=()=>{tab("battle");window.scrollTo({top:0,behavior:"smoo
 /* ---- comics: read the STAR LIGHT COMICS issues page by page ---- */
 var COMICS=[ // var: the home screen can render before this line runs
  {id:"atlas-01",title:"ATLAS PRIME #1",sub:"最強最弱の男",desc:"普段は人並み以下の体力しか持たない青年ダニエル・ウォーカー。街に巨大生物「ギガンター」が現れたとき、彼の秘密が明かされる――",dir:"comics/atlas-01/",pages:13,v:2},
+ {id:"nova-01",title:"NOVA MAY #1",sub:"希望の光",desc:"遥か昔、銀河の中心の惑星クエーセリアを闇の軍団ダークレギオンが襲った。数千年後、女王セレニアが放ったノヴァコアは、地球の女子高生メイ・アークライトのもとへ――",dir:"comics/nova-01/",pages:12},
 ];
 const cmSrc=(c,i)=>`${c.dir}${String(i).padStart(2,"0")}.jpg${c.v?`?v=${c.v}`:""}`; // v: bump when pages are reordered
 let CM=null; // {c, i}
