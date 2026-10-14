@@ -6059,6 +6059,9 @@ async function cloudCheckFriends(force){
   }
 }
 setTimeout(()=>cloudCheckFriends(true),3000);
+// while the app stays open, and whenever it comes back to the screen, look for friends' new cards
+setInterval(()=>{if(document.visibilityState==="visible"){cloudCheckFriends();if(typeof ccTick==="function")ccTick()}},120000);
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"){cloudCheckFriends();if(typeof ccTick==="function")ccTick()}});
 setTimeout(()=>{const n=customAutoSell();if(n){save();render();toast(`自作カードの3枚目からのダブり ${n} 枚を自動で売りました（+${n} コイン）`)}},1500);
 function gfImport(pk,quiet){
   if(!pk||typeof pk!=="object"||!Array.isArray(pk.cards)||!pk.cards.length||pk.cards.length>300)return "ガチャの中身が正しくありません。";
