@@ -5769,7 +5769,7 @@ async function cloudToken(){
         if(r.ok){S.cloudAuth={uid:j.user_id,refresh:j.refresh_token,token:j.id_token,exp:Date.now()+(+j.expires_in||3600)*1000};save();return j.id_token}
       }
       r=await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${FB.apiKey}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({returnSecureToken:true})});
-      j=await r.json();if(!r.ok)throw new Error("auth");
+      j=await r.json().catch(()=>({}));if(!r.ok){const e=new Error("auth");e.fb=(j.error&&j.error.message)||("HTTP "+r.status);throw e}
       S.cloudAuth={uid:j.localId,refresh:j.refreshToken,token:j.idToken,exp:Date.now()+(+j.expiresIn||3600)*1000};save();return j.idToken;
     }finally{cloudAuthP=null}
   })();
@@ -5780,9 +5780,23 @@ const fsVal=f=>f?(f.stringValue!=null?f.stringValue:f.integerValue!=null?+f.inte
 async function fsReq(method,path,body,auth){
   const h={};if(body)h["Content-Type"]="application/json";
   if(auth)h.Authorization="Bearer "+await cloudToken();
-  const r=await fetch(FS_BASE+path,{method,headers:h,body:body?JSON.stringify(body):undefined});
+  let r;
+  try{r=await fetch(FS_BASE+path,{method,headers:h,body:body?JSON.stringify(body):undefined})}
+  catch(e){const x=new Error("net");x.fb="NETWORK";throw x}
   const j=r.status===204?{}:await r.json().catch(()=>({}));
+  if(!r.ok)fbLast=(j.error&&(j.error.status||j.error.message))||("HTTP "+r.status);
   return{ok:r.ok,status:r.status,j};
+}
+var fbLast="";
+// a short, readable reason for a Firebase problem (shown under the message so it can be fixed)
+function fbWhy(e){
+  const s=String((e&&e.fb)||fbLast||(e&&e.message)||"");
+  if(/OPERATION_NOT_ALLOWED|ADMIN_ONLY_OPERATION/.test(s))return "Firebase の「匿名ログイン」がオフになっています。Firebase の Authentication → ログイン方法 で「匿名」を有効にしてください。（"+s+"）";
+  if(/PERMISSION_DENIED|^HTTP 403/.test(s))return "Firebase のルールでことわられました。ルールが正しく公開されているか確かめてください。（"+s+"）";
+  if(/NETWORK|Failed to fetch|Load failed/.test(s))return "インターネットにつながっていないようです。電波のいい所でもう一度ためしてね。";
+  if(/NOT_FOUND|^HTTP 404/.test(s))return "Firebase のデータベースが見つかりません。（"+s+"）";
+  if(/API_KEY|INVALID_ARGUMENT|^HTTP 400/.test(s))return "Firebase の設定でエラーになりました。（"+s+"）";
+  return s?"（エラー："+s+"）":"もう一度ためしてね。";
 }
 function gsShrink(src){ // pictures are made smaller so a pack stays light for friends
   return new Promise(res=>{
@@ -5846,7 +5860,7 @@ async function gsOpen(p){
   if(p.cloud&&p.cloud.code){
     $("gsCode").textContent=p.cloud.code;$("gsInfo").textContent="最新の内容をアップロード中…";
     try{await cloudSyncPack(p);$("gsInfo").textContent="このコードはずっと使えます。カードを追加すると自動でフレンドに届きます。"}
-    catch(e){$("gsInfo").textContent="アップロードできませんでした。インターネットにつながっているか確かめてね。"}
+    catch(e){console.warn(e);$("gsInfo").textContent="アップロードできませんでした。"+fbWhy(e)}
     return;
   }
   $("gsCode").textContent="------";$("gsInfo").textContent="コードを作っています…";
@@ -5864,7 +5878,7 @@ async function gsOpen(p){
     await cloudSyncPack(p);
     $("gsInfo").textContent="できあがり！ このコードはずっと使えます。カードを追加すると自動でフレンドに届きます。";sfx("rare");
     renderMine();
-  }catch(e){console.warn(e);$("gsInfo").textContent="コードを作れませんでした。インターネットにつながっているか確かめて、もう一度ためしてね。"}
+  }catch(e){console.warn(e);$("gsInfo").textContent="コードを作れませんでした。"+fbWhy(e)}
 }
 function gsClose(){$("gsModal").hidden=true;document.body.style.overflow=""}
 $("gsClose").onclick=gsClose;
@@ -5892,12 +5906,12 @@ $("gfModal").addEventListener("click",e=>{if(e.target===$("gfModal"))gfClose()})
 async function cloudFetchPack(code){
   const m=await fsReq("GET",`/packs/${code}`);
   if(m.status===404)return{err:"そのコードのガチャは見つかりませんでした。コードを確かめてね。"};
-  if(!m.ok)return{err:"ガチャを受け取れませんでした。インターネットにつながっているか確かめてね。"};
+  if(!m.ok)return{err:"ガチャを受け取れませんでした。"+fbWhy()};
   const f=m.j.fields||{};
   const cards=[];let token="";
   for(let i=0;i<10;i++){
     const r=await fsReq("GET",`/packs/${code}/cards?pageSize=100${token?`&pageToken=${encodeURIComponent(token)}`:""}`);
-    if(!r.ok)return{err:"ガチャを受け取れませんでした。もう一度ためしてね。"};
+    if(!r.ok)return{err:"ガチャを受け取れませんでした。"+fbWhy()};
     (r.j.documents||[]).forEach(d=>{try{cards.push(JSON.parse(fsVal(d.fields&&d.fields.data)))}catch(e){}});
     token=r.j.nextPageToken;if(!token)break;
   }
@@ -5907,7 +5921,7 @@ async function gfReceive(){
   const code=String($("gfCode").value||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
   if(code.length!==6){$("gfMsg").textContent="6文字のガチャコードを入れてね。";return}
   $("gfMsg").textContent="受け取っています…";
-  const res=await cloudFetchPack(code).catch(()=>({err:"ガチャを受け取れませんでした。インターネットにつながっているか確かめてね。"}));
+  const res=await cloudFetchPack(code).catch(e=>{console.warn(e);return{err:"ガチャを受け取れませんでした。"+fbWhy(e)}});
   if(res.err){$("gfMsg").textContent=res.err;return}
   if(!res.pack.cards.length){$("gfMsg").textContent="このガチャにはまだカードがありません。";return}
   const err=gfImport(res.pack);
@@ -5988,7 +6002,7 @@ async function ccOpen(p){
     $("ccCode").textContent=p.cloud.collab;
     $("ccInfo").textContent="このコードを一緒に作る友達に教えてね。友達が「共同制作に参加」でコードを入れると、メンバーになってカードを追加・編集・削除できます。";
     await cloudSyncPack(p);renderMine();ccMembers(p);
-  }catch(e){console.warn(e);$("ccInfo").textContent=e.message==="rules"?"Firebase のルールがまだ新しくなっていないようです。ルールを書きかえて「公開」を押してから、もう一度ためしてね。":"コードを作れませんでした。インターネットにつながっているか確かめて、もう一度ためしてね。"}
+  }catch(e){console.warn(e);$("ccInfo").textContent=e.message==="rules"?"Firebase のルールがまだ新しくなっていないようです。ルールを書きかえて「公開」を押してから、もう一度ためしてね。":"コードを作れませんでした。"+fbWhy(e)}
 }
 async function ccMembers(p){
   try{const r=await fsReq("GET",`/packs/${p.cloud.code}/members?pageSize=100`);if(!r.ok)return;
@@ -6020,7 +6034,7 @@ async function ccJoin(){
     if(!S.packs.includes(p))return;
     $("ccJoinCode").value="";msg("");sfx("ur");toast(`共同制作ガチャ「${pname(p)}」に参加しました！ カードを追加するとメンバー全員に届きます。`);
     render();fillPackSelect();renderMine();
-  }catch(e){console.warn(e);msg("参加できませんでした。インターネットにつながっているか確かめてね。")}
+  }catch(e){console.warn(e);msg("参加できませんでした。"+fbWhy(e))}
 }
 // leave (member) – the cards stay online for the others
 async function ccLeave(p){
