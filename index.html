@@ -1545,6 +1545,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
       <p class="ab-note">フレンドから聞いた「ガチャコード」を入れてね。受け取ったガチャは、作った人がカードを追加すると自動で最新になります。</p>
       <div class="on-join"><input type="text" id="gfCode" maxlength="6" placeholder="コード" autocomplete="off" autocapitalize="characters" aria-label="ガチャコード"><button type="button" class="btn-main" id="gfGo">受け取る</button></div>
       <p class="fr-msg" id="gfMsg" role="status"></p>
+      <p class="ab-note">アプリの版：<b class="app-ver"></b></p>
     </div>
   </div>
   <div class="detail ms-modal bt-iv" id="btInfo" hidden role="dialog" aria-modal="true" aria-label="カードのステータス">
@@ -1682,7 +1683,7 @@ section::after{position:absolute;z-index:-1;pointer-events:none;font-family:var(
     </div>
     <button type="button" class="ts-start" id="tsStart">TAP TO START</button>
     <div class="ts-info" id="tsInfo"></div>
-    <div class="ts-foot">STAR LIGHT COMICS ・ ORIGINAL HEROES</div>
+    <div class="ts-foot">STAR LIGHT COMICS ・ ORIGINAL HEROES ・ <span class="app-ver"></span></div>
   </div>
   <div class="vcm" id="vcm" hidden>
     <canvas id="vcmCanvas"></canvas>
@@ -5788,6 +5789,8 @@ async function fsReq(method,path,body,auth){
   return{ok:r.ok,status:r.status,j};
 }
 var fbLast="";
+const APP_VER="cc-v175"; // keep the same as VERSION in sw.js
+document.querySelectorAll(".app-ver").forEach(e=>e.textContent=APP_VER);
 // a short, readable reason for a Firebase problem (shown under the message so it can be fixed)
 function fbWhy(e){
   const s=String((e&&e.fb)||fbLast||(e&&e.message)||"");
