@@ -1823,7 +1823,7 @@ function load(raw){
   const isColor=c=>typeof c==="string"&&/^#[0-9a-f]{6}$/i.test(c);
   s.packs=s.packs.filter(p=>p&&typeof p.id==="string").map(p=>{const o={id:p.id,name:String(p.name||"").slice(0,20),color:isColor(p.color)?p.color:PACK_COLORS[0]};
     if(typeof p.shareUid==="string")o.shareUid=p.shareUid.slice(0,40);
-    if(p.cloud&&typeof p.cloud.code==="string"){o.cloud={code:p.cloud.code.slice(0,6),sig:p.cloud.sig&&typeof p.cloud.sig==="object"?p.cloud.sig:{},rt:p.cloud.rt&&typeof p.cloud.rt==="object"?p.cloud.rt:{},metaSig:String(p.cloud.metaSig||"")};if(typeof p.cloud.collab==="string")o.cloud.collab=p.cloud.collab.slice(0,6)}
+    if(p.cloud&&typeof p.cloud.code==="string"){o.cloud={code:p.cloud.code.slice(0,6),sig:p.cloud.sig&&typeof p.cloud.sig==="object"?p.cloud.sig:{},rt:p.cloud.rt&&typeof p.cloud.rt==="object"?p.cloud.rt:{},metaSig:String(p.cloud.metaSig||""),...(Number(p.cloud.pv)?{pv:Number(p.cloud.pv)}:{})};if(typeof p.cloud.collab==="string")o.cloud.collab=p.cloud.collab.slice(0,6)}
     if(p.collab&&typeof p.collab==="object"&&typeof p.collab.code==="string"&&o.cloud)o.collab={code:p.collab.code.slice(0,6),key:String(p.collab.key||"").slice(0,6),from:String(p.collab.from||"").slice(0,12)};
     if(p.friend&&typeof p.friend==="object"){o.friend={from:String(p.friend.from||"").slice(0,12),uid:String(p.friend.uid||"").slice(0,40)};if(typeof p.friend.code==="string")o.friend.code=p.friend.code.slice(0,6);o.friend.ver=Math.max(0,Number(p.friend.ver)||0)}return o});
   s.custom=s.custom.filter(c=>c&&typeof c.id==="string"&&typeof c.img==="string"&&(c.img==="idb"||/^data:image\/(jpeg|png|webp|gif);base64,[A-Za-z0-9+/=]+$/.test(c.img))&&ORDER.includes(c.r))
@@ -5789,7 +5789,7 @@ async function fsReq(method,path,body,auth){
   return{ok:r.ok,status:r.status,j};
 }
 var fbLast="";
-const APP_VER="cc-v175"; // keep the same as VERSION in sw.js
+const APP_VER="cc-v176"; // keep the same as VERSION in sw.js
 document.querySelectorAll(".app-ver").forEach(e=>e.textContent=APP_VER);
 // a short, readable reason for a Firebase problem (shown under the message so it can be fixed)
 function fbWhy(e){
@@ -5797,6 +5797,7 @@ function fbWhy(e){
   if(/OPERATION_NOT_ALLOWED|ADMIN_ONLY_OPERATION/.test(s))return "Firebase の「匿名ログイン」がオフになっています。Firebase の Authentication → ログイン方法 で「匿名」を有効にしてください。（"+s+"）";
   if(/PERMISSION_DENIED|^HTTP 403/.test(s))return "Firebase のルールでことわられました。ルールが正しく公開されているか確かめてください。（"+s+"）";
   if(/NETWORK|Failed to fetch|Load failed/.test(s))return "インターネットにつながっていないようです。電波のいい所でもう一度ためしてね。";
+  if(/RESOURCE_EXHAUSTED|^HTTP 429/.test(s))return "Firebase の無料で使える1日の回数を使い切りました。毎日 夕方4時ごろ（日本時間）にリセットされるので、そのあとにもう一度ためしてね。";
   if(/NOT_FOUND|^HTTP 404/.test(s))return "Firebase のデータベースが見つかりません。（"+s+"）";
   if(/API_KEY|INVALID_ARGUMENT|^HTTP 400/.test(s))return "Firebase の設定でエラーになりました。（"+s+"）";
   return s?"（エラー："+s+"）":"もう一度ためしてね。";
@@ -5818,7 +5819,7 @@ function packMeta(p,ver){
 var cloudBusy=false,cloudAgain=false,cloudTimer=0; // var: render() can run before this block on startup
 async function cloudSyncPack(p){
   await cloudToken();
-  if(isCollab(p)){const ok=await collabPull(p);if(!ok)return}
+  if(isCollab(p)&&(!p.cloud.pullAt||Date.now()-p.cloud.pullAt>180000||cardsIn(p.id).some(c=>(p.cloud.sig||{})[c.id]!==cardSig(c)))){p.cloud.pullAt=Date.now();const ok=await collabPull(p);if(!ok)return}
   const code=p.cloud.code,list=cardsIn(p.id),old=p.cloud.sig||{},now={},rt=p.cloud.rt||(p.cloud.rt={});
   let changed=false;
   for(const c of list){
@@ -5957,6 +5958,8 @@ async function collabPull(p){
   if(!m.ok)return false;
   const f=m.j.fields||{};
   if(p.collab){const nm=fsVal(f.name),col=fsVal(f.color);if(typeof nm==="string")p.name=nm.slice(0,20);if(typeof col==="string"&&/^#[0-9a-f]{6}$/i.test(col))p.color=col;p.collab.from=String(fsVal(f.from)||"").slice(0,12)}
+  const ver=fsVal(f.ver)||0;
+  if(p.cloud.pv&&p.cloud.pv===ver)return true; // nothing new since last time
   const seen=new Set();let token="",got=0,changed=false;
   for(let i=0;i<10;i++){
     const r=await fsReq("GET",`/packs/${code}/cards?pageSize=100${token?`&pageToken=${encodeURIComponent(token)}`:""}`);
@@ -5978,6 +5981,7 @@ async function collabPull(p){
   if(gone.length){const ids=new Set(gone.map(c=>c.id));S.custom=S.custom.filter(c=>!ids.has(c.id));gone.forEach(c=>{delete sig[c.id];delete rt[c.id];delete S.owned[c.id]});changed=true}
   if(changed){save();render();mineStale=true}
   if(got)toast(`共同制作ガチャ「${pname(p)}」に新しいカードが ${got} 枚届きました！`);
+  p.cloud.pv=ver;save();
   return true;
 }
 // owner: show (and make, the first time) the co-creation code
@@ -6048,7 +6052,7 @@ async function ccLeave(p){
   try{if(code)await fsReq("DELETE",`/packs/${code}/members/${S.cloudAuth.uid}`,null,true)}catch(e){}
 }
 let ccTickAt=0;
-function ccTick(force){if(!force&&Date.now()-ccTickAt<30000)return;ccTickAt=Date.now();if(S.packs.some(isCollab))cloudSyncAll()}
+function ccTick(force){if(!force&&Date.now()-ccTickAt<180000)return;ccTickAt=Date.now();if(S.packs.some(isCollab))cloudSyncAll()}
 setTimeout(()=>ccTick(true),3500);
 $("ccClose").onclick=ccClose;
 $("ccModal").addEventListener("click",e=>{if(e.target===$("ccModal"))ccClose()});
@@ -6056,7 +6060,7 @@ $("ccJoinGo").onclick=ccJoin;
 // friends' gachas: check for updates when the app opens / the gacha screen is shown
 var cloudCheckAt=0;
 async function cloudCheckFriends(force){
-  if(!force&&Date.now()-cloudCheckAt<60000)return;
+  if(!force&&Date.now()-cloudCheckAt<300000)return;
   cloudCheckAt=Date.now();
   for(const p of S.packs.filter(x=>x.friend&&x.friend.code)){
     try{
@@ -6077,7 +6081,7 @@ async function cloudCheckFriends(force){
 }
 setTimeout(()=>cloudCheckFriends(true),3000);
 // while the app stays open, and whenever it comes back to the screen, look for friends' new cards
-setInterval(()=>{if(document.visibilityState==="visible"){cloudCheckFriends();if(typeof ccTick==="function")ccTick()}},120000);
+setInterval(()=>{if(document.visibilityState==="visible"){cloudCheckFriends();if(typeof ccTick==="function")ccTick()}},600000);
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"){cloudCheckFriends();if(typeof ccTick==="function")ccTick()}});
 setTimeout(()=>{const n=customAutoSell();if(n){save();render();toast(`自作カードの3枚目からのダブり ${n} 枚を自動で売りました（+${n} コイン）`)}},1500);
 function gfImport(pk,quiet){
